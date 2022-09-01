@@ -1,0 +1,8 @@
+
+  * Print coordinates in status bar
+    * Window coordinates
+  * Tissot indicatrix
+  * Raster tiles from 3rd party servers
+  * Continent outlines
+  * labeled points
+  * Buddhist churches
