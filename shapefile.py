@@ -26,7 +26,7 @@ def read_shape_file(file_name: str) -> list:
         while fh.tell() < file_end:
             record_number, record_length = struct.unpack(">2i", fh.read(8))
             assert record_length > 0
-            print(record_number, record_length)
+            # print(record_number, record_length)
             next_record = fh.tell() + 2 * record_length
             record_shape_type, = struct.unpack("<i", fh.read(4))
             record_shape_type = ShapeType(record_shape_type)
@@ -35,7 +35,7 @@ def read_shape_file(file_name: str) -> list:
             assert record_shape_type == ShapeType.POLYGON
             fh.seek(32, os.SEEK_CUR)  # skip MBR minimum bounding rectangle
             num_rings, num_points = struct.unpack("<2i", fh.read(8))
-            print("  ", num_rings, num_points)
+            # print("  ", num_rings, num_points)
             ring_indexes = struct.unpack(f"<{num_rings}i", fh.read(4 * num_rings))
             coordinates = struct.unpack(f"<{num_points * 2}d", fh.read(16 * num_points))
             lon_coords = coordinates[::2]
