@@ -41,19 +41,27 @@ class Coastline(object):
         self.shader = compileProgram(
             compileShader(
                 inspect.cleandoc("""
-                    #version 410
+                    #version 430
                     
                     in vec2 in_pos;
+                    
+                    layout(location = 1) uniform mat3 model = mat3(
+                        vec3(1.0/90.0, 0, 0),
+                        vec3(0, 1.0/90.0, 0),
+                        vec3(0, 0, 1)
+                    );
+                    layout(location = 2) uniform mat3 view = mat3(1);
+                    layout(location = 3) uniform mat3 projection = mat3(1);
 
                     void main() {
                         // TODO: model/view/projection matrix with scale...
-                        gl_Position = vec4(in_pos / 90, 0, 1);
+                        gl_Position = vec4(model * view * projection * vec3(in_pos, 0), 1);
                     }
                 """),
                 GL.GL_VERTEX_SHADER),
             compileShader(
                 inspect.cleandoc("""
-                    #version 410
+                    #version 430
 
                     out vec4 fragColor;
                     
@@ -83,11 +91,12 @@ class Coastline(object):
         self.vertices = numpy.array(vertices, dtype=numpy.float32).flatten()
         print(self.start_indices, self.vertex_counts)
 
-    def paint_opengl(self):
+    def paint_opengl(self, context):
         GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.shader)
         GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(2)
+        GL.glUniformMatrix3fv(2, 1, False, context.view_matrix)
+        GL.glUniformMatrix3fv(3, 1, False, context.projection_matrix)
         GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
-        # GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices[18:19], self.vertex_counts[18:19], 1)
         GL.glBindVertexArray(0)
