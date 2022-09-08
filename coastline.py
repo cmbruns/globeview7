@@ -24,7 +24,7 @@ class Coastline(object):
         for gshhs in [
             1,  # L1: boundary between land and ocean, except Antarctica.
             2,  # L2: boundary between lake and land.
-            3,  # L3: boundary between island-in-lake and lake.
+            #  3,  # L3: boundary between island-in-lake and lake.
             #  4,  # L4: boundary between pond-in-island and island.
             #  5, # L5: boundary between Antarctica ice and ocean.
             6,  # L6: boundary between Antarctica grounding-line and ocean.
@@ -46,7 +46,8 @@ class Coastline(object):
                     in vec2 in_pos;
 
                     void main() {
-                        gl_Position = vec4(in_pos, 0, 1);
+                        // TODO: model/view/projection matrix with scale...
+                        gl_Position = vec4(in_pos / 90, 0, 1);
                     }
                 """),
                 GL.GL_VERTEX_SHADER),
@@ -57,7 +58,8 @@ class Coastline(object):
                     out vec4 fragColor;
                     
                     void main() {
-                        fragColor = vec4(0, 0, 1, 1);
+                        // fragColor = vec4(0.012, 0.325, 0.517, 1);
+                        fragColor = vec4(0.03, 0.34, 0.60, 1);
                     }
                 """),
                 GL.GL_FRAGMENT_SHADER),
@@ -78,12 +80,14 @@ class Coastline(object):
                     vertices.append(vertex)
         self.start_indices = numpy.array(start_indices, dtype=numpy.int32)
         self.vertex_counts = numpy.array(vertex_counts, dtype=numpy.int32)
-        self.vertices = (0.004 * numpy.array(vertices, dtype=numpy.float32)).flatten()
+        self.vertices = numpy.array(vertices, dtype=numpy.float32).flatten()
         print(self.start_indices, self.vertex_counts)
 
     def paint_opengl(self):
         GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.shader)
+        GL.glEnable(GL.GL_LINE_SMOOTH)
+        GL.glLineWidth(2)
         GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
         # GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices[18:19], self.vertex_counts[18:19], 1)
         GL.glBindVertexArray(0)
