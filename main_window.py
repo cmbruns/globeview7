@@ -8,3 +8,4 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
         self.openGLWidget.statusMessageRequested.connect(self.statusbar.showMessage)
+        self.longitudeSlider.valueChanged.connect(self.openGLWidget.set_center_longitude)

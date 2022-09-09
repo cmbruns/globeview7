@@ -17,8 +17,8 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QMainWindow,
-    QMenu, QMenuBar, QSizePolicy, QStatusBar,
-    QWidget)
+    QMenu, QMenuBar, QSizePolicy, QSlider,
+    QStatusBar, QWidget)
 
 from geocanvas import GeoCanvas
 
@@ -42,6 +42,13 @@ class Ui_MainWindow(object):
         self.openGLWidget.setSizePolicy(sizePolicy)
 
         self.horizontalLayout.addWidget(self.openGLWidget)
+
+        self.longitudeSlider = QSlider(self.centralwidget)
+        self.longitudeSlider.setObjectName(u"longitudeSlider")
+        self.longitudeSlider.setMaximum(360)
+        self.longitudeSlider.setOrientation(Qt.Vertical)
+
+        self.horizontalLayout.addWidget(self.longitudeSlider)
 
         self.groupBox = QGroupBox(self.centralwidget)
         self.groupBox.setObjectName(u"groupBox")

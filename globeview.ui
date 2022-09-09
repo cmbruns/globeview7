@@ -26,6 +26,16 @@
      </widget>
     </item>
     <item>
+     <widget class="QSlider" name="longitudeSlider">
+      <property name="maximum">
+       <number>360</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
        <string>Display Projection</string>

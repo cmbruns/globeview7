@@ -44,18 +44,26 @@ class Coastline(object):
                     #version 430
                     
                     in vec2 in_pos;
-                    
-                    layout(location = 1) uniform mat3 model = mat3(
-                        vec3(1.0/90.0, 0, 0),
-                        vec3(0, 1.0/90.0, 0),
-                        vec3(0, 0, 1)
-                    );
-                    layout(location = 2) uniform mat3 view = mat3(1);
-                    layout(location = 3) uniform mat3 projection = mat3(1);
+
+                    layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
+                    layout(location = 2) uniform mat3 ecef_X_ecef1 = mat3(1);
 
                     void main() {
-                        // TODO: model/view/projection matrix with scale...
-                        gl_Position = vec4(model * view * projection * vec3(in_pos, 0), 1);
+                        vec2 wgs = radians(in_pos);
+                        vec3 gcs = vec3(
+                            cos(wgs.x) * cos(wgs.y),
+                            sin(wgs.x) * cos(wgs.y),
+                            sin(wgs.y)
+                        );
+                        vec3 gcs2 = ecef_X_ecef1 * gcs;
+                        vec2 wgs2 = vec2(
+                            atan(gcs2.y, gcs2.x),
+                            asin(gcs2.z)
+                        );
+                        
+                        vec3 nmc = vec3(wgs2 / radians(90), 1);
+                        vec3 ndc = ndc_X_nmc * nmc;
+                        gl_Position = vec4(ndc.xy, 0, 1);
                     }
                 """),
                 GL.GL_VERTEX_SHADER),
@@ -94,9 +102,11 @@ class Coastline(object):
     def paint_opengl(self, context):
         GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.shader)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glEnable(GL.GL_BLEND)
         GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(2)
-        GL.glUniformMatrix3fv(2, 1, False, context.view_matrix)
-        GL.glUniformMatrix3fv(3, 1, False, context.projection_matrix)
+        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
+        GL.glUniformMatrix3fv(2, 1, False, context.ecef1_X_ecef)  # transpose is inverse
         GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
         GL.glBindVertexArray(0)
