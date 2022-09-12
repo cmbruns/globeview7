@@ -26,7 +26,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QSlider" name="longitudeSlider">
+     <widget class="QSlider" name="azimuthSlider">
       <property name="maximum">
        <number>360</number>
       </property>
@@ -50,7 +50,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

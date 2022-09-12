@@ -43,12 +43,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.openGLWidget)
 
-        self.longitudeSlider = QSlider(self.centralwidget)
-        self.longitudeSlider.setObjectName(u"longitudeSlider")
-        self.longitudeSlider.setMaximum(360)
-        self.longitudeSlider.setOrientation(Qt.Vertical)
+        self.azimuthSlider = QSlider(self.centralwidget)
+        self.azimuthSlider.setObjectName(u"azimuthSlider")
+        self.azimuthSlider.setMaximum(360)
+        self.azimuthSlider.setOrientation(Qt.Vertical)
 
-        self.horizontalLayout.addWidget(self.longitudeSlider)
+        self.horizontalLayout.addWidget(self.azimuthSlider)
 
         self.groupBox = QGroupBox(self.centralwidget)
         self.groupBox.setObjectName(u"groupBox")
@@ -58,7 +58,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QRect(0, 0, 800, 22))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         MainWindow.setMenuBar(self.menubar)
