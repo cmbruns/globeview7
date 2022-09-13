@@ -3,6 +3,19 @@ import math
 import numpy
 
 
+class FramedPoint(object):
+    def __init__(self, vector):
+        self.vector = vector
+
+
+class NMCPoint(FramedPoint):
+    pass
+
+
+class OBQPoint(FramedPoint):
+    pass
+
+
 class Transform(object):
     def __init__(self, size=3):
         self.matrix = numpy.eye(size, dtype=numpy.float32)
