@@ -61,7 +61,13 @@
    </widget>
    <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="font">
+    <font>
+     <family>Courier New</family>
+    </font>
+   </property>
+  </widget>
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>

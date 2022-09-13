@@ -2,18 +2,8 @@ import math
 
 import numpy
 
-
-class FramedPoint(object):
-    def __init__(self, vector):
-        self.vector = vector
-
-
-class NMCPoint(FramedPoint):
-    pass
-
-
-class OBQPoint(FramedPoint):
-    pass
+from gv.frame import WGS84Point, WindowPoint
+from gv.projection import WGS84Projection
 
 
 class Transform(object):
@@ -24,6 +14,7 @@ class Transform(object):
 
 class ViewState(object):
     def __init__(self):
+        self._projection = WGS84Projection()
         self._window_size = [1, 1]
         self._center_location = [math.radians(0), math.radians(0)]
         self._zoom = 1.0  # windows per hemisphere
@@ -146,6 +137,16 @@ class ViewState(object):
             )
             self._nmc_X_ndc.dirty = False
         return self._nmc_X_ndc.matrix
+
+    def wgs_for_window_point(self, p_win: WindowPoint) -> WGS84Point:
+        p_nmc = self.nmc_X_ndc @ self.ndc_X_win @ p_win
+        p_obq = self._projection.obq_for_nmc(p_nmc)
+        p_ecf = self.ecf_X_obq @ p_obq
+        p_wgs = WGS84Point([
+            math.atan2(p_ecf[1], p_ecf[0]),
+            math.asin(p_ecf[2]),
+        ])
+        return p_wgs
 
     @property
     def window_size(self):

@@ -7,6 +7,7 @@ from PySide6 import QtCore, QtOpenGLWidgets, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 
 import coastline
+import frame
 from view_state import ViewState
 
 
@@ -23,7 +24,10 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.previous_mouse = None
 
     def center_on_window_pixel(self, pos: QtCore.QPoint):
-        print(pos)
+        wgs = self.view_state.wgs_for_window_point(frame.WindowPoint.from_qpoint(pos))
+        self.view_state.center_location = wgs
+        print(self.view_state.wgs_for_window_point(frame.WindowPoint.from_qpoint(pos)))
+        self.update()
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         center_action = QtGui.QAction(text="Center on this location", parent=self)
@@ -37,6 +41,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.coastline.initialize_opengl()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        # TODO: refactor dragging to use ViewState jacobian methods
         xyw_win = numpy.array((event.x(), event.y(), 1), dtype=numpy.float)
         p_ndc = self.view_state.ndc_X_win @ xyw_win
         p_nmc = self.view_state.nmc_X_ndc @ p_ndc
@@ -95,7 +100,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         # self.statusMessageRequested.emit(f"({p_deg[0]:.4f}, {p_deg[1]:.4f}) [wgs84]", 2000)
         # self.statusMessageRequested.emit(f"({p_obq[0]:.4f}, {p_obq[1]:.4f}, {p_obq[2]:.4f}) [ecef]", 2000)
         # self.statusMessageRequested.emit(f"({p_ecf[0]:.4f}, {p_ecf[1]:.4f}, {p_ecf[2]:.4f}) [ecef]", 2000)
-        self.statusMessageRequested.emit(f"({p_deg2[0]:.4f}, {p_deg2[1]:.4f}) [wgs84]", 2000)
+        wgs2 = frame.WGS84Point(p_wgs)
+        self.statusMessageRequested.emit(f"{wgs2}", 2000)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         xyw_win = numpy.array((event.x(), event.y(), 1), dtype=numpy.float)
