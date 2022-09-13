@@ -45,6 +45,7 @@ class ViewState(object):
         self._azimuth = azimuth
         self._ndc_X_nmc.dirty = True
         self._nmc_X_ndc.dirty = True
+        self._nmc_J_win.dirty = True
 
     @property
     def center_location(self):
@@ -158,6 +159,7 @@ class ViewState(object):
         self._ndc_X_win.dirty = True
         self._ndc_X_nmc.dirty = True
         self._nmc_X_ndc.dirty = True
+        self._nmc_J_win.dirty = True
 
     @property
     def zoom(self):
@@ -172,3 +174,4 @@ class ViewState(object):
         self._zoom = zoom
         self._ndc_X_nmc.dirty = True
         self._nmc_X_ndc.dirty = True
+        self._nmc_J_win.dirty = True
