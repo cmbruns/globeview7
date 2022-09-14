@@ -26,7 +26,6 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
     def center_on_window_pixel(self, pos: QtCore.QPoint):
         wgs = self.view_state.wgs_for_window_point(frame.WindowPoint.from_qpoint(pos))
         self.view_state.center_location = wgs
-        print(self.view_state.wgs_for_window_point(frame.WindowPoint.from_qpoint(pos)))
         self.update()
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:

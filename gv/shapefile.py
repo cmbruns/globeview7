@@ -18,7 +18,6 @@ def read_shape_file(file_name: str) -> list:
         version, shape_type = struct.unpack("<2i", fh.read(8))
         shape_type = ShapeType(int(shape_type))
         assert shape_type == ShapeType.POLYGON
-        print(file_length, version, shape_type)
         file_end = 2 * file_length
         assert file_end > 0
         fh.seek(100)  # skip to end of header

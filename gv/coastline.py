@@ -1,4 +1,5 @@
 import inspect
+import pkg_resources
 
 import numpy
 from OpenGL import GL
@@ -38,46 +39,22 @@ class Coastline(object):
         GL.glEnableVertexAttribArray(0)
         GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, False, 0, None)
         #
+        vertex_source = "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
+            "version.glsl",
+            "coastline.vert",
+        ]])
         self.shader = compileProgram(
             compileShader(
-                inspect.cleandoc("""
-                    #version 430
-                    
-                    in vec2 in_pos;
-
-                    layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
-                    layout(location = 2) uniform mat3 obq_X_ecf = mat3(1);
-
-                    void main() {
-                        vec2 wgs = radians(in_pos);
-                        vec3 ecf = vec3(
-                            cos(wgs.x) * cos(wgs.y),
-                            sin(wgs.x) * cos(wgs.y),
-                            sin(wgs.y)
-                        );
-                        vec3 obq = obq_X_ecf * ecf;
-                        vec2 prj = vec2(
-                            atan(obq.y, obq.x),
-                            asin(obq.z)
-                        );
-                        
-                        vec3 nmc = vec3(prj / radians(90), 1);
-                        vec3 ndc = ndc_X_nmc * nmc;
-                        gl_Position = vec4(ndc.xy, 0, 1);
-                    }
-                """),
+                "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
+                    "version.glsl",
+                    "coastline.vert",
+                ]]),
                 GL.GL_VERTEX_SHADER),
             compileShader(
-                inspect.cleandoc("""
-                    #version 430
-
-                    out vec4 fragColor;
-                    
-                    void main() {
-                        // fragColor = vec4(0.012, 0.325, 0.517, 1);
-                        fragColor = vec4(0.03, 0.34, 0.60, 1);
-                    }
-                """),
+                "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
+                    "version.glsl",
+                    "coastline.frag",
+                ]]),
                 GL.GL_FRAGMENT_SHADER),
         )
         GL.glBindVertexArray(0)
@@ -97,7 +74,6 @@ class Coastline(object):
         self.start_indices = numpy.array(start_indices, dtype=numpy.int32)
         self.vertex_counts = numpy.array(vertex_counts, dtype=numpy.int32)
         self.vertices = numpy.array(vertices, dtype=numpy.float32).flatten()
-        print(self.start_indices, self.vertex_counts)
 
     def paint_opengl(self, context):
         GL.glBindVertexArray(self.vao)
