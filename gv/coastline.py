@@ -53,6 +53,12 @@ class Coastline(object):
             compileShader(
                 "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
                     "version.glsl",
+                    "coastline.geom",
+                ]]),
+                GL.GL_GEOMETRY_SHADER),
+            compileShader(
+                "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
+                    "version.glsl",
                     "coastline.frag",
                 ]]),
                 GL.GL_FRAGMENT_SHADER),
