@@ -1,8 +1,11 @@
 import functools
 import math
+import pkg_resources
 
 import numpy
 from OpenGL import GL
+from PIL import Image
+from PIL.ImageQt import ImageQt
 from PySide6 import QtCore, QtOpenGLWidgets, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 
@@ -14,6 +17,10 @@ from view_state import ViewState
 class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        fh = pkg_resources.resource_stream("gv", "crosshair32.png")
+        img = ImageQt(Image.open(fh).convert("RGBA"))
+        cursor = QtGui.QCursor(QtGui.QPixmap.fromImage(img))
+        self.setCursor(cursor)
         self.setMouseTracking(True)
         self.view_state = ViewState()
         #
