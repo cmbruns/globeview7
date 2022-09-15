@@ -51,7 +51,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         xyw_win = numpy.array((event.x(), event.y(), 1), dtype=numpy.float)
         p_ndc = self.view_state.ndc_X_win @ xyw_win
         p_nmc = self.view_state.nmc_X_ndc @ p_ndc
-        p_prj = p_nmc * math.pi / 2
+        p_prj = p_nmc
         p_obq = numpy.array([
             math.cos(p_prj[0]) * math.cos(p_prj[1]),
             math.sin(p_prj[0]) * math.cos(p_prj[1]),
@@ -65,8 +65,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                 self.statusMessageRequested.emit(f"{dnmc[0]:.3f}, {dnmc[1]:.3f}", 2000)
                 # Display projection specific Jacobian
                 wgs84prj_J_nmc = numpy.array([
-                    [math.pi / 2.0, 0],
-                    [0, math.pi / 2.0]], dtype=numpy.float)
+                    [1, 0],
+                    [0, 1]], dtype=numpy.float)
                 dwgs84prj = wgs84prj_J_nmc @ dnmc
                 # print(dwgs84prj)
                 c0 = math.cos(p_prj[0])
@@ -99,7 +99,6 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
             math.asin(p_ecf[2]),
             1
         ], dtype=numpy.float)
-        p_deg2 = p_wgs * 180 / math.pi
         # self.statusMessageRequested.emit(f"{xyw_win} [win]", 2000)
         # self.statusMessageRequested.emit(f"({xyw_ndc[0]:.4f}, {xyw_ndc[1]:.4f}) [ndc]", 2000)
         # self.statusMessageRequested.emit(f"({p_nmc[0]:.4f}, {p_nmc[1]:.4f}) [nmc]", 2000)

@@ -20,7 +20,7 @@ class WGS84Projection(DisplayProjection):
     """
     @staticmethod
     def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:
-        p_prj = p_nmc * math.pi / 2  # Radians from normalized units
+        p_prj = p_nmc  # Radians from normalized units
         result = OBQPoint((
             math.cos(p_prj[0]) * math.cos(p_prj[1]),
             math.sin(p_prj[0]) * math.cos(p_prj[1]),

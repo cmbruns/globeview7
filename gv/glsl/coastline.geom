@@ -1,17 +1,24 @@
-// Discard line segments that go around the WGS84 seam
-// TODO: clip the lines to the seam
+const int WGS84_PROJECTION = 1;
+const int ORTHOGRAPHIC_PROJECTION = 2;
+
+// Clip line segments that go around the WGS84 seam
 // TODO: interpolate curves
 
 layout (lines) in;
-layout (line_strip, max_vertices = 36) out;  // 2-per-segment * 2-for-seam-crossing * 9 worlds shown
+layout (line_strip, max_vertices = 36) out;  // 36 = 2-per-segment * 2-for-seam-crossing * 9 worlds shown
 layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
 layout(location = 3) uniform mat3 nmc_X_ndc = mat3(1);
+layout(location = 4) uniform int projection = WGS84_PROJECTION;
 
 out vec4 color;
 
-void drawSegment(in vec3 nmc0, in vec3 nmc1)
+const float pi = 3.14159265359;
+const float two_pi = 2 * pi;
+
+void drawWgsSegment(in vec3 nmc0, in vec3 nmc1)
 {
     // Does the longitude range need to be duplicated?
+    // TODO: compute this range on the host
     float nmc_xmin = 0;
     float nmc_xmax = 0;
     const vec3 corners_ndc[4] = vec3[4](
@@ -24,19 +31,19 @@ void drawSegment(in vec3 nmc0, in vec3 nmc1)
         nmc_xmin = min(nmc_xmin, nmc.x);
         nmc_xmax = max(nmc_xmax, nmc.x);
     }
-    // earth longitude range for GCS is 4.0 in nmc units
-    int inmc_xmin = int(floor((nmc_xmin + 2) / 4.0)) * 4;
-    int inmc_xmax = int(ceil((nmc_xmax - 2) / 4.0)) * 4;
+    // earth longitude range for GCS is 2pi in nmc units
+    int inmc_xmin = int(floor((nmc_xmin + pi) / two_pi));
+    int inmc_xmax = int(ceil((nmc_xmax - pi) / two_pi));
 
     // show at most 9 worlds
-    if ((inmc_xmax - inmc_xmin) > 8 * 4) {
-        inmc_xmin = -16;
-        inmc_xmax = 16;
+    if ((inmc_xmax - inmc_xmin) > 8 * two_pi) {
+        inmc_xmin = -4;
+        inmc_xmax = 4;
     }
 
-    for (int nmcx_offset = inmc_xmin; nmcx_offset <= inmc_xmax; nmcx_offset += 4)
+    for (int nmcx_offset = inmc_xmin; nmcx_offset <= inmc_xmax; nmcx_offset += 1)
     {
-        vec3 offset = vec3(nmcx_offset, 0, 0);
+        vec3 offset = vec3(two_pi * nmcx_offset, 0, 0);
         vec3 ndc0 = ndc_X_nmc * (nmc0 + offset);
         vec3 ndc1 = ndc_X_nmc * (nmc1 + offset);
         gl_Position = vec4(ndc0.xy, 0, 1);
@@ -62,17 +69,14 @@ void main()
             left = nmc1;
             right = nmc0;
         }
-        float alpha = (left.x + 2) / (left.x + 2 + 2 - right.x);
-        vec3 mid = vec3(-2, mix(left.yz, right.yz, alpha));
-        // color = vec4(1, 0.34, 0.60, 1);
-        drawSegment(left, mid);
-        mid.x = 2;
-        // color = vec4(0.03, 1, 0.60, 1);
-        drawSegment(right, mid);
-        return;// skip this segment for now...  TODO: clip it
+        float alpha = (left.x + pi) / (left.x + pi + pi - right.x);
+        vec3 mid = vec3(-pi, mix(left.yz, right.yz, alpha));
+        drawWgsSegment(left, mid);
+        mid.x = pi;
+        drawWgsSegment(mid, right);
     }
     else
     {
-        drawSegment(nmc0, nmc1);
+        drawWgsSegment(nmc0, nmc1);
     }
 }

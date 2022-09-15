@@ -17,7 +17,7 @@ class ViewState(object):
         self._projection = WGS84Projection()
         self._window_size = [1, 1]
         self._center_location = [math.radians(0), math.radians(0)]
-        self._zoom = 1.0  # windows per hemisphere
+        self._zoom = 0.7  # windows per radian
         self._azimuth = math.radians(0)  # "up" compass direction
         self._ecf_X_obq = Transform()
         self._ndc_X_nmc = Transform()
