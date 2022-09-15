@@ -89,6 +89,7 @@ class Coastline(object):
         GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(2)
         GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
+        GL.glUniformMatrix3fv(3, 1, True, context.nmc_X_ndc)
         GL.glUniformMatrix3fv(2, 1, False, context.ecf_X_obq)  # transpose is inverse
         GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
         GL.glBindVertexArray(0)
