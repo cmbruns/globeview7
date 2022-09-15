@@ -9,12 +9,8 @@ layout(location = 3) uniform mat3 nmc_X_ndc = mat3(1);
 
 out vec4 color;
 
-void main() {
-    vec3 nmc0 = gl_in[0].gl_Position.xyz;
-    vec3 nmc1 = gl_in[1].gl_Position.xyz;
-    if (abs(nmc0.x - nmc1.x) > 2)// segment crosses seam
-        return;// skip this segment for now...  TODO: clip it
-
+void drawSegment(in vec3 nmc0, in vec3 nmc1)
+{
     // Does the longitude range need to be duplicated?
     float nmc_xmin = 0;
     float nmc_xmax = 0;
@@ -48,5 +44,35 @@ void main() {
         gl_Position = vec4(ndc1.xy, 0, 1);
         EmitVertex();
         EndPrimitive();
+    }
+}
+
+void main()
+{
+    vec3 nmc0 = gl_in[0].gl_Position.xyz;
+    vec3 nmc1 = gl_in[1].gl_Position.xyz;
+    color = vec4(0.03, 0.34, 0.60, 1);
+
+    if (abs(nmc1.x - nmc0.x) > 2)// segment crosses seam
+    {
+        // Enforce left to right for simpler clipping
+        vec3 left = nmc0;
+        vec3 right = nmc1;
+        if (left.x > right.x) {
+            left = nmc1;
+            right = nmc0;
+        }
+        float alpha = (left.x + 2) / (left.x + 2 + 2 - right.x);
+        vec3 mid = vec3(-2, mix(left.yz, right.yz, alpha));
+        // color = vec4(1, 0.34, 0.60, 1);
+        drawSegment(left, mid);
+        mid.x = 2;
+        // color = vec4(0.03, 1, 0.60, 1);
+        drawSegment(right, mid);
+        return;// skip this segment for now...  TODO: clip it
+    }
+    else
+    {
+        drawSegment(nmc0, nmc1);
     }
 }
