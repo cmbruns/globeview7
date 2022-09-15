@@ -62,25 +62,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
             if self.previous_mouse is not None:
                 dwin = xyw_win[:2] - self.previous_mouse[:2]
                 dnmc = self.view_state.nmc_J_win @ dwin
-                self.statusMessageRequested.emit(f"{dnmc[0]:.3f}, {dnmc[1]:.3f}", 2000)
-                # Display projection specific Jacobian
-                wgs84prj_J_nmc = numpy.array([
-                    [1, 0],
-                    [0, 1]], dtype=numpy.float)
-                dwgs84prj = wgs84prj_J_nmc @ dnmc
-                # print(dwgs84prj)
-                c0 = math.cos(p_prj[0])
-                s0 = math.sin(p_prj[0])
-                c1 = math.cos(p_prj[1])
-                s1 = math.sin(p_prj[1])
-                obq_J_wgs84prj = numpy.array([
-                    [-s0 * c1, -c0 * s1],
-                    [c0 * c1, -s0 * s1],
-                    [0, c1]], dtype=numpy.float)
-                dobq = obq_J_wgs84prj @ dwgs84prj
-                # ecf_J_obq = self.ecf_X_obq[0:3, 0:3]
+                dobq = self.view_state._projection.dobq_for_dnmc(dnmc, p_nmc)
                 decf = self.view_state.ecf_J_obq @ dobq
-                # print([f"{x:0.3f}" for x in p_ecf])
                 xy2 = p_ecf[0]**2 + p_ecf[1]**2
                 sxy2 = xy2 ** 0.5
                 # https://en.wikipedia.org/wiki/List_of_common_coordinate_transformations#From_Cartesian_coordinates

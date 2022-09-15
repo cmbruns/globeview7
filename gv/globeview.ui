@@ -40,6 +40,35 @@
       <property name="title">
        <string>Display Projection</string>
       </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QComboBox" name="projectionComboBox">
+         <item>
+          <property name="text">
+           <string>Equirectangular</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Orthographic</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>473</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -63,9 +92,7 @@
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="font">
-    <font>
-     <family>Courier New</family>
-    </font>
+    <font/>
    </property>
   </widget>
   <action name="actionQuit">

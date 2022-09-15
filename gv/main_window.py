@@ -17,3 +17,7 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     @QtCore.Slot(int)
     def on_azimuthSlider_valueChanged(self, azimuth_degrees):
         self.openGLWidget.set_azimuth(azimuth_degrees)
+
+    @QtCore.Slot(int)
+    def on_projectionComboBox_currentIndexChanged(self, projection: int):
+        print(f"projection changed to {projection}")
