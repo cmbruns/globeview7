@@ -1,6 +1,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ui_globeview import Ui_MainWindow
+from gv.projection import Projection
 
 
 class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
@@ -20,4 +21,4 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
 
     @QtCore.Slot(int)
     def on_projectionComboBox_currentIndexChanged(self, projection: int):
-        print(f"projection changed to {projection}")
+        self.openGLWidget.set_projection(Projection(projection))

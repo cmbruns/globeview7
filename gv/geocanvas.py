@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt
 
 import coastline
 import frame
+from gv.projection import Projection, OrthographicProjection, WGS84Projection
 from view_state import ViewState
 
 
@@ -62,7 +63,10 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
             if self.previous_mouse is not None:
                 dwin = xyw_win[:2] - self.previous_mouse[:2]
                 dnmc = self.view_state.nmc_J_win @ dwin
-                dobq = self.view_state._projection.dobq_for_dnmc(dnmc, p_nmc)
+                try:
+                    dobq = self.view_state._projection.dobq_for_dnmc(dnmc, p_nmc)
+                except RuntimeError:
+                    return
                 decf = self.view_state.ecf_J_obq @ dobq
                 xy2 = p_ecf[0]**2 + p_ecf[1]**2
                 sxy2 = xy2 ** 0.5
@@ -124,6 +128,17 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
 
     def set_azimuth(self, azimuth_degrees):
         self.view_state.azimuth = math.radians(azimuth_degrees)
+        self.update()
+
+    def set_projection(self, projection: Projection):
+        if projection == self.view_state._projection.index:
+            return  # No Change
+        if projection == Projection.EQUIRECTANGULAR:
+            self.view_state._projection = WGS84Projection()
+        elif projection == Projection.ORTHOGRAPHIC:
+            self.view_state._projection = OrthographicProjection()
+        else:
+            raise NotImplementedError
         self.update()
 
     statusMessageRequested = QtCore.Signal(str, int)

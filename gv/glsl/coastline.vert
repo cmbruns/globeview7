@@ -1,5 +1,5 @@
-const int WGS84_PROJECTION = 1;
-const int ORTHOGRAPHIC_PROJECTION = 2;
+const int WGS84_PROJECTION = 0;
+const int ORTHOGRAPHIC_PROJECTION = 1;
 
 in vec2 in_pos;
 layout(location = 2) uniform mat3 obq_X_ecf = mat3(1);
@@ -27,7 +27,7 @@ void main() {
         nmc = vec3(
             obq.y,
             obq.z,
-            1);
+            obq.x);  // store depth for clipping
     }
 
     gl_Position = vec4(nmc.xyz, 1);
