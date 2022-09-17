@@ -66,8 +66,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                 try:
                     dobq = self.view_state._projection.dobq_for_dnmc(dnmc, p_nmc)
                 except RuntimeError:
+                    self.previous_mouse = None
                     return  # TODO: handle outside cases in projection
-                print(f"dobq: {dobq}")
                 # Compute center latitude shift from obq shift
                 px, py, pz = p_obq
                 xy2 = px**2 + py**2
@@ -75,7 +75,6 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                 dlat = numpy.dot(dobq, [-px * pz / sxy2, -py * pz / sxy2, sxy2])
                 #
                 decf = self.view_state.ecf_J_obq @ dobq
-                print(f"decf: {decf}")
                 px, py, pz = p_ecf
                 xy2 = px**2 + py**2
                 sxy2 = xy2 ** 0.5
