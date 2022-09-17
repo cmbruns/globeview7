@@ -7,6 +7,7 @@ const int ORTHOGRAPHIC_PROJECTION = 1;
 layout (lines) in;
 layout (line_strip, max_vertices = 36) out;  // 36 = 2-per-segment * 2-for-seam-crossing * 9 worlds shown
 layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
+layout(location = 2) uniform mat3 obq_X_ecf = mat3(1);
 layout(location = 3) uniform mat3 nmc_X_ndc = mat3(1);
 layout(location = 4) uniform int projection = WGS84_PROJECTION;
 
@@ -60,42 +61,69 @@ void drawSegment(in vec3 nmc0, in vec3 nmc1)
     }
 }
 
+vec3 obq_for_wgs_deg(in vec2 wgs_deg) {
+    vec2 wgs = radians(wgs_deg);
+    vec3 ecf = vec3(
+        cos(wgs.x) * cos(wgs.y),
+        sin(wgs.x) * cos(wgs.y),
+        sin(wgs.y));
+    vec3 obq = obq_X_ecf * ecf;
+    return obq;
+}
+
 void main()
 {
-    vec3 nmc0 = gl_in[0].gl_Position.xyz;
-    vec3 nmc1 = gl_in[1].gl_Position.xyz;
+    vec2 wgs_deg0 = gl_in[0].gl_Position.xy;
+    vec2 wgs_deg1 = gl_in[1].gl_Position.xy;
+
+    vec3 obq0 = obq_for_wgs_deg(wgs_deg0);
+    vec3 obq1 = obq_for_wgs_deg(wgs_deg1);
+
+    color = vec4(0.03, 0.34, 0.60, 1);
 
     if (projection == ORTHOGRAPHIC_PROJECTION) {
         // clip far side of the earth
         // TODO: interpolate to edge point
-        if (nmc0.z < 0)
+        if (obq0.x < 0 && obq1.x < 0)
             return;
-        if (nmc1.z < 0)
-            return;
-        // restore ordinary homogeneous coordinate after clipping
-        nmc0.z = 1;
-        nmc1.z = 1;
-    }
 
-    color = vec4(0.03, 0.34, 0.60, 1);
+        // Hack to remove antarctica lines in coastline database
+        // if (wgs_deg0 == vec2(0, -90))
+        //     return;
 
-    if (projection == WGS84_PROJECTION && (abs(nmc1.x - nmc0.x) > 2)) // segment crosses seam
-    {
-        // Enforce left to right for simpler clipping
-        vec3 left = nmc0;
-        vec3 right = nmc1;
-        if (left.x > right.x) {
-            left = nmc1;
-            right = nmc0;
-        }
-        float alpha = (left.x + pi) / (left.x + pi + pi - right.x);
-        vec3 mid = vec3(-pi, mix(left.yz, right.yz, alpha));
-        drawSegment(left, mid);
-        mid.x = pi;
-        drawSegment(mid, right);
-    }
-    else
-    {
+        vec3 nmc0 = vec3(obq0.y, obq0.z, 1);
+        vec3 nmc1 = vec3(obq1.y, obq1.z, 1);
+
         drawSegment(nmc0, nmc1);
+    }
+    else if (projection == WGS84_PROJECTION)
+    {
+        vec3 nmc0 = vec3(
+            atan(obq0.y, obq0.x),
+            asin(obq0.z),
+            1);
+        vec3 nmc1 = vec3(
+            atan(obq1.y, obq1.x),
+            asin(obq1.z),
+            1);
+
+        if (abs(nmc1.x - nmc0.x) > 2) {
+            // segment crosses seam
+            // Enforce left to right for simpler clipping
+            vec3 left = nmc0;
+            vec3 right = nmc1;
+            if (left.x > right.x) {
+                left = nmc1;
+                right = nmc0;
+            }
+            float alpha = (left.x + pi) / (left.x + pi + pi - right.x);
+            vec3 mid = vec3(-pi, mix(left.yz, right.yz, alpha));
+            drawSegment(left, mid);
+            mid.x = pi;
+            drawSegment(mid, right);
+        }
+        else {
+            drawSegment(nmc0, nmc1);
+        }
     }
 }
