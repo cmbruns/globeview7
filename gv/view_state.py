@@ -72,6 +72,7 @@ class ViewState(object):
                 [slat, 0, clat],
             ], dtype=numpy.float)
             self._ecf_X_obq.matrix[:] = rot_lon @ rot_lat
+            # self._ecf_X_obq.matrix[:] = rot_lat
             self._ecf_X_obq.dirty = False
         return self._ecf_X_obq.matrix
 
