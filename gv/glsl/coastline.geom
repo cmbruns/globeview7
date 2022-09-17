@@ -81,15 +81,21 @@ void main()
 
     color = vec4(0.03, 0.34, 0.60, 1);
 
+    // Hack to remove antarctica lines in coastline database
+    if (wgs_deg0.y == -90)
+       return;
+    if (wgs_deg1.y == -90)
+       return;
+    if (wgs_deg0.x == 180 && wgs_deg1.x == 180)
+        return;
+    if (wgs_deg0.x == -180 && wgs_deg1.x == -180)
+        return;
+
     if (projection == ORTHOGRAPHIC_PROJECTION) {
         // clip far side of the earth
         // TODO: interpolate to edge point
         if (obq0.x < 0 && obq1.x < 0)
             return;
-
-        // Hack to remove antarctica lines in coastline database
-        // if (wgs_deg0 == vec2(0, -90))
-        //     return;
 
         vec3 nmc0 = vec3(obq0.y, obq0.z, 1);
         vec3 nmc1 = vec3(obq1.y, obq1.z, 1);
