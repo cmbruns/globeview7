@@ -1,8 +1,11 @@
 import abc
 import enum
-from math import cos, radians, sin
+import inspect
+from math import cos, pi, radians, sin
 
 import numpy
+from OpenGL import GL
+from OpenGL.GL.shaders import compileShader, compileProgram
 
 from gv.frame import NMCPoint, OBQPoint, FramedPoint
 
@@ -16,6 +19,9 @@ class DisplayProjection(abc.ABC):
     @staticmethod
     @abc.abstractmethod
     def dobq_for_dnmc(dnmc, p_nmc: NMCPoint):
+        pass
+
+    def draw_boundary(self, context):
         pass
 
     @staticmethod
@@ -35,6 +41,59 @@ class DisplayProjection(abc.ABC):
 
 class OrthographicProjection(DisplayProjection):
     index = Projection.ORTHOGRAPHIC
+
+    def __init__(self):
+        super().__init__()
+        self.boundary_vao = None
+        self.boundary_vbo = None
+        self.boundary_shader = None
+        r = 1.0
+        cverts = 100
+        verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
+        self.boundary_vertices = numpy.array(verts, dtype=numpy.float32)
+
+    def draw_boundary(self, context):
+        if self.boundary_vao is None:
+            self.boundary_vao = GL.glGenVertexArrays(1)
+            GL.glBindVertexArray(self.boundary_vao)
+            self.boundary_vbo = GL.glGenBuffers(1)
+            GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.boundary_vbo)
+            GL.glBufferData(GL.GL_ARRAY_BUFFER, self.boundary_vertices, GL.GL_STATIC_DRAW)
+            GL.glEnableVertexAttribArray(0)
+            GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, False, 0, None)
+            self.boundary_shader = compileProgram(
+                compileShader(inspect.cleandoc("""
+                    #version 430
+
+                    in vec3 nmc;
+                    layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
+
+                    void main() {
+                        vec3 ndc = ndc_X_nmc * nmc;
+                        gl_Position = vec4(ndc.xy, 0, ndc.z);
+                    }
+                """), GL.GL_VERTEX_SHADER),
+                compileShader(inspect.cleandoc("""
+                    #version 430
+
+                    out vec4 fragColor;
+
+                    void main() {
+                        // TODO: share line color
+                        fragColor = vec4(0.03, 0.34, 0.60, 1);
+                    }
+                """), GL.GL_FRAGMENT_SHADER),
+            )
+        GL.glBindVertexArray(self.boundary_vao)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glEnable(GL.GL_LINE_SMOOTH)
+        GL.glLineWidth(2)
+        GL.glUseProgram(self.boundary_shader)
+        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
+        GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
+        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        GL.glBindVertexArray(0)
 
     @staticmethod
     def dobq_for_dnmc(dnmc, p_nmc: NMCPoint):
@@ -63,11 +122,70 @@ class OrthographicProjection(DisplayProjection):
         return result
 
 
+# TODO: maybe use instanced geometry for tiled copies of the world
 class WGS84Projection(DisplayProjection):
     """
     Plate caree / Equirectangular / Geographic coordinates projection
     """
     index = Projection.EQUIRECTANGULAR
+
+    def __init__(self):
+        super().__init__()
+        self.boundary_vao = None
+        self.boundary_vbo = None
+        self.boundary_shader = None
+        self.boundary_vertices = numpy.array([
+            # Clockwise, like shapefiles
+            # Normalized map coordinates
+            [-1, 0, 0],  # left infinity
+            [0, radians(90), 1],  # top
+            [1, 0, 0],  # right infinity
+            [0, radians(-90), 1],  # bottom
+        ],
+        dtype=numpy.float32)
+
+    def draw_boundary(self, context):
+        if self.boundary_vao is None:
+            self.boundary_vao = GL.glGenVertexArrays(1)
+            GL.glBindVertexArray(self.boundary_vao)
+            self.boundary_vbo = GL.glGenBuffers(1)
+            GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.boundary_vbo)
+            GL.glBufferData(GL.GL_ARRAY_BUFFER, self.boundary_vertices, GL.GL_STATIC_DRAW)
+            GL.glEnableVertexAttribArray(0)
+            GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, False, 0, None)
+            self.boundary_shader = compileProgram(
+                compileShader(inspect.cleandoc("""
+                    #version 430
+                    
+                    in vec3 nmc;
+                    layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
+                             
+                    void main() {
+                        vec3 ndc = ndc_X_nmc * nmc;
+                        gl_Position = vec4(ndc.xy, 0, ndc.z);
+                    }
+                """), GL.GL_VERTEX_SHADER),
+                compileShader(inspect.cleandoc("""
+                    #version 430
+                    
+                    out vec4 fragColor;
+                                       
+                    void main() {
+                        // TODO: share line color
+                        fragColor = vec4(0.03, 0.34, 0.60, 1);
+                    }
+                """), GL.GL_FRAGMENT_SHADER),
+            )
+        GL.glBindVertexArray(self.boundary_vao)
+        # TODO: common gl state for all?
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glEnable(GL.GL_LINE_SMOOTH)
+        GL.glLineWidth(2)
+        GL.glUseProgram(self.boundary_shader)
+        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
+        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        GL.glBindVertexArray(0)
 
     @staticmethod
     def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:

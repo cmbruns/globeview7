@@ -69,6 +69,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                     self.previous_mouse = None
                     return  # TODO: handle outside cases in projection
                 # Compute center latitude shift from obq shift
+                # TODO: this might not be the perfect solution.
                 px, py, pz = p_obq
                 xy2 = px**2 + py**2
                 sxy2 = xy2 ** 0.5
@@ -121,6 +122,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
     def paint_opengl(self):
         GL.glClearColor(254/255, 247/255, 228/255, 1)  # Ivory
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        self.view_state._projection.draw_boundary(context=self.view_state)
         # TODO: Experimental coastline sketch
         self.coastline.paint_opengl(context=self.view_state)
 
