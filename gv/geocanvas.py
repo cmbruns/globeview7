@@ -94,9 +94,9 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                     [-px * pz / sxy2, -py * pz / sxy2, sxy2],
                 ], dtype=numpy.float)
                 dwgs = wgs_J_ecf @ decf
-                # Latitude angle has a discontinuity; below seems like the right correction
+                # Latitude angle has a discontinuity; below seems like the right correction.
+                # TODO: dragging north-south at lon-lon0==90 does nothing. should it?
                 dlat0_factor = math.cos(p_wgs[0] - self.view_state.center_location[0])
-                print(dlat0_factor)
                 dlat2 = dwgs[1] * dlat0_factor
                 self.view_state.center_location -= numpy.array([dwgs[0], dlat2])  # TODO: simplify dlon
                 self.update()
