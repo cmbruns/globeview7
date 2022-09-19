@@ -36,6 +36,22 @@ class FramedPoint(abc.ABC):
     def frame(cls):
         raise NotImplementedError
 
+    @property
+    def x(self):
+        return self.vector[0]
+
+    @property
+    def y(self):
+        return self.vector[1]
+
+    @property
+    def z(self):
+        return self.vector[2]
+
+    @property
+    def w(self):
+        return self.vector[-1]
+
 
 class NMCPoint(FramedPoint):
     frame = Frame.NMC

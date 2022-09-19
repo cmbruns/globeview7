@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt
 
 import coastline
 import frame
+from gv.frame import NMCPoint
 from gv.projection import Projection, OrthographicProjection, WGS84Projection
 from view_state import ViewState
 
@@ -52,6 +53,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         xyw_win = numpy.array((event.x(), event.y(), 1), dtype=numpy.float)
         p_ndc = self.view_state.ndc_X_win @ xyw_win
         p_nmc = self.view_state.nmc_X_ndc @ p_ndc
+        if not self.view_state.projection.is_valid_nmc(NMCPoint(p_nmc)):
+            return
         p_prj = p_nmc
         p_obq = numpy.array([
             math.cos(p_prj[0]) * math.cos(p_prj[1]),
@@ -59,6 +62,12 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
             math.sin(p_prj[1])
         ], dtype=numpy.float)
         p_ecf = self.view_state.ecf_X_obq @ p_obq  # Adjust for center longitude
+        # Back to wgs84
+        p_wgs = numpy.array([
+            math.atan2(p_ecf[1], p_ecf[0]),
+            math.asin(p_ecf[2]),
+            1
+        ], dtype=numpy.float)
         if event.buttons() & Qt.LeftButton:  # dragging
             if self.previous_mouse is not None:
                 dwin = xyw_win[:2] - self.previous_mouse[:2]
@@ -85,16 +94,14 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                     [-px * pz / sxy2, -py * pz / sxy2, sxy2],
                 ], dtype=numpy.float)
                 dwgs = wgs_J_ecf @ decf
-                self.view_state.center_location -= numpy.array([dwgs[0], dlat])  # TODO: simplify dlon
+                # Latitude angle has a discontinuity; below seems like the right correction
+                dlat0_factor = math.cos(p_wgs[0] - self.view_state.center_location[0])
+                print(dlat0_factor)
+                dlat2 = dwgs[1] * dlat0_factor
+                self.view_state.center_location -= numpy.array([dwgs[0], dlat2])  # TODO: simplify dlon
                 self.update()
             self.previous_mouse = xyw_win
             return
-        # Back to wgs84
-        p_wgs = numpy.array([
-            math.atan2(p_ecf[1], p_ecf[0]),
-            math.asin(p_ecf[2]),
-            1
-        ], dtype=numpy.float)
         # self.statusMessageRequested.emit(f"{xyw_win} [win]", 2000)
         # self.statusMessageRequested.emit(f"({xyw_ndc[0]:.4f}, {xyw_ndc[1]:.4f}) [ndc]", 2000)
         # self.statusMessageRequested.emit(f"({p_nmc[0]:.4f}, {p_nmc[1]:.4f}) [nmc]", 2000)

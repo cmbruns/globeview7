@@ -24,18 +24,24 @@ class DisplayProjection(abc.ABC):
     def draw_boundary(self, context):
         pass
 
+    # TODO: @property + @classmethod might not work in python 3.11
+    @property
+    @classmethod
+    @abc.abstractmethod
+    def index(cls):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def is_valid_nmc(p_nmc: NMCPoint) -> bool:
+        return True
+
     @staticmethod
     @abc.abstractmethod
     def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:
         """
         Convert from normalized map coordinates to rotated geocentric coordinates.
         """
-        pass
-
-    @property
-    @classmethod
-    @abc.abstractmethod
-    def index(cls):
         pass
 
 
@@ -111,6 +117,12 @@ class OrthographicProjection(DisplayProjection):
         return result
 
     @staticmethod
+    def is_valid_nmc(p_nmc: NMCPoint) -> bool:
+        if p_nmc.x**2 + p_nmc.y**2 > 1:
+            return False
+        return True
+
+    @staticmethod
     def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:
         p_prj = p_nmc  # Radians from normalized units
         x, y = p_prj[:2]
@@ -127,6 +139,13 @@ class WGS84Projection(DisplayProjection):
     """
     Plate caree / Equirectangular / Geographic coordinates projection
     """
+
+    @staticmethod
+    def is_valid_nmc(p_nmc: NMCPoint) -> bool:
+        if abs(p_nmc.y) > radians(90):
+            return False
+        return True
+
     index = Projection.EQUIRECTANGULAR
 
     def __init__(self):

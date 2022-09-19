@@ -139,6 +139,10 @@ class ViewState(object):
             self._nmc_X_ndc.dirty = False
         return self._nmc_X_ndc.matrix
 
+    @property
+    def projection(self):
+        return self._projection
+
     def wgs_for_window_point(self, p_win: WindowPoint) -> WGS84Point:
         p_nmc = self.nmc_X_ndc @ self.ndc_X_win @ p_win
         p_obq = self._projection.obq_for_nmc(p_nmc)
