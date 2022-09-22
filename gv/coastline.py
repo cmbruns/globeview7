@@ -1,4 +1,3 @@
-import inspect
 import pkg_resources
 
 import numpy

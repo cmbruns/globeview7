@@ -9,11 +9,12 @@ from PIL.ImageQt import ImageQt
 from PySide6 import QtCore, QtOpenGLWidgets, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 
-import coastline
-import frame
+from gv import basemap
+from gv import coastline
+from gv import frame
 from gv.frame import NMCPoint
 from gv.projection import Projection, OrthographicProjection, WGS84Projection
-from view_state import ViewState
+from gv.view_state import ViewState
 
 
 class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
@@ -30,6 +31,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.font = self.painter.font()
         # self.font.setPointSize(self.font.pointSize() * 4)
         self.coastline = coastline.Coastline()
+        self.basemap = basemap.RootRasterTile()
         self.previous_mouse = None
 
     def center_on_window_pixel(self, pos: QtCore.QPoint):
@@ -131,6 +133,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.view_state._projection.draw_boundary(context=self.view_state)
         # TODO: Experimental coastline sketch
+        self.basemap.paint_opengl(context=self.view_state)
         self.coastline.paint_opengl(context=self.view_state)
 
     def paint_qt(self, painter):
