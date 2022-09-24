@@ -131,7 +131,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
     def paint_opengl(self):
         GL.glClearColor(254/255, 247/255, 228/255, 1)  # Ivory
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        self.view_state._projection.draw_boundary(context=self.view_state)
+        # TODO: separate generic layer classes
+        self.view_state.projection.draw_boundary(context=self.view_state)
         # TODO: Experimental coastline sketch
         self.basemap.paint_opengl(context=self.view_state)
         self.coastline.paint_opengl(context=self.view_state)

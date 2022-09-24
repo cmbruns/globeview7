@@ -41,28 +41,18 @@ class RootRasterTile(object):
         )
 
     def initialize_opengl(self):
-        self.vao = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(self.vao)
         self.shader = compileProgram(
             compileShader(inspect.cleandoc("""
                 #version 430
                 
-                // WGS84 projection bounds
-                const vec3 nmcWgs84Bounds[4] = vec3[](
-                    vec3(0, -radians(90), 1),  // center of northern boundary
-                    vec3(-1, 0, 0),  // infinity west
-                    vec3(0, +radians(90), 1),  // center of southern boundary
-                    vec3(+1, 0, 0));  // infinity east
+                in vec3 nmc_in;
 
                 layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
-                const int WGS84_PROJECTION = 0;
-                const int ORTHOGRAPHIC_PROJECTION = 1;
-                layout(location = 4) uniform int projection = WGS84_PROJECTION;
-                
+
                 out vec3 nmc;
                 
                 void main() {
-                    nmc = nmcWgs84Bounds[gl_VertexID];
+                    nmc = nmc_in;
                     vec3 ndc = ndc_X_nmc * nmc;
                     gl_Position = vec4(ndc.xy, 0, ndc.z);
                 }
@@ -126,12 +116,22 @@ class RootRasterTile(object):
                 
                 void main() 
                 {
-                    vec2 prj = nmc.xy / nmc.z;  // TODO: wgs84 display projection only
+                    vec2 prj = nmc.xy / nmc.z;
                     
-                    vec3 obq = vec3(
-                        cos(prj.x) * cos(prj.y),
-                        sin(prj.x) * cos(prj.y),
-                        sin(prj.y));
+                    vec3 obq;
+                    if (projection == WGS84_PROJECTION) {
+                        obq = vec3(
+                            cos(prj.x) * cos(prj.y),
+                            sin(prj.x) * cos(prj.y),
+                            sin(prj.y));
+                    }
+                    else if (projection == ORTHOGRAPHIC_PROJECTION) {
+                        obq = vec3(
+                            sqrt(1.0 - dot(prj.xy, prj.xy)),
+                            prj.x,
+                            prj.y);
+                    }
+
                     vec3 ecf = ecf_X_obq * obq;
                     vec2 wgs = vec2(
                         atan(ecf.y, ecf.x),
@@ -140,16 +140,13 @@ class RootRasterTile(object):
                     vec2 tile = mercator;
                     tile.y *= -1;
                     tile = tile / radians(360) + vec2(0.5);
-
-                    // frag_color = vec4(mercator, 0.0, 1);
-                    // frag_color = texture(image, tile);
                     frag_color = catrom(image, tile);
                 }
         """), GL.GL_FRAGMENT_SHADER),
         )
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
         GL.glTexImage2D(
             GL.GL_TEXTURE_2D,
             0,
@@ -178,13 +175,11 @@ class RootRasterTile(object):
         GL.glBindVertexArray(0)
 
     def paint_opengl(self, context):
-        if self.vao is None:
+        if self.texture is None:
             self.initialize_opengl()
-        GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.shader)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
         GL.glUniformMatrix3fv(2, 1, True, context.ecf_X_obq)
         GL.glUniform1i(4, context.projection.index.value)
-        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
-        GL.glBindVertexArray(0)
+        context.projection.fill_boundary(context)

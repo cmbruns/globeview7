@@ -1,0 +1,4 @@
+const int WGS84_PROJECTION = 0;
+const int ORTHOGRAPHIC_PROJECTION = 1;
+
+

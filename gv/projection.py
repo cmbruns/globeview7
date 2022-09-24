@@ -24,6 +24,9 @@ class DisplayProjection(abc.ABC):
     def draw_boundary(self, context):
         pass
 
+    def fill_boundary(self, context):
+        pass
+
     # TODO: @property + @classmethod might not work in python 3.11
     @property
     @classmethod
@@ -58,7 +61,7 @@ class OrthographicProjection(DisplayProjection):
         verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
         self.boundary_vertices = numpy.array(verts, dtype=numpy.float32)
 
-    def draw_boundary(self, context):
+    def _bind_boundary(self, context):
         if self.boundary_vao is None:
             self.boundary_vao = GL.glGenVertexArrays(1)
             GL.glBindVertexArray(self.boundary_vao)
@@ -91,14 +94,22 @@ class OrthographicProjection(DisplayProjection):
                 """), GL.GL_FRAGMENT_SHADER),
             )
         GL.glBindVertexArray(self.boundary_vao)
+
+    def draw_boundary(self, context):
+        self._bind_boundary(context)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glEnable(GL.GL_BLEND)
         GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(1)
         GL.glUseProgram(self.boundary_shader)
         GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
-        GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
+        GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        GL.glBindVertexArray(0)
+
+    def fill_boundary(self, context):
+        self._bind_boundary(context)
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
         GL.glBindVertexArray(0)
 
     @staticmethod
@@ -156,14 +167,14 @@ class WGS84Projection(DisplayProjection):
         self.boundary_vertices = numpy.array([
             # Clockwise, like shapefiles
             # Normalized map coordinates
-            [-1, 0, 0],  # left infinity
-            [0, radians(90), 1],  # top
-            [1, 0, 0],  # right infinity
-            [0, radians(-90), 1],  # bottom
-        ],
-        dtype=numpy.float32)
+            # For use in triangle fans, it's important for the first vertex to be non-infinite.
+            [0, -radians(90), 1],  # center of southern boundary
+            [-1, 0, 0],  # west infinity
+            [0, radians(90), 1],  # center of northern boundary
+            [1, 0, 0],  # east infinity
+        ], dtype=numpy.float32)
 
-    def draw_boundary(self, context):
+    def _bind_boundary(self, context):
         if self.boundary_vao is None:
             self.boundary_vao = GL.glGenVertexArrays(1)
             GL.glBindVertexArray(self.boundary_vao)
@@ -175,10 +186,10 @@ class WGS84Projection(DisplayProjection):
             self.boundary_shader = compileProgram(
                 compileShader(inspect.cleandoc("""
                     #version 430
-                    
+
                     in vec3 nmc;
                     layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
-                             
+
                     void main() {
                         vec3 ndc = ndc_X_nmc * nmc;
                         gl_Position = vec4(ndc.xy, 0, ndc.z);
@@ -186,9 +197,9 @@ class WGS84Projection(DisplayProjection):
                 """), GL.GL_VERTEX_SHADER),
                 compileShader(inspect.cleandoc("""
                     #version 430
-                    
+
                     out vec4 fragColor;
-                                       
+
                     void main() {
                         // TODO: share line color
                         fragColor = vec4(0.03, 0.34, 0.60, 1);
@@ -196,6 +207,9 @@ class WGS84Projection(DisplayProjection):
                 """), GL.GL_FRAGMENT_SHADER),
             )
         GL.glBindVertexArray(self.boundary_vao)
+
+    def draw_boundary(self, context):
+        self._bind_boundary(context)
         # TODO: common gl state for all?
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glEnable(GL.GL_BLEND)
@@ -204,6 +218,11 @@ class WGS84Projection(DisplayProjection):
         GL.glUseProgram(self.boundary_shader)
         GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        GL.glBindVertexArray(0)
+
+    def fill_boundary(self, context):
+        self._bind_boundary(context)
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
         GL.glBindVertexArray(0)
 
     @staticmethod
