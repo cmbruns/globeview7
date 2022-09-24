@@ -10,6 +10,11 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.setupUi(self)
         self.openGLWidget.statusMessageRequested.connect(self.statusbar.showMessage)
         self.actionQuit.setShortcut(QtGui.QKeySequence.Quit)  # no effect on Windows
+        self.openGLWidget.actionReset_View = self.actionReset_View
+
+    @QtCore.Slot()
+    def on_actionReset_View_triggered(self):
+        self.openGLWidget.reset_view()
 
     @QtCore.Slot()
     def on_actionQuit_triggered(self):

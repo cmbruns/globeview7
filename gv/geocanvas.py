@@ -33,6 +33,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.coastline = coastline.Coastline()
         self.basemap = basemap.RootRasterTile()
         self.previous_mouse = None
+        self.actionReset_View = None
 
     def center_on_window_pixel(self, pos: QtCore.QPoint):
         wgs = self.view_state.wgs_for_window_point(frame.WindowPoint.from_qpoint(pos))
@@ -44,6 +45,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         center_action.triggered.connect(functools.partial(self.center_on_window_pixel, event.pos()))
         menu = QtWidgets.QMenu(self)
         menu.addAction(center_action)
+        menu.addAction(self.actionReset_View)
         menu.addAction(QtGui.QAction(text="Cancel [ESC]", parent=self))
         menu.exec(event.globalPos())
 
@@ -142,6 +144,12 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         painter.setFont(self.font)
         painter.setPen(QtGui.QColor("#07495f"))  # Dark blue
         painter.drawText(50, 50, "Some Text")
+
+    def reset_view(self):
+        self.view_state.center_location = [0, 0]
+        self.view_state.azimuth = 0
+        self.view_state.zoom = 0.7
+        self.update()
 
     def resizeGL(self, width: int, height: int) -> None:
         self.view_state.window_size = width, height

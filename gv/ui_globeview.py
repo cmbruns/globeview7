@@ -30,6 +30,8 @@ class Ui_MainWindow(object):
         MainWindow.resize(800, 600)
         self.actionQuit = QAction(MainWindow)
         self.actionQuit.setObjectName(u"actionQuit")
+        self.actionReset_View = QAction(MainWindow)
+        self.actionReset_View.setObjectName(u"actionReset_View")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -75,6 +77,8 @@ class Ui_MainWindow(object):
         self.menubar.setGeometry(QRect(0, 0, 800, 22))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
+        self.menuView = QMenu(self.menubar)
+        self.menuView.setObjectName(u"menuView")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -83,7 +87,9 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuView.menuAction())
         self.menuFile.addAction(self.actionQuit)
+        self.menuView.addAction(self.actionReset_View)
 
         self.retranslateUi(MainWindow)
 
@@ -93,10 +99,12 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle("")
         self.actionQuit.setText(QCoreApplication.translate("MainWindow", u"Quit", None))
+        self.actionReset_View.setText(QCoreApplication.translate("MainWindow", u"Reset View", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Display Projection", None))
         self.projectionComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Equirectangular", None))
         self.projectionComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Orthographic", None))
 
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
+        self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
     # retranslateUi
 
