@@ -96,8 +96,6 @@ class OrthographicProjection(DisplayProjection):
                 }
             """), GL.GL_FRAGMENT_SHADER),
         )
-        GL.glBindVertexArray(0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)  # Avoid borking later Qt text
 
     def draw_boundary(self, context):
         if self.boundary_vao is None:
@@ -111,18 +109,12 @@ class OrthographicProjection(DisplayProjection):
         GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
         # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
-        # Clean up
-        GL.glBindVertexArray(0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)  # Avoid borking later Qt text
 
     def fill_boundary(self, context):
         if self.boundary_vao is None:
             self.initialize_gl()
         GL.glBindVertexArray(self.boundary_vao)
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
-        # Clean up
-        GL.glBindVertexArray(0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)  # Avoid borking later Qt text
 
     @staticmethod
     def dobq_for_dnmc(dnmc, p_nmc: NMCPoint):
@@ -218,9 +210,6 @@ class WGS84Projection(DisplayProjection):
                     }
                 """), GL.GL_FRAGMENT_SHADER),
             )
-        # Clean up
-        GL.glBindVertexArray(0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)  # Avoid borking later Qt text
 
     def draw_boundary(self, context):
         if self.boundary_vao is None:
@@ -234,18 +223,12 @@ class WGS84Projection(DisplayProjection):
         GL.glUseProgram(self.boundary_shader)
         GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
-        # Clean up
-        GL.glBindVertexArray(0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)  # Avoid borking later Qt text
 
     def fill_boundary(self, context):
         if self.boundary_vao is None:
             self.initialize_gl()
         GL.glBindVertexArray(self.boundary_vao)
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
-        # Clean up
-        GL.glBindVertexArray(0)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)  # Avoid borking later Qt text
 
     @staticmethod
     def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:
