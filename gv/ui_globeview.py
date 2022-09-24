@@ -16,10 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHBoxLayout,
-    QMainWindow, QMenu, QMenuBar, QSizePolicy,
-    QSlider, QSpacerItem, QStatusBar, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QGroupBox,
+    QHBoxLayout, QLabel, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QSizePolicy, QSpacerItem,
+    QStatusBar, QVBoxLayout, QWidget)
 
 from geocanvas import GeoCanvas
 
@@ -34,42 +34,166 @@ class Ui_MainWindow(object):
         self.actionReset_View.setObjectName(u"actionReset_View")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.horizontalLayout = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.openGLWidget = GeoCanvas(self.centralwidget)
-        self.openGLWidget.setObjectName(u"openGLWidget")
+        self.horizontalLayout_4 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.widget = QWidget(self.centralwidget)
+        self.widget.setObjectName(u"widget")
+        self.verticalLayout_2 = QVBoxLayout(self.widget)
+        self.verticalLayout_2.setSpacing(0)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.groupBox_2 = QGroupBox(self.widget)
+        self.groupBox_2.setObjectName(u"groupBox_2")
+
+        self.verticalLayout_2.addWidget(self.groupBox_2)
+
+
+        self.horizontalLayout_4.addWidget(self.widget)
+
+        self.widget_3 = QWidget(self.centralwidget)
+        self.widget_3.setObjectName(u"widget_3")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widget_3.sizePolicy().hasHeightForWidth())
+        self.widget_3.setSizePolicy(sizePolicy)
+        self.verticalLayout = QVBoxLayout(self.widget_3)
+        self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.openGLWidget = GeoCanvas(self.widget_3)
+        self.openGLWidget.setObjectName(u"openGLWidget")
         sizePolicy.setHeightForWidth(self.openGLWidget.sizePolicy().hasHeightForWidth())
         self.openGLWidget.setSizePolicy(sizePolicy)
 
-        self.horizontalLayout.addWidget(self.openGLWidget)
+        self.verticalLayout.addWidget(self.openGLWidget)
 
-        self.azimuthSlider = QSlider(self.centralwidget)
-        self.azimuthSlider.setObjectName(u"azimuthSlider")
-        self.azimuthSlider.setMaximum(360)
-        self.azimuthSlider.setOrientation(Qt.Vertical)
 
-        self.horizontalLayout.addWidget(self.azimuthSlider)
+        self.horizontalLayout_4.addWidget(self.widget_3)
 
-        self.groupBox = QGroupBox(self.centralwidget)
+        self.widget_2 = QWidget(self.centralwidget)
+        self.widget_2.setObjectName(u"widget_2")
+        self.verticalLayout_7 = QVBoxLayout(self.widget_2)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.groupBox = QGroupBox(self.widget_2)
         self.groupBox.setObjectName(u"groupBox")
-        self.verticalLayout = QVBoxLayout(self.groupBox)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout_6 = QVBoxLayout(self.groupBox)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.projectionComboBox = QComboBox(self.groupBox)
         self.projectionComboBox.addItem("")
         self.projectionComboBox.addItem("")
         self.projectionComboBox.setObjectName(u"projectionComboBox")
 
-        self.verticalLayout.addWidget(self.projectionComboBox)
-
-        self.verticalSpacer = QSpacerItem(20, 473, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.verticalLayout.addItem(self.verticalSpacer)
+        self.verticalLayout_6.addWidget(self.projectionComboBox)
 
 
-        self.horizontalLayout.addWidget(self.groupBox)
+        self.verticalLayout_7.addWidget(self.groupBox)
+
+        self.groupBox_3 = QGroupBox(self.widget_2)
+        self.groupBox_3.setObjectName(u"groupBox_3")
+        self.groupBox_3.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.verticalLayout_5 = QVBoxLayout(self.groupBox_3)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.widget_5 = QWidget(self.groupBox_3)
+        self.widget_5.setObjectName(u"widget_5")
+        self.widget_5.setLayoutDirection(Qt.LeftToRight)
+        self.verticalLayout_4 = QVBoxLayout(self.widget_5)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.widget_6 = QWidget(self.widget_5)
+        self.widget_6.setObjectName(u"widget_6")
+        self.horizontalLayout_2 = QHBoxLayout(self.widget_6)
+        self.horizontalLayout_2.setSpacing(0)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_3)
+
+        self.northUpButton = QPushButton(self.widget_6)
+        self.northUpButton.setObjectName(u"northUpButton")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.northUpButton.sizePolicy().hasHeightForWidth())
+        self.northUpButton.setSizePolicy(sizePolicy1)
+
+        self.horizontalLayout_2.addWidget(self.northUpButton)
+
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_4)
+
+
+        self.verticalLayout_4.addWidget(self.widget_6)
+
+        self.widget_4 = QWidget(self.widget_5)
+        self.widget_4.setObjectName(u"widget_4")
+        self.horizontalLayout = QHBoxLayout(self.widget_4)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.northLeftButton = QPushButton(self.widget_4)
+        self.northLeftButton.setObjectName(u"northLeftButton")
+
+        self.horizontalLayout.addWidget(self.northLeftButton)
+
+        self.northRightButton = QPushButton(self.widget_4)
+        self.northRightButton.setObjectName(u"northRightButton")
+
+        self.horizontalLayout.addWidget(self.northRightButton)
+
+
+        self.verticalLayout_4.addWidget(self.widget_4)
+
+        self.widget_7 = QWidget(self.widget_5)
+        self.widget_7.setObjectName(u"widget_7")
+        self.horizontalLayout_3 = QHBoxLayout(self.widget_7)
+        self.horizontalLayout_3.setSpacing(0)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer)
+
+        self.northDownButton = QPushButton(self.widget_7)
+        self.northDownButton.setObjectName(u"northDownButton")
+        sizePolicy1.setHeightForWidth(self.northDownButton.sizePolicy().hasHeightForWidth())
+        self.northDownButton.setSizePolicy(sizePolicy1)
+
+        self.horizontalLayout_3.addWidget(self.northDownButton)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
+
+
+        self.verticalLayout_4.addWidget(self.widget_7)
+
+
+        self.verticalLayout_5.addWidget(self.widget_5)
+
+        self.label = QLabel(self.groupBox_3)
+        self.label.setObjectName(u"label")
+
+        self.verticalLayout_5.addWidget(self.label)
+
+        self.azimuthSpinBox = QDoubleSpinBox(self.groupBox_3)
+        self.azimuthSpinBox.setObjectName(u"azimuthSpinBox")
+        self.azimuthSpinBox.setWrapping(True)
+        self.azimuthSpinBox.setMaximum(360.000000000000000)
+        self.azimuthSpinBox.setSingleStep(5.000000000000000)
+
+        self.verticalLayout_5.addWidget(self.azimuthSpinBox)
+
+
+        self.verticalLayout_7.addWidget(self.groupBox_3)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_7.addItem(self.verticalSpacer)
+
+
+        self.horizontalLayout_4.addWidget(self.widget_2)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -85,6 +209,9 @@ class Ui_MainWindow(object):
         font = QFont()
         self.statusbar.setFont(font)
         MainWindow.setStatusBar(self.statusbar)
+#if QT_CONFIG(shortcut)
+        self.label.setBuddy(self.azimuthSpinBox)
+#endif // QT_CONFIG(shortcut)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -100,10 +227,18 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle("")
         self.actionQuit.setText(QCoreApplication.translate("MainWindow", u"Quit", None))
         self.actionReset_View.setText(QCoreApplication.translate("MainWindow", u"Reset View", None))
+        self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Layers", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Display Projection", None))
         self.projectionComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Equirectangular", None))
         self.projectionComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Orthographic", None))
 
+        self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"North Direction", None))
+        self.northUpButton.setText(QCoreApplication.translate("MainWindow", u"Up", None))
+        self.northLeftButton.setText(QCoreApplication.translate("MainWindow", u"Left", None))
+        self.northRightButton.setText(QCoreApplication.translate("MainWindow", u"Right", None))
+        self.northDownButton.setText(QCoreApplication.translate("MainWindow", u"Down", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Up Azimuth (degrees)", None))
+        self.azimuthSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u"\u00b0", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
     # retranslateUi

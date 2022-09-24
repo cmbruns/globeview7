@@ -20,9 +20,25 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     def on_actionQuit_triggered(self):
         QtCore.QCoreApplication.quit()
 
-    @QtCore.Slot(int)
-    def on_azimuthSlider_valueChanged(self, azimuth_degrees):
+    @QtCore.Slot(float)
+    def on_azimuthSpinBox_valueChanged(self, azimuth_degrees):
         self.openGLWidget.set_azimuth(azimuth_degrees)
+
+    @QtCore.Slot()
+    def on_northDownButton_clicked(self):
+        self.azimuthSpinBox.setValue(180)
+
+    @QtCore.Slot()
+    def on_northLeftButton_clicked(self):
+        self.azimuthSpinBox.setValue(90)
+
+    @QtCore.Slot()
+    def on_northRightButton_clicked(self):
+        self.azimuthSpinBox.setValue(270)
+
+    @QtCore.Slot()
+    def on_northUpButton_clicked(self):
+        self.azimuthSpinBox.setValue(0)
 
     @QtCore.Slot(int)
     def on_projectionComboBox_currentIndexChanged(self, projection: int):
