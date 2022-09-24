@@ -6,3 +6,13 @@
   * Continent outlines
   * labeled points
   * Buddhist churches
+
+* Principles:
+  * Smooth: "everything" has continuous first derivatvies
+  * Sparse: small numbers of "rich" locations can accurately reconstruct stuff
+  * Accurate: explicitly track fidelity measured in real world units
+
+as opposed to:
+  * Jagged: overly simple primitives like line segments and triangles
+  * Dense: so many primitives needed to get even basic accuracy
+  * Good enough: If it's not obviously wrong, it's probably OK.
