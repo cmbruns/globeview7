@@ -1,6 +1,7 @@
-import math
+from math import asin, atan2, cos, pi, radians, sin
 
 import numpy
+from PySide6 import QtCore
 
 from gv.frame import WGS84Point, WindowPoint
 from gv.projection import WGS84Projection
@@ -12,13 +13,15 @@ class Transform(object):
         self.dirty = True
 
 
-class ViewState(object):
+class ViewState(QtCore.QObject):
     def __init__(self):
+        super().__init__()
         self._projection = WGS84Projection()
         self._window_size = [1, 1]
-        self._center_location = [math.radians(0), math.radians(0)]
+        # TODO: should center be in degrees? Does the principle of best exactness apply here?
+        self._center_location = [radians(0), radians(0)]
         self._zoom = 0.7  # windows per radian
-        self._azimuth = math.radians(0)  # "up" compass direction
+        self._azimuth = 0  # "up" compass direction degrees
         self._ecf_X_obq = Transform()
         self._ndc_X_nmc = Transform()
         self._ndc_X_win = Transform()
@@ -37,6 +40,9 @@ class ViewState(object):
         self._ndc_X_nmc.dirty = True
         self._nmc_X_ndc.dirty = True
         self._nmc_J_win.dirty = True
+        self.azimuth_changed.emit(self._azimuth)
+
+    azimuth_changed = QtCore.Signal(float)
 
     @property
     def center_location(self):
@@ -45,10 +51,10 @@ class ViewState(object):
     @center_location.setter
     def center_location(self, center):
         lon, lat = center
-        if lat > math.pi / 2:
-            lat = math.pi / 2
-        if lat < -math.pi / 2:
-            lat = -math.pi / 2
+        if lat > pi / 2:
+            lat = pi / 2
+        if lat < -pi / 2:
+            lat = -pi / 2
         if self._center_location[0] == lon and self._center_location[1] == lat:
             return  # No change
         self._center_location[:] = lon, lat
@@ -57,15 +63,15 @@ class ViewState(object):
     @property
     def ecf_X_obq(self):
         if self._ecf_X_obq.dirty:
-            clon = math.cos(self._center_location[0])
-            slon = math.sin(self._center_location[0])
+            clon = cos(self._center_location[0])
+            slon = sin(self._center_location[0])
             rot_lon = numpy.array([
                 [clon, -slon, 0],
                 [slon, clon, 0],
                 [0, 0, 1]
             ], dtype=numpy.float)
-            clat = math.cos(self._center_location[1])
-            slat = math.sin(self._center_location[1])
+            clat = cos(self._center_location[1])
+            slat = sin(self._center_location[1])
             rot_lat = numpy.array([
                 [clat, 0, -slat],
                 [0, 1, 0],
@@ -84,8 +90,8 @@ class ViewState(object):
     def ndc_X_nmc(self):
         if self._ndc_X_nmc.dirty:
             z = self._zoom
-            c = math.cos(self._azimuth)
-            s = math.sin(self._azimuth)
+            c = cos(radians(self._azimuth))
+            s = sin(radians(self._azimuth))
             w, h = self._window_size
             a = (w / h) ** 0.5  # sqrt(aspect ratio)
             self._ndc_X_nmc.matrix[:] = (
@@ -112,8 +118,8 @@ class ViewState(object):
     def nmc_J_win(self):
         if self._nmc_J_win.dirty:
             z = self._zoom
-            c = math.cos(self._azimuth)
-            s = math.sin(self._azimuth)
+            c = cos(radians(self._azimuth))
+            s = sin(radians(self._azimuth))
             w, h = self._window_size
             a2 = (w / h) ** 0.5  # sqrt(aspect ratio)
             self._nmc_J_win.matrix[:] = [
@@ -127,8 +133,8 @@ class ViewState(object):
     def nmc_X_ndc(self):
         if self._nmc_X_ndc.dirty:
             z = self._zoom
-            c = math.cos(self._azimuth)
-            s = math.sin(self._azimuth)
+            c = cos(radians(self._azimuth))
+            s = sin(radians(self._azimuth))
             w, h = self._window_size
             a = (w / h) ** 0.5  # sqrt(aspect ratio)
             self._nmc_X_ndc.matrix[:] = (
@@ -148,8 +154,8 @@ class ViewState(object):
         p_obq = self._projection.obq_for_nmc(p_nmc)
         p_ecf = self.ecf_X_obq @ p_obq
         p_wgs = WGS84Point([
-            math.atan2(p_ecf[1], p_ecf[0]),
-            math.asin(p_ecf[2]),
+            atan2(p_ecf[1], p_ecf[0]),
+            asin(p_ecf[2]),
         ])
         return p_wgs
 

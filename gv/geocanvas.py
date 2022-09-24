@@ -34,6 +34,9 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.basemap = basemap.RootRasterTile()
         self.previous_mouse = None
         self.actionReset_View = None
+        self.view_state.azimuth_changed.connect(self.azimuth_changed)
+
+    azimuth_changed = QtCore.Signal(float)
 
     def center_on_window_pixel(self, pos: QtCore.QPoint):
         wgs = self.view_state.wgs_for_window_point(frame.WindowPoint.from_qpoint(pos))
@@ -158,7 +161,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.update()
 
     def set_azimuth(self, azimuth_degrees):
-        self.view_state.azimuth = math.radians(azimuth_degrees)
+        self.view_state.azimuth = azimuth_degrees
         self.update()
 
     def set_projection(self, projection: Projection):
