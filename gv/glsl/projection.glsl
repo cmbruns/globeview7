@@ -1,5 +1,6 @@
 #line 2
 
+// Keep these values in sync with projection.py
 const int EQUIRECTANGULAR_PROJECTION = 0;
 const int ORTHOGRAPHIC_PROJECTION = 1;
 
@@ -7,6 +8,27 @@ layout(std140) uniform TransformBlock
 {
     int projection;  // TODO: use a uniform block like this...
 } ub;
+
+struct Segment
+{
+    vec3 p1;
+    vec3 p2;
+};
+
+int clip_obq_segment(in Segment obq, in int projection, out Segment[2] result)
+{
+    result[0] = obq;
+    return 1;  // number of output segments
+}
+
+bool cull_obq(in vec3 obq, in int projection)
+{
+    bool result = false;
+    if (projection == ORTHOGRAPHIC_PROJECTION) {
+        result = obq.x < 0;
+    }
+    return result;
+}
 
 // Convert WGS84 coordinates to non-oblique geocentric coordinates
 vec3 ecf_for_wgs(vec2 wgs /* lon, lat radians */)

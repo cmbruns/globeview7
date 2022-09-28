@@ -61,3 +61,5 @@ class Coastline(object):
         GL.glUniformMatrix3fv(2, 1, False, context.ecf_X_obq)  # transpose is inverse
         GL.glUniform1i(4, context.projection.index.value)
         GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
+        # TODO: drive multiple equirect instances from CPU side
+        # GL.glMultiDrawArraysIndirect(GL.GL_LINE_LOOP, indirect, drawcount, stride)

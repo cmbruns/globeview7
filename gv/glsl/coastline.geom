@@ -60,10 +60,7 @@ void drawSegment(in vec3 nmc0, in vec3 nmc1)
 
 vec3 obq_for_wgs_deg(in vec2 wgs_deg) {
     vec2 wgs = radians(wgs_deg);
-    vec3 ecf = vec3(
-        cos(wgs.x) * cos(wgs.y),
-        sin(wgs.x) * cos(wgs.y),
-        sin(wgs.y));
+    vec3 ecf = ecf_for_wgs(wgs);
     vec3 obq = obq_X_ecf * ecf;
     return obq;
 }
@@ -86,30 +83,16 @@ void main()
     vec3 obq0 = obq_for_wgs_deg(wgs_deg0);
     vec3 obq1 = obq_for_wgs_deg(wgs_deg1);
 
+    if (cull_obq(obq0, projection) && cull_obq(obq1, projection))
+        return;
+
+    vec3 nmc0 = nmc_for_obq(obq0, projection);
+    vec3 nmc1 = nmc_for_obq(obq1, projection);
+
     color = vec4(0.03, 0.34, 0.60, 1);
 
-    if (projection == ORTHOGRAPHIC_PROJECTION) {
-        // clip far side of the earth
-        // TODO: interpolate to edge point
-        if (obq0.x < 0 && obq1.x < 0)
-            return;
-
-        vec3 nmc0 = vec3(obq0.y, obq0.z, 1);
-        vec3 nmc1 = vec3(obq1.y, obq1.z, 1);
-
-        drawSegment(nmc0, nmc1);
-    }
-    else if (projection == EQUIRECTANGULAR_PROJECTION)
+    if (projection == EQUIRECTANGULAR_PROJECTION)
     {
-        vec3 nmc0 = vec3(
-            atan(obq0.y, obq0.x),
-            asin(obq0.z),
-            1);
-        vec3 nmc1 = vec3(
-            atan(obq1.y, obq1.x),
-            asin(obq1.z),
-            1);
-
         if (abs(nmc1.x - nmc0.x) > 2) {
             // segment crosses seam
             // Enforce left to right for simpler clipping
@@ -128,5 +111,8 @@ void main()
         else {
             drawSegment(nmc0, nmc1);
         }
+    }
+    else {
+        drawSegment(nmc0, nmc1);
     }
 }
