@@ -31,47 +31,8 @@ class H3Cell(object):
     def initialize_opengl(self):
         self.boundary.initialize_opengl()
         self.program = compileProgram(
-            shader.from_string("""
-                #version 410
-                
-                const int WGS84_PROJECTION = 0;
-                const int ORTHOGRAPHIC_PROJECTION = 1;
-                
-                in vec2 corner;
-                uniform mat3 obq_X_ecf = mat3(1);
-                uniform mat3 ndc_X_nmc = mat3(1);
-                uniform int projection = WGS84_PROJECTION;
-                
-                void main() {
-                    vec2 wgs = radians(corner.yx);
-                    vec3 ecf = vec3(
-                        cos(wgs.x) * cos(wgs.y),
-                        sin(wgs.x) * cos(wgs.y),
-                        sin(wgs.y));
-                    vec3 obq = obq_X_ecf * ecf;
-                    // TODO: gnomonic edge direction
-                    vec3 nmc;
-                    if (projection == WGS84_PROJECTION) {
-                        nmc = vec3(atan(obq.y, obq.x), asin(obq.z), 1);
-                    }
-                    else {
-                        // orthographic
-                        nmc = vec3(obq.y, obq.z, 1);
-                    }
-                    // TODO: other projection
-                    vec3 ndc = ndc_X_nmc * nmc;
-                    gl_Position = vec4(ndc.xy, 0, ndc.z);
-                }
-            """, GL.GL_VERTEX_SHADER),
-            shader.from_string("""
-                #version 410
-                
-                out vec4 fragColor;
-                
-                void main() {
-                    fragColor = vec4(0, 1, 0, 1);  // green
-                }
-            """, GL.GL_FRAGMENT_SHADER),
+            shader.from_files(["h3cell.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["green.frag"], GL.GL_FRAGMENT_SHADER),
         )
         self.obq_X_ecf_loc = GL.glGetUniformLocation(self.program, "obq_X_ecf")
         self.ndc_X_nmc_loc = GL.glGetUniformLocation(self.program, "ndc_X_nmc")
