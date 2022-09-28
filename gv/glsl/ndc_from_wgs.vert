@@ -1,4 +1,4 @@
-#pragma include "projection.glsl"
+#pragma include "projection.glsl"  // must be done manually at the moment...
 #line 3
 
 in vec2 wgs;  // longitude, latitude in WGS84 radians

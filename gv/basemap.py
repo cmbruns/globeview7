@@ -7,6 +7,8 @@ from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram
 from PIL import Image
 
+from gv import shader
+
 
 class RootRasterTile(object):
     def __init__(self):
@@ -42,107 +44,8 @@ class RootRasterTile(object):
 
     def initialize_opengl(self):
         self.shader = compileProgram(
-            compileShader(inspect.cleandoc("""
-                #version 430
-                
-                in vec3 nmc_in;
-
-                layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
-
-                out vec3 nmc;
-                
-                void main() {
-                    nmc = nmc_in;
-                    vec3 ndc = ndc_X_nmc * nmc;
-                    gl_Position = vec4(ndc.xy, 0, ndc.z);
-                }
-            """), GL.GL_VERTEX_SHADER),
-            compileShader(inspect.cleandoc("""
-                #version 430
-                
-                in vec3 nmc;
-
-                layout(location = 2) uniform mat3 ecf_X_obq = mat3(1);
-                const int WGS84_PROJECTION = 0;
-                const int ORTHOGRAPHIC_PROJECTION = 1;
-                layout(location = 4) uniform int projection = WGS84_PROJECTION;
-                uniform sampler2D image;
-
-                out vec4 frag_color;
-                
-                vec4 catrom_weights(float t) {
-                    return 0.5 * vec4(
-                        -1*t*t*t + 2*t*t - 1*t,  // P0 weight
-                        3*t*t*t - 5*t*t + 2,  // P1 weight
-                        -3*t*t*t + 4*t*t + 1*t,  // P2 weight
-                        1*t*t*t - 1*t*t);  // P3 weight
-                }
-                
-                vec4 equirect_color(sampler2D image, vec2 tex_coord)
-                {
-                    // Use explicit gradients, to preserve anisotropic filtering during mipmap lookup
-                    vec2 dpdx = dFdx(tex_coord);
-                    vec2 dpdy = dFdy(tex_coord);
-                    if (true) {
-                        if (dpdx.x > 0.5) dpdx.x -= 1; // use "repeat" wrapping on gradient
-                        if (dpdx.x < -0.5) dpdx.x += 1;
-                        if (dpdy.x > 0.5) dpdy.x -= 1; // use "repeat" wrapping on gradient
-                        if (dpdy.x < -0.5) dpdy.x += 1;
-                    }
-                
-                    return textureGrad(image, tex_coord, dpdx, dpdy);
-                }
-                
-                vec4 catrom(sampler2D image, vec2 textureCoordinate) {
-                    vec2 texel = textureCoordinate * textureSize(image, 0) - vec2(0.5);
-                    ivec2 texel1 = ivec2(floor(texel));
-                    vec2 param = texel - texel1;
-                    // return vec4(param, 0, 1);  // interpolation parameter
-                    vec4 weightsX = catrom_weights(param.x);
-                    vec4 weightsY = catrom_weights(param.y);
-                    // return vec4(-3 * weightsX[3], 0, 0, 1);  // point 1 x weight
-                    vec4 combined = vec4(0);
-                    for (int y = 0; y < 4; ++y) {
-                        float wy = weightsY[y];
-                        for (int x = 0; x < 4; ++x) {
-                            float wx = weightsX[x];
-                            vec2 texel2 = vec2(x , y) + texel1 - vec2(0.5);
-                            vec2 tc = texel2 / textureSize(image, 0);
-                            combined += wx * wy * equirect_color(image, tc);
-                        }
-                    }
-                    return combined;
-                }
-                
-                void main() 
-                {
-                    vec2 prj = nmc.xy / nmc.z;
-                    
-                    vec3 obq;
-                    if (projection == WGS84_PROJECTION) {
-                        obq = vec3(
-                            cos(prj.x) * cos(prj.y),
-                            sin(prj.x) * cos(prj.y),
-                            sin(prj.y));
-                    }
-                    else if (projection == ORTHOGRAPHIC_PROJECTION) {
-                        obq = vec3(
-                            sqrt(1.0 - dot(prj.xy, prj.xy)),
-                            prj.x,
-                            prj.y);
-                    }
-
-                    vec3 ecf = ecf_X_obq * obq;
-                    vec2 wgs = vec2(
-                        atan(ecf.y, ecf.x),
-                        asin(ecf.z));
-                    vec2 mercator = vec2(wgs.x, log(tan(radians(45) + wgs.y/2.0)));
-                    vec2 tile = mercator;
-                    tile.y *= -1;
-                    tile = tile / radians(360) + vec2(0.5);
-                    frag_color = catrom(image, tile);
-                }
-        """), GL.GL_FRAGMENT_SHADER),
+            shader.from_files(["ndc_from_nmc.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
         )
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
