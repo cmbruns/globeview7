@@ -142,7 +142,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         # TODO: separate generic layer classes
         self.basemap.paint_opengl(context=self.view_state)
         self.coastline.paint_opengl(context=self.view_state)
-        self.h3.paint_opengl(self.view_state)
+        self.h3.draw_boundary(self.view_state)
         self.view_state.projection.draw_boundary(context=self.view_state)
         # Clean up; Avoid borking later Qt text
         GL.glBindVertexArray(0)
