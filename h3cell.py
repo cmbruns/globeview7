@@ -2,7 +2,7 @@
 TODO: show individual H3 cell in globeview.
 """
 
-import inspect
+from math import radians
 
 import h3
 from OpenGL import GL
@@ -17,8 +17,10 @@ class H3Cell(object):
         self._address = address
         # Note h3_to_geo_boundary returns coordinates in lat/lng order
         cell_boundary = h3.h3_to_geo_boundary(self._address)
+        # swap order and convert to radians
+        wgs = [(radians(lon), radians(lat)) for lat, lon in cell_boundary]
         # TODO: shift to a more local origin for better numerical stability
-        self.boundary = VertexBuffer(cell_boundary)
+        self.boundary = VertexBuffer(wgs)
         self.program = None
         self.obq_X_ecf_loc = None
         self.ndc_X_nmc_loc = None
@@ -31,7 +33,7 @@ class H3Cell(object):
     def initialize_opengl(self):
         self.boundary.initialize_opengl()
         self.program = compileProgram(
-            shader.from_files(["projection.glsl", "h3cell.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "ndc_from_wgs.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["green.frag"], GL.GL_FRAGMENT_SHADER),
         )
         self.obq_X_ecf_loc = GL.glGetUniformLocation(self.program, "obq_X_ecf")

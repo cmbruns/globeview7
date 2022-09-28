@@ -1,11 +1,12 @@
-in vec2 corner;
+#pragma include "projection.glsl"
+#line 3
+
+in vec2 wgs;  // longitude, latitude in WGS84 radians
 uniform mat3 obq_X_ecf = mat3(1);
 uniform mat3 ndc_X_nmc = mat3(1);
 uniform int projection = EQUIRECTANGULAR_PROJECTION;
 
 void main() {
-    // swap x,y because h3 returns lat/lng, not lng/lat
-    vec2 wgs = radians(corner.yx);  // WGS84 longitude, latitude in radians
     vec3 ecf = ecf_for_wgs(wgs);  // geocentric x, y, z in radians
     vec3 obq = obq_X_ecf * ecf;  // geocentric recentered to map center
     // TODO: gnomonic edge direction from obq coordinates
