@@ -1,6 +1,3 @@
-const int WGS84_PROJECTION = 0;
-const int ORTHOGRAPHIC_PROJECTION = 1;
-
 // Clip line segments that go around the WGS84 seam
 // TODO: interpolate curves
 
@@ -9,7 +6,7 @@ layout (line_strip, max_vertices = 36) out;  // 36 = 2-per-segment * 2-for-seam-
 layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
 layout(location = 2) uniform mat3 obq_X_ecf = mat3(1);
 layout(location = 3) uniform mat3 nmc_X_ndc = mat3(1);
-layout(location = 4) uniform int projection = WGS84_PROJECTION;
+layout(location = 4) uniform int projection = EQUIRECTANGULAR_PROJECTION;
 
 out vec4 color;
 
@@ -21,7 +18,7 @@ void drawSegment(in vec3 nmc0, in vec3 nmc1)
     int inmc_xmin = 0;
     int inmc_xmax = 0;
     
-    if (projection == WGS84_PROJECTION)
+    if (projection == EQUIRECTANGULAR_PROJECTION)
     {
         // Does the longitude range need to be duplicated?
         // TODO: compute this range on the host
@@ -76,11 +73,6 @@ void main()
     vec2 wgs_deg0 = gl_in[0].gl_Position.xy;
     vec2 wgs_deg1 = gl_in[1].gl_Position.xy;
 
-    vec3 obq0 = obq_for_wgs_deg(wgs_deg0);
-    vec3 obq1 = obq_for_wgs_deg(wgs_deg1);
-
-    color = vec4(0.03, 0.34, 0.60, 1);
-
     // Hack to remove antarctica lines in coastline database
     if (wgs_deg0.y == -90)
        return;
@@ -90,6 +82,11 @@ void main()
         return;
     if (wgs_deg0.x == -180 && wgs_deg1.x == -180)
         return;
+
+    vec3 obq0 = obq_for_wgs_deg(wgs_deg0);
+    vec3 obq1 = obq_for_wgs_deg(wgs_deg1);
+
+    color = vec4(0.03, 0.34, 0.60, 1);
 
     if (projection == ORTHOGRAPHIC_PROJECTION) {
         // clip far side of the earth
@@ -102,7 +99,7 @@ void main()
 
         drawSegment(nmc0, nmc1);
     }
-    else if (projection == WGS84_PROJECTION)
+    else if (projection == EQUIRECTANGULAR_PROJECTION)
     {
         vec3 nmc0 = vec3(
             atan(obq0.y, obq0.x),

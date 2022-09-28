@@ -1,8 +1,6 @@
-import pkg_resources
-
 import numpy
 from OpenGL import GL
-from OpenGL.GL.shaders import compileShader, compileProgram
+from OpenGL.GL.shaders import compileProgram
 
 from gv.vertex_buffer import VertexBuffer
 from gv import shader
@@ -31,7 +29,7 @@ class Coastline(object):
         self.vertices.initialize_opengl()
         self.shader = compileProgram(
             shader.from_files(["coastline.vert", ], GL.GL_VERTEX_SHADER),
-            shader.from_files(["coastline.geom", ], GL.GL_GEOMETRY_SHADER),
+            shader.from_files(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
             shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
         )
 

@@ -17,6 +17,11 @@ vec3 ecf_for_wgs(vec2 wgs /* lon, lat radians */)
         sin(wgs.y));  // z up
 }
 
+vec2 mercator_for_lonlat(in vec2 lonlat)
+{
+    return vec2(lonlat.x, log(tan(radians(45) + lonlat.y/2.0)));
+}
+
 // Convert oblique geocentric coordinates to normalized map coordinates
 vec3 nmc_for_obq(in vec3 obq, in int projection)
 {

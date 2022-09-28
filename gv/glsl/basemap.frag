@@ -13,7 +13,8 @@ void main()
     vec3 obq = obq_for_nmc(nmc, projection);
     vec3 ecf = ecf_X_obq * obq;
     vec2 wgs = wgs_for_ecf(ecf);
-    vec2 mercator = vec2(wgs.x, log(tan(radians(45) + wgs.y/2.0)));
+    vec2 mercator = mercator_for_lonlat(wgs);
+    // TODO library function for tile coordinates
     vec2 tile = mercator;
     tile.y *= -1;
     tile = tile / radians(360) + vec2(0.5);

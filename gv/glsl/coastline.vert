@@ -1,5 +1,6 @@
-in vec2 in_pos;
+in vec2 lonlat_deg;
 
 void main() {
-    gl_Position = vec4(in_pos, 0, 1);
+    // keep values in degrees to permit exact matching in coastline cleanup
+    gl_Position = vec4(lonlat_deg, 0, 1);
 }
