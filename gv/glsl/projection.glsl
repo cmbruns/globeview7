@@ -9,13 +9,16 @@ const float two_pi = 2.0 * pi;
 layout(std140) uniform TransformBlock
 {
     int projection;  // TODO: use a uniform block like this...
-} ub;
+    int instanceID;  // for (future) tiling equirectangular projection
 
-struct Segment2
-{
-    vec2 p1;
-    vec2 p2;
-};
+    // linear transforms: display toward data
+    mat3 ndc_X_nmc;
+    mat3 obq_X_ecf;
+
+    // linear transforms: data toward display
+    mat3 ecf_X_obq;
+    mat3 nmc_X_ndc;
+} ub;
 
 struct Segment3
 {

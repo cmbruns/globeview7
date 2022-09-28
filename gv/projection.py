@@ -12,8 +12,8 @@ from gv.vertex_buffer import VertexBuffer
 
 
 class Projection(enum.IntEnum):
-     EQUIRECTANGULAR = 0
-     ORTHOGRAPHIC = 1
+    EQUIRECTANGULAR = 0
+    ORTHOGRAPHIC = 1
 
 
 class DisplayProjection(abc.ABC):
