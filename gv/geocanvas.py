@@ -9,6 +9,7 @@ from PIL.ImageQt import ImageQt
 from PySide6 import QtCore, QtOpenGLWidgets, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 
+import h3cell
 from gv import basemap
 from gv import coastline
 from gv import frame
@@ -32,6 +33,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         # self.font.setPointSize(self.font.pointSize() * 4)
         self.coastline = coastline.Coastline()
         self.basemap = basemap.RootRasterTile()
+        self.h3 = h3cell.H3Cell()
+        #
         self.previous_mouse = None
         self.actionReset_View = None
         self.view_state.azimuth_changed.connect(self.azimuth_changed)
@@ -140,6 +143,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.view_state.projection.draw_boundary(context=self.view_state)
         self.basemap.paint_opengl(context=self.view_state)
         self.coastline.paint_opengl(context=self.view_state)
+        self.h3.paint_opengl(self.view_state)
         # Clean up; Avoid borking later Qt text
         GL.glBindVertexArray(0)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
