@@ -10,9 +10,6 @@ layout(location = 4) uniform int projection = EQUIRECTANGULAR_PROJECTION;
 
 out vec4 color;
 
-const float pi = 3.14159265359;
-const float two_pi = 2 * pi;
-
 void drawSegment(in vec3 nmc0, in vec3 nmc1)
 {
     int inmc_xmin = 0;

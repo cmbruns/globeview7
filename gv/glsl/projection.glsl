@@ -3,6 +3,8 @@
 // Keep these values in sync with projection.py
 const int EQUIRECTANGULAR_PROJECTION = 0;
 const int ORTHOGRAPHIC_PROJECTION = 1;
+const float pi = 3.14159265359;
+const float two_pi = 2.0 * pi;
 
 layout(std140) uniform TransformBlock
 {
@@ -23,6 +25,24 @@ struct Segment3
 
 int clip_nmc_segment(in Segment3 nmc, in int projection, out Segment3[2] result)
 {
+    if (projection == EQUIRECTANGULAR_PROJECTION) {
+        if (abs(nmc.p1.x - nmc.p2.x) > pi/2) {
+            // segment crosses seam
+            // Enforce left to right for simpler clipping
+            vec3 left = nmc.p1;
+            vec3 right = nmc.p2;
+            if (left.x > right.x) {
+                left = nmc.p2;
+                right = nmc.p1;
+            }
+            float alpha = (left.x + pi) / (left.x + pi + pi - right.x);
+            vec3 mid = vec3(-pi, mix(left.yz, right.yz, alpha));
+            result[0] = Segment3(left, mid);
+            mid.x = pi;
+            result[1] = Segment3(mid, right);
+            return 2;
+        }
+    }
     result[0] = nmc;
     return 1;  // number of output segments
 }
