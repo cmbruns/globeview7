@@ -5,6 +5,7 @@ from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram
 
 from gv.vertex_buffer import VertexBuffer
+from gv import shader
 from shapefile import read_shape_file
 
 
@@ -28,29 +29,10 @@ class Coastline(object):
             polygons.extend(read_shape_file(f"C:/Users/cmbruns/Downloads/gshhg-shp-2.3.7/GSHHS_shp/c/GSHHS_c_L{gshhs}.shp"))
         self.populate_data(polygons)
         self.vertices.initialize_opengl()
-        vertex_source = "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
-            "version.glsl",
-            "coastline.vert",
-        ]])
         self.shader = compileProgram(
-            compileShader(
-                "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
-                    "version.glsl",
-                    "coastline.vert",
-                ]]),
-                GL.GL_VERTEX_SHADER),
-            compileShader(
-                "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
-                    "version.glsl",
-                    "coastline.geom",
-                ]]),
-                GL.GL_GEOMETRY_SHADER),
-            compileShader(
-                "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
-                    "version.glsl",
-                    "coastline.frag",
-                ]]),
-                GL.GL_FRAGMENT_SHADER),
+            shader.from_files(["coastline.vert", ], GL.GL_VERTEX_SHADER),
+            shader.from_files(["coastline.geom", ], GL.GL_GEOMETRY_SHADER),
+            shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
         )
 
     def populate_data(self, shapefile_polygons):

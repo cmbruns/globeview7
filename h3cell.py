@@ -9,6 +9,7 @@ from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram
 
 from gv.vertex_buffer import VertexBuffer
+from gv import shader
 
 
 class H3Cell(object):
@@ -30,7 +31,7 @@ class H3Cell(object):
     def initialize_opengl(self):
         self.boundary.initialize_opengl()
         self.program = compileProgram(
-            compileShader(inspect.cleandoc("""
+            shader.from_string("""
                 #version 410
                 
                 const int WGS84_PROJECTION = 0;
@@ -61,8 +62,8 @@ class H3Cell(object):
                     vec3 ndc = ndc_X_nmc * nmc;
                     gl_Position = vec4(ndc.xy, 0, ndc.z);
                 }
-            """), GL.GL_VERTEX_SHADER),
-            compileShader(inspect.cleandoc("""
+            """, GL.GL_VERTEX_SHADER),
+            shader.from_string("""
                 #version 410
                 
                 out vec4 fragColor;
@@ -70,7 +71,7 @@ class H3Cell(object):
                 void main() {
                     fragColor = vec4(0, 1, 0, 1);  // green
                 }
-            """), GL.GL_FRAGMENT_SHADER),
+            """, GL.GL_FRAGMENT_SHADER),
         )
         self.obq_X_ecf_loc = GL.glGetUniformLocation(self.program, "obq_X_ecf")
         self.ndc_X_nmc_loc = GL.glGetUniformLocation(self.program, "ndc_X_nmc")
