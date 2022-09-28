@@ -83,33 +83,18 @@ void main()
     if (cull_obq(obq0, projection) && cull_obq(obq1, projection))
         return;
 
-    vec3 nmc0 = nmc_for_obq(obq0, projection);
-    vec3 nmc1 = nmc_for_obq(obq1, projection);
+    Segment3 nmc = Segment3(
+        nmc_for_obq(obq0, projection),
+        nmc_for_obq(obq1, projection));
+    Segment3 nmc_clipped[2];
+    int nmc_seg_count = clip_nmc_segment(nmc, projection, nmc_clipped);
+    if (nmc_seg_count < 1)
+        return;
 
     color = vec4(0.03, 0.34, 0.60, 1);
 
-    if (projection == EQUIRECTANGULAR_PROJECTION)
-    {
-        if (abs(nmc1.x - nmc0.x) > 2) {
-            // segment crosses seam
-            // Enforce left to right for simpler clipping
-            vec3 left = nmc0;
-            vec3 right = nmc1;
-            if (left.x > right.x) {
-                left = nmc1;
-                right = nmc0;
-            }
-            float alpha = (left.x + pi) / (left.x + pi + pi - right.x);
-            vec3 mid = vec3(-pi, mix(left.yz, right.yz, alpha));
-            drawSegment(left, mid);
-            mid.x = pi;
-            drawSegment(mid, right);
-        }
-        else {
-            drawSegment(nmc0, nmc1);
-        }
-    }
-    else {
-        drawSegment(nmc0, nmc1);
+    for (int s = 0; s < nmc_seg_count; ++s) {
+        Segment3 nmcc = nmc_clipped[s];
+        drawSegment(nmcc.p1, nmcc.p2);
     }
 }
