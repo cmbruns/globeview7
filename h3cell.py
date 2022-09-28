@@ -34,6 +34,7 @@ class H3Cell(object):
         self.boundary.initialize_opengl()
         self.program = compileProgram(
             shader.from_files(["projection.glsl", "h3cell.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "h3cell.geom"], GL.GL_GEOMETRY_SHADER),
             shader.from_files(["green.frag"], GL.GL_FRAGMENT_SHADER),
         )
         self.obq_X_ecf_loc = GL.glGetUniformLocation(self.program, "obq_X_ecf")

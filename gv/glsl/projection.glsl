@@ -9,15 +9,32 @@ layout(std140) uniform TransformBlock
     int projection;  // TODO: use a uniform block like this...
 } ub;
 
-struct Segment
+struct Segment2
+{
+    vec2 p1;
+    vec2 p2;
+};
+
+struct Segment3
 {
     vec3 p1;
     vec3 p2;
 };
 
-int clip_obq_segment(in Segment obq, in int projection, out Segment[2] result)
+int clip_nmc_segment(in Segment3 nmc, in int projection, out Segment3[2] result)
 {
-    result[0] = obq;
+    result[0] = nmc;
+    return 1;  // number of output segments
+}
+
+int clip_obq_segment(in Segment3 obq, in int projection, out Segment3 result)
+{
+    if (projection == ORTHOGRAPHIC_PROJECTION) {
+        if (obq.p1.x < 0 && obq.p2.x < 0)
+            return 0;  // Segment lies on the far side of the earth
+        // TODO: compute clipped segment
+    }
+    result = obq;
     return 1;  // number of output segments
 }
 

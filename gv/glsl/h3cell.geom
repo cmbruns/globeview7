@@ -1,9 +1,34 @@
+#line 2
+
 layout (lines) in;
-layout (lines, max_vertices = 4) out;  // up to two line segments
+layout (line_strip, max_vertices = 4) out;  // up to two line segments
+
+uniform mat3 ndc_X_nmc = mat3(1);
+uniform int projection = EQUIRECTANGULAR_PROJECTION;
 
 void main()
 {
-    Segment obq = Segment(gl_in[0].gl_Position.xyz);
-    Segment result[2];
-    int seg_count = clip_obq_segment(obq, projection, result);
+    Segment3 obq = Segment3(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz);
+
+    Segment3 clipped;
+    int obq_seg_count = clip_obq_segment(obq, projection, clipped);
+    if (obq_seg_count < 1)
+        return;
+
+    Segment3 nmc = Segment3(
+        nmc_for_obq(clipped.p1, projection),
+        nmc_for_obq(clipped.p2, projection));
+
+    Segment3 clipped2[2];
+    int nmc_seg_count = clip_nmc_segment(nmc, projection, clipped2);
+    if (nmc_seg_count < 1)
+        return;
+
+    Segment3 ndc = Segment3(
+        ndc_X_nmc * nmc.p1, ndc_X_nmc * nmc.p2);
+    gl_Position = vec4(ndc.p1.xy, 0, 1);
+    EmitVertex();
+    gl_Position = vec4(ndc.p2.xy, 0, 1);
+    EmitVertex();
+    EndPrimitive();
 }
