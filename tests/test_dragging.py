@@ -1,7 +1,7 @@
 from math import radians
 import unittest
 
-from gv.projection import WGS84Projection
+from gv.projection import EquirectangularProjection
 from gv.view_state import ViewState
 
 
@@ -9,7 +9,7 @@ class TestDragLatitude(unittest.TestCase):
     def setUp(self):
         self.view_state = ViewState()
         self.view_state.window_size = 100, 100
-        self.view_state._projection = WGS84Projection()
+        self.view_state._projection = EquirectangularProjection()
 
     def test_drag_lat_past_pole(self):
         # Tilt earth forward so we can see past the north pole

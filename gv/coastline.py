@@ -4,6 +4,7 @@ import numpy
 from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram
 
+from gv.vertex_buffer import VertexBuffer
 from shapefile import read_shape_file
 
 
@@ -12,14 +13,9 @@ class Coastline(object):
         self.start_indices = None
         self.vertex_counts = None
         self.vertices = None
-        self.vao = None
-        self.vbo = None
         self.shader = None
 
     def initialize_opengl(self):
-        self.vao = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(self.vao)
-        #
         polygons = []
         for gshhs in [
             1,  # L1: boundary between land and ocean, except Antarctica.
@@ -31,13 +27,7 @@ class Coastline(object):
         ]:
             polygons.extend(read_shape_file(f"C:/Users/cmbruns/Downloads/gshhg-shp-2.3.7/GSHHS_shp/c/GSHHS_c_L{gshhs}.shp"))
         self.populate_data(polygons)
-        #
-        self.vbo = GL.glGenBuffers(1)
-        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
-        GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_STATIC_DRAW)
-        GL.glEnableVertexAttribArray(0)
-        GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, False, 0, None)
-        #
+        self.vertices.initialize_opengl()
         vertex_source = "\n".join([pkg_resources.resource_string("gv.glsl", f).decode() for f in [
             "version.glsl",
             "coastline.vert",
@@ -62,7 +52,6 @@ class Coastline(object):
                 ]]),
                 GL.GL_FRAGMENT_SHADER),
         )
-        GL.glBindVertexArray(0)
 
     def populate_data(self, shapefile_polygons):
         vertices = []
@@ -78,10 +67,10 @@ class Coastline(object):
                     vertices.append(vertex)
         self.start_indices = numpy.array(start_indices, dtype=numpy.int32)
         self.vertex_counts = numpy.array(vertex_counts, dtype=numpy.int32)
-        self.vertices = numpy.array(vertices, dtype=numpy.float32).flatten()
+        self.vertices = VertexBuffer(vertices)
 
     def paint_opengl(self, context):
-        GL.glBindVertexArray(self.vao)
+        self.vertices.bind()
         GL.glUseProgram(self.shader)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         GL.glEnable(GL.GL_BLEND)
@@ -90,6 +79,5 @@ class Coastline(object):
         GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
         GL.glUniformMatrix3fv(3, 1, True, context.nmc_X_ndc)
         GL.glUniformMatrix3fv(2, 1, False, context.ecf_X_obq)  # transpose is inverse
-        GL.glUniform1i(4, context._projection.index.value)
+        GL.glUniform1i(4, context.projection.index.value)
         GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
-        GL.glBindVertexArray(0)

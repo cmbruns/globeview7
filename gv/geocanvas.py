@@ -14,7 +14,7 @@ from gv import basemap
 from gv import coastline
 from gv import frame
 from gv.frame import NMCPoint
-from gv.projection import Projection, OrthographicProjection, WGS84Projection
+from gv.projection import Projection, OrthographicProjection, EquirectangularProjection
 from gv.view_state import ViewState
 
 
@@ -140,10 +140,10 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         GL.glClearColor(254/255, 247/255, 228/255, 1)  # Ivory
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         # TODO: separate generic layer classes
-        self.view_state.projection.draw_boundary(context=self.view_state)
         self.basemap.paint_opengl(context=self.view_state)
         self.coastline.paint_opengl(context=self.view_state)
         self.h3.paint_opengl(self.view_state)
+        self.view_state.projection.draw_boundary(context=self.view_state)
         # Clean up; Avoid borking later Qt text
         GL.glBindVertexArray(0)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
@@ -172,7 +172,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         if projection == self.view_state._projection.index:
             return  # No Change
         if projection == Projection.EQUIRECTANGULAR:
-            self.view_state._projection = WGS84Projection()
+            self.view_state._projection = EquirectangularProjection()
         elif projection == Projection.ORTHOGRAPHIC:
             self.view_state._projection = OrthographicProjection()
         else:

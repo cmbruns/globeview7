@@ -10,17 +10,13 @@ class VertexBuffer(object):
         self.element_count = len(vertices[0])
         self.vertices = numpy.array(vertices, dtype=numpy.float32).flatten()
 
-    def __enter__(self):
+    def __len__(self):
+        return self.vertex_count
+
+    def bind(self):
         if self.vao is None:
             self.initialize_opengl()
         GL.glBindVertexArray(self.vao)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        GL.glBindVertexArray(0)
-
-    def __len__(self):
-        return self.vertex_count
 
     def initialize_opengl(self):
         if self.vao is None:

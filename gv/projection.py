@@ -91,21 +91,21 @@ class OrthographicProjection(DisplayProjection):
     def draw_boundary(self, context):
         if self.boundary_shader is None:
             self.initialize_gl()
-        with self.boundary_vertices as bv:
-            GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-            GL.glEnable(GL.GL_BLEND)
-            GL.glEnable(GL.GL_LINE_SMOOTH)
-            GL.glLineWidth(1)
-            GL.glUseProgram(self.boundary_shader)
-            GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
-            # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
-            GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(bv))
+        self.boundary_vertices.bind()
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glEnable(GL.GL_LINE_SMOOTH)
+        GL.glLineWidth(1)
+        GL.glUseProgram(self.boundary_shader)
+        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
+        # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
+        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
     def fill_boundary(self, context):
         if self.boundary_shader is None:
             self.initialize_gl()
-        with self.boundary_vertices as bv:
-            GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(bv))
+        self.boundary_vertices.bind()
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
 
     @staticmethod
     def dobq_for_dnmc(dnmc, p_nmc: NMCPoint):
@@ -141,7 +141,7 @@ class OrthographicProjection(DisplayProjection):
 
 
 # TODO: maybe use instanced geometry for tiled copies of the world
-class WGS84Projection(DisplayProjection):
+class EquirectangularProjection(DisplayProjection):
     """
     Plate caree / Equirectangular / Geographic coordinates projection
     """
@@ -197,21 +197,21 @@ class WGS84Projection(DisplayProjection):
     def draw_boundary(self, context):
         if self.boundary_shader is None:
             self.initialize_gl()
-        with self.boundary_vertices as bv:
-            # TODO: common gl state for all?
-            GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-            GL.glEnable(GL.GL_BLEND)
-            GL.glEnable(GL.GL_LINE_SMOOTH)
-            GL.glLineWidth(1)
-            GL.glUseProgram(self.boundary_shader)
-            GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
-            GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        self.boundary_vertices.bind()
+        # TODO: common gl state for all?
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glEnable(GL.GL_LINE_SMOOTH)
+        GL.glLineWidth(1)
+        GL.glUseProgram(self.boundary_shader)
+        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
+        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
     def fill_boundary(self, context):
         if self.boundary_shader is None:
             self.initialize_gl()
-        with self.boundary_vertices as bv:
-            GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
+        self.boundary_vertices.bind()
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
 
     @staticmethod
     def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:
