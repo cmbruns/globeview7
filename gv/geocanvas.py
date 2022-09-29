@@ -45,6 +45,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.previous_mouse = None
         self.actionReset_View = None
         self.view_state.azimuth_changed.connect(self.azimuth_changed)
+        self.ubo = None
 
     azimuth_changed = QtCore.Signal(float)
 
@@ -63,7 +64,10 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         menu.exec(event.globalPos())
 
     def initializeGL(self) -> None:
-        pass
+        self.ubo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_UNIFORM_BUFFER, self.ubo)
+        GL.glBindBufferBase(GL.GL_UNIFORM_BUFFER, 2, self.ubo)  # Assign binding point "2" to TransformBlock
+        GL.glBufferData(GL.GL_UNIFORM_BUFFER, 16 + 4*64, None, GL.GL_DYNAMIC_DRAW)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         # TODO: refactor dragging to use ViewState jacobian methods
@@ -146,6 +150,23 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
     def paint_opengl(self):
         GL.glClearColor(254/255, 247/255, 228/255, 1)  # Ivory
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+        # Fill TransformBlock uniform block
+        GL.glBindBuffer(GL.GL_UNIFORM_BUFFER, self.ubo)
+        vs = self.view_state
+        GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 0, 4,  # Projection
+                           numpy.array([vs.projection.index.value], dtype=numpy.int32))
+        # Create 4x4 versions of transform matrices - because std140
+        m4 = numpy.eye(4, dtype=numpy.float32)
+        m4[:3, :3] = vs.ndc_X_nmc.T  # transpose to convert to OpenGL expectations
+        GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 16, 64, m4)
+        m4[:3, :3] = vs.ecf_X_obq  # Not-transpose to get rotation inverse
+        GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 80, 64, m4)
+        m4[:3, :3] = vs.ecf_X_obq.T
+        GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 144, 64, m4)
+        m4[:3, :3] = vs.nmc_X_ndc.T
+        GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 208, 64, m4)
+
         # TODO: more separate generic layer classes
         for layer in reversed(self.layers):  # top layer last
             if not layer.is_visible:
@@ -159,6 +180,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
 
     def paint_qt(self, painter):
+        # TODO: layer for qt stuff
         # Experimental label sketch
         painter.setFont(self.font)
         painter.setPen(QtGui.QColor("#07495f"))  # Dark blue

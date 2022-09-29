@@ -6,18 +6,20 @@ const int ORTHOGRAPHIC_PROJECTION = 1;
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
 
-layout(std140) uniform TransformBlock
+layout(std140, binding = 2) uniform TransformBlock
 {
-    int projection;  // TODO: use a uniform block like this...
-    int instanceID;  // for (future) tiling equirectangular projection
+    int projection;  // 0 TODO: use a uniform block like this...
+    int instanceID;  // 4 for (future) tiling equirectangular projection
+    // there is room for 2 more scalars here...
 
     // linear transforms: display toward data
-    mat3 ndc_X_nmc;
-    mat3 obq_X_ecf;
+    mat4 ndc_X_nmc4;  // 16
+    mat4 obq_X_ecf4;  // 80
 
     // linear transforms: data toward display
-    mat3 ecf_X_obq;
-    mat3 nmc_X_ndc;
+    mat4 ecf_X_obq4;  // 144
+    mat4 nmc_X_ndc4;  // 208
+    // 272
 } ub;
 
 struct Segment3

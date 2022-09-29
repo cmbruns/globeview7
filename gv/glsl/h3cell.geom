@@ -3,29 +3,27 @@
 layout (lines) in;
 layout (line_strip, max_vertices = 4) out;  // up to two line segments
 
-uniform mat3 ndc_X_nmc = mat3(1);
-uniform int projection = EQUIRECTANGULAR_PROJECTION;
-
 void main()
 {
     Segment3 obq = Segment3(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz);
 
     // some projections e.g. orthographic like to clip in obq space
     Segment3 clipped;
-    int obq_seg_count = clip_obq_segment(obq, projection, clipped);
+    int obq_seg_count = clip_obq_segment(obq, ub.projection, clipped);
     if (obq_seg_count < 1)
         return;
 
     Segment3 nmc = Segment3(
-        nmc_for_obq(clipped.p1, projection),
-        nmc_for_obq(clipped.p2, projection));
+        nmc_for_obq(clipped.p1, ub.projection),
+        nmc_for_obq(clipped.p2, ub.projection));
 
     // some projections e.g. equirectangular like to clip in nmc space
     Segment3 clipped2[2];
-    int nmc_seg_count = clip_nmc_segment(nmc, projection, clipped2);
+    int nmc_seg_count = clip_nmc_segment(nmc, ub.projection, clipped2);
     if (nmc_seg_count < 1)
         return;
 
+    mat3 ndc_X_nmc = mat3(ub.ndc_X_nmc4);
     for (int s = 0; s < nmc_seg_count; ++s)
     {
         Segment3 c2 = clipped2[s];
