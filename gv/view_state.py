@@ -5,6 +5,7 @@ from PySide6 import QtCore
 
 from gv.frame import WGS84Point, WindowPoint
 from gv.projection import EquirectangularProjection
+from gv.layer import ILayer
 
 
 class Transform(object):
@@ -187,3 +188,12 @@ class ViewState(QtCore.QObject):
         self._ndc_X_nmc.dirty = True
         self._nmc_X_ndc.dirty = True
         self._nmc_J_win.dirty = True
+
+
+class ProjectionOutlineLayer(ILayer):
+    def __init__(self, view_state: ViewState):
+        super().__init__(name="Boundary")
+        self.view_state = view_state
+
+    def paint_opengl(self, context):
+        self.view_state.projection.draw_boundary(context)

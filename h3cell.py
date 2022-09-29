@@ -8,12 +8,14 @@ import h3
 from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram
 
+from gv.layer import ILayer
 from gv.vertex_buffer import VertexBuffer
 from gv import shader
 
 
-class H3Cell(object):
+class H3Cell(ILayer):
     def __init__(self, address: str = "8045fffffffffff"):
+        super().__init__(name=f"H3 {address}")
         self._address = address
         # Note h3_to_geo_boundary returns coordinates in lat/lng order
         cell_boundary = h3.h3_to_geo_boundary(self._address)
@@ -52,3 +54,5 @@ class H3Cell(object):
         GL.glLineWidth(3)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary))
 
+    def paint_opengl(self, context):
+        self.draw_boundary(context)

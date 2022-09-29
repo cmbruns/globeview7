@@ -15,7 +15,7 @@ from gv import coastline
 from gv import frame
 from gv.frame import NMCPoint
 from gv.projection import Projection, OrthographicProjection, EquirectangularProjection
-from gv.view_state import ViewState
+from gv.view_state import ProjectionOutlineLayer, ViewState
 
 
 class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
@@ -32,12 +32,15 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.font = self.painter.font()
         # self.font.setPointSize(self.font.pointSize() * 4)
         self.layers = []
+        self.layers.append(ProjectionOutlineLayer(self.view_state))
+        self.layers.append(h3cell.H3Cell())
+        self.layers.append(coastline.Coastline("Coast Lines"))
         self.layers.append(basemap.RootRasterTile("Satellite"))
         for layer in self.layers:
             layer.visibility_changed.connect(self.update)
-        self.coastline = coastline.Coastline()
+        # self.coastline = coastline.Coastline()
         # self.basemap = basemap.RootRasterTile()
-        self.h3 = h3cell.H3Cell()
+        # self.h3 = h3cell.H3Cell()
         #
         self.previous_mouse = None
         self.actionReset_View = None
@@ -60,7 +63,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         menu.exec(event.globalPos())
 
     def initializeGL(self) -> None:
-        self.coastline.initialize_opengl()
+        pass
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         # TODO: refactor dragging to use ViewState jacobian methods
@@ -148,9 +151,9 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
             if not layer.is_visible:
                 continue
             layer.paint_opengl(context=self.view_state)
-        self.coastline.paint_opengl(context=self.view_state)
-        self.h3.draw_boundary(self.view_state)
-        self.view_state.projection.draw_boundary(context=self.view_state)
+        # self.coastline.paint_opengl(context=self.view_state)
+        # self.h3.draw_boundary(self.view_state)
+        # self.view_state.projection.draw_boundary(context=self.view_state)
         # Clean up; Avoid borking later Qt text
         GL.glBindVertexArray(0)
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)

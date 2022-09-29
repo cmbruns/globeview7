@@ -5,10 +5,12 @@ from OpenGL.GL.shaders import compileProgram
 from gv.vertex_buffer import VertexBuffer
 from gv import shader
 from shapefile import read_shape_file
+from gv.layer import ILayer
 
 
-class Coastline(object):
-    def __init__(self):
+class Coastline(ILayer):
+    def __init__(self, name: str):
+        super().__init__(name=name)
         self.start_indices = None
         self.vertex_counts = None
         self.vertices = None
@@ -50,6 +52,8 @@ class Coastline(object):
         self.vertices = VertexBuffer(vertices)
 
     def paint_opengl(self, context):
+        if self.shader is None:
+            self.initialize_opengl()
         self.vertices.bind()
         GL.glUseProgram(self.shader)
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)

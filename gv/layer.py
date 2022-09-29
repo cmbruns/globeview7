@@ -37,12 +37,11 @@ class LayerListWidget(QtWidgets.QListWidget):
 class LayerWidget(QtWidgets.QWidget):
     def __init__(self, layer: ILayer, parent=None):
         super().__init__(parent=parent)
-        self.layer = layer
-        self.row = QtWidgets.QHBoxLayout()
-        self.checkbox = QtWidgets.QCheckBox()
-        self.checkbox.setChecked(layer.is_visible)
-        self.checkbox.stateChanged.connect(layer.set_visible)
-        self.row.addWidget(self.checkbox)
-        self.row.addWidget(QtWidgets.QLabel(layer.display_name))
-        self.row.addStretch()
-        self.setLayout(self.row)
+        row = QtWidgets.QHBoxLayout()
+        m = row.getContentsMargins()
+        row.setContentsMargins(m[0], 0, m[2], 0)  # pack layers together
+        checkbox = QtWidgets.QCheckBox(layer.display_name)
+        checkbox.setChecked(layer.is_visible)
+        checkbox.stateChanged.connect(layer.set_visible)
+        row.addWidget(checkbox)
+        self.setLayout(row)
