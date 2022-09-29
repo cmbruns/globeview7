@@ -34,6 +34,11 @@ class Ui_MainWindow(object):
         self.actionQuit.setObjectName(u"actionQuit")
         self.actionReset_View = QAction(MainWindow)
         self.actionReset_View.setObjectName(u"actionReset_View")
+        self.actionFull_Screen = QAction(MainWindow)
+        self.actionFull_Screen.setObjectName(u"actionFull_Screen")
+        self.actionFull_Screen.setCheckable(True)
+        self.actionNormal_View = QAction(MainWindow)
+        self.actionNormal_View.setObjectName(u"actionNormal_View")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_4 = QHBoxLayout(self.centralwidget)
@@ -58,11 +63,11 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
         self.splitter.setSizePolicy(sizePolicy)
         self.splitter.setOrientation(Qt.Horizontal)
-        self.widget = QWidget(self.splitter)
-        self.widget.setObjectName(u"widget")
-        self.verticalLayout = QVBoxLayout(self.widget)
+        self.leftArea_widget = QWidget(self.splitter)
+        self.leftArea_widget.setObjectName(u"leftArea_widget")
+        self.verticalLayout = QVBoxLayout(self.leftArea_widget)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.groupBox_2 = QGroupBox(self.widget)
+        self.groupBox_2 = QGroupBox(self.leftArea_widget)
         self.groupBox_2.setObjectName(u"groupBox_2")
         self.verticalLayout_3 = QVBoxLayout(self.groupBox_2)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -74,7 +79,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.groupBox_2)
 
-        self.splitter.addWidget(self.widget)
+        self.splitter.addWidget(self.leftArea_widget)
         self.widget_3 = QWidget(self.splitter)
         self.widget_3.setObjectName(u"widget_3")
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -95,11 +100,11 @@ class Ui_MainWindow(object):
 
         self.splitter.addWidget(self.widget_3)
         self.splitter_2.addWidget(self.splitter)
-        self.widget_2 = QWidget(self.splitter_2)
-        self.widget_2.setObjectName(u"widget_2")
-        self.verticalLayout_2 = QVBoxLayout(self.widget_2)
+        self.rightArea_widget = QWidget(self.splitter_2)
+        self.rightArea_widget.setObjectName(u"rightArea_widget")
+        self.verticalLayout_2 = QVBoxLayout(self.rightArea_widget)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.groupBox = QGroupBox(self.widget_2)
+        self.groupBox = QGroupBox(self.rightArea_widget)
         self.groupBox.setObjectName(u"groupBox")
         self.verticalLayout_6 = QVBoxLayout(self.groupBox)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
@@ -113,7 +118,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.groupBox)
 
-        self.groupBox_3 = QGroupBox(self.widget_2)
+        self.groupBox_3 = QGroupBox(self.rightArea_widget)
         self.groupBox_3.setObjectName(u"groupBox_3")
         self.groupBox_3.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
         self.verticalLayout_5 = QVBoxLayout(self.groupBox_3)
@@ -230,7 +235,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
 
-        self.splitter_2.addWidget(self.widget_2)
+        self.splitter_2.addWidget(self.rightArea_widget)
 
         self.horizontalLayout_5.addWidget(self.splitter_2)
 
@@ -259,6 +264,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuView.menuAction())
         self.menuFile.addAction(self.actionQuit)
         self.menuView.addAction(self.actionReset_View)
+        self.menuView.addAction(self.actionFull_Screen)
 
         self.retranslateUi(MainWindow)
 
@@ -269,6 +275,14 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle("")
         self.actionQuit.setText(QCoreApplication.translate("MainWindow", u"Quit", None))
         self.actionReset_View.setText(QCoreApplication.translate("MainWindow", u"Reset View", None))
+        self.actionFull_Screen.setText(QCoreApplication.translate("MainWindow", u"Full Screen", None))
+#if QT_CONFIG(shortcut)
+        self.actionFull_Screen.setShortcut(QCoreApplication.translate("MainWindow", u"F", None))
+#endif // QT_CONFIG(shortcut)
+        self.actionNormal_View.setText(QCoreApplication.translate("MainWindow", u"Normal_View", None))
+#if QT_CONFIG(shortcut)
+        self.actionNormal_View.setShortcut(QCoreApplication.translate("MainWindow", u"Esc", None))
+#endif // QT_CONFIG(shortcut)
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Layers", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Display Projection", None))
         self.projectionComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Equirectangular", None))

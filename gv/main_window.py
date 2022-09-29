@@ -13,6 +13,9 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.actionQuit.setShortcut(QtGui.QKeySequence.Quit)  # no effect on Windows
         self.openGLWidget.actionReset_View = self.actionReset_View
         self.openGLWidget.azimuth_changed.connect(self.azimuthSpinBox.setValue)
+        # Allow action shortcuts even when toolbar and menu bar are hidden
+        self.addAction(self.actionFull_Screen)
+        self.addAction(self.actionNormal_View)
         #
         self.layers = self.openGLWidget.layers
         ll = self.layers_listWidget
@@ -22,6 +25,27 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             row = LayerWidget(layer)
             item.setSizeHint(row.minimumSizeHint())
             ll.setItemWidget(item, row)
+
+    @QtCore.Slot(bool)
+    def on_actionFull_Screen_toggled(self, is_checked: bool):
+        if is_checked:
+            self.menubar.hide()
+            # self.toolBar.hide()
+            self.rightArea_widget.hide()
+            self.leftArea_widget.hide()
+            self.statusbar.hide()
+            self.showFullScreen()
+        else:
+            self.menubar.show()
+            # self.toolBar.show()
+            self.rightArea_widget.show()
+            self.leftArea_widget.show()
+            self.statusbar.show()
+            self.showNormal()
+
+    @QtCore.Slot()
+    def on_actionNormal_View_triggered(self):
+        self.actionFull_Screen.setChecked(False)
 
     @QtCore.Slot()
     def on_actionReset_View_triggered(self):
