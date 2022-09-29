@@ -8,10 +8,12 @@ from OpenGL.GL.shaders import compileShader, compileProgram
 from PIL import Image
 
 from gv import shader
+from gv.layer import ILayer
 
 
-class RootRasterTile(object):
-    def __init__(self):
+class RootRasterTile(ILayer):
+    def __init__(self, name: str):
+        super().__init__(name=name)
         self.vao = None
         self.shader = None
         self.texture = None

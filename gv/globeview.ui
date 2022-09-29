@@ -73,7 +73,11 @@
               <property name="title">
                <string>Layers</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_3"/>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <widget class="LayerListWidget" name="layers_listWidget"/>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
@@ -411,6 +415,11 @@
    <class>GeoCanvas</class>
    <extends>QOpenGLWidget</extends>
    <header>geocanvas.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LayerListWidget</class>
+   <extends>QListWidget</extends>
+   <header location="global">gv/layer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

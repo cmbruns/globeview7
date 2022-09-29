@@ -2,6 +2,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ui_globeview import Ui_MainWindow
 from gv.projection import Projection
+from gv.layer import LayerWidget
 
 
 class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
@@ -12,6 +13,15 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.actionQuit.setShortcut(QtGui.QKeySequence.Quit)  # no effect on Windows
         self.openGLWidget.actionReset_View = self.actionReset_View
         self.openGLWidget.azimuth_changed.connect(self.azimuthSpinBox.setValue)
+        #
+        self.layers = self.openGLWidget.layers
+        ll = self.layers_listWidget
+        for layer in self.layers:
+            item = QtWidgets.QListWidgetItem(ll)
+            ll.addItem(item)
+            row = LayerWidget(layer)
+            item.setSizeHint(row.minimumSizeHint())
+            ll.setItemWidget(item, row)
 
     @QtCore.Slot()
     def on_actionReset_View_triggered(self):

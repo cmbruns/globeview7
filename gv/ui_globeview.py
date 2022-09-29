@@ -17,12 +17,13 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QFrame,
-    QGroupBox, QHBoxLayout, QLabel, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QSizePolicy,
-    QSpacerItem, QSplitter, QStatusBar, QVBoxLayout,
-    QWidget)
+    QGroupBox, QHBoxLayout, QLabel, QListWidgetItem,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QSpacerItem, QSplitter, QStatusBar,
+    QVBoxLayout, QWidget)
 
 from geocanvas import GeoCanvas
+from gv.layer import LayerListWidget
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -65,6 +66,11 @@ class Ui_MainWindow(object):
         self.groupBox_2.setObjectName(u"groupBox_2")
         self.verticalLayout_3 = QVBoxLayout(self.groupBox_2)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.layers_listWidget = LayerListWidget(self.groupBox_2)
+        self.layers_listWidget.setObjectName(u"layers_listWidget")
+
+        self.verticalLayout_3.addWidget(self.layers_listWidget)
+
 
         self.verticalLayout.addWidget(self.groupBox_2)
 

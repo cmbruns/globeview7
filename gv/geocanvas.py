@@ -31,8 +31,12 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.painter = QtGui.QPainter()
         self.font = self.painter.font()
         # self.font.setPointSize(self.font.pointSize() * 4)
+        self.layers = []
+        self.layers.append(basemap.RootRasterTile("Satellite"))
+        for layer in self.layers:
+            layer.visibility_changed.connect(self.update)
         self.coastline = coastline.Coastline()
-        self.basemap = basemap.RootRasterTile()
+        # self.basemap = basemap.RootRasterTile()
         self.h3 = h3cell.H3Cell()
         #
         self.previous_mouse = None
@@ -139,8 +143,11 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
     def paint_opengl(self):
         GL.glClearColor(254/255, 247/255, 228/255, 1)  # Ivory
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        # TODO: separate generic layer classes
-        self.basemap.paint_opengl(context=self.view_state)
+        # TODO: more separate generic layer classes
+        for layer in reversed(self.layers):  # top layer last
+            if not layer.is_visible:
+                continue
+            layer.paint_opengl(context=self.view_state)
         self.coastline.paint_opengl(context=self.view_state)
         self.h3.draw_boundary(self.view_state)
         self.view_state.projection.draw_boundary(context=self.view_state)
