@@ -79,14 +79,14 @@ void main()
     vec3 obq0 = obq_for_wgs_deg(wgs_deg0);
     vec3 obq1 = obq_for_wgs_deg(wgs_deg1);
 
-    if (cull_obq(obq0, ub.projection) && cull_obq(obq1, ub.projection))
+    if (cull_obq(obq0) && cull_obq(obq1))
         return;
 
     Segment3 nmc = Segment3(
-        nmc_for_obq(obq0, ub.projection),
-        nmc_for_obq(obq1, ub.projection));
+        nmc_for_obq(obq0),
+        nmc_for_obq(obq1));
     Segment3 nmc_clipped[2];
-    int nmc_seg_count = clip_nmc_segment(nmc, ub.projection, nmc_clipped);
+    int nmc_seg_count = clip_nmc_segment(nmc, nmc_clipped);
     if (nmc_seg_count < 1)
         return;
 

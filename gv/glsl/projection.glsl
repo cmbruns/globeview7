@@ -3,6 +3,7 @@
 // Keep these values in sync with projection.py
 const int EQUIRECTANGULAR_PROJECTION = 0;
 const int ORTHOGRAPHIC_PROJECTION = 1;
+
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
 
@@ -28,9 +29,9 @@ struct Segment3
     vec3 p2;
 };
 
-int clip_nmc_segment(in Segment3 nmc, in int projection, out Segment3[2] result)
+int clip_nmc_segment(in Segment3 nmc, out Segment3[2] result)
 {
-    if (projection == EQUIRECTANGULAR_PROJECTION) {
+    if (ub.projection == EQUIRECTANGULAR_PROJECTION) {
         if (abs(nmc.p1.x - nmc.p2.x) > pi/2) {
             // segment crosses seam
             // Enforce left to right for simpler clipping
@@ -52,9 +53,9 @@ int clip_nmc_segment(in Segment3 nmc, in int projection, out Segment3[2] result)
     return 1;  // number of output segments
 }
 
-int clip_obq_segment(in Segment3 obq, in int projection, out Segment3 result)
+int clip_obq_segment(in Segment3 obq, out Segment3 result)
 {
-    if (projection == ORTHOGRAPHIC_PROJECTION) {
+    if (ub.projection == ORTHOGRAPHIC_PROJECTION) {
         if (obq.p1.x < 0 && obq.p2.x < 0)
             return 0;  // Segment lies on the far side of the earth
         // TODO: compute clipped segment
@@ -63,10 +64,10 @@ int clip_obq_segment(in Segment3 obq, in int projection, out Segment3 result)
     return 1;  // number of output segments
 }
 
-bool cull_obq(in vec3 obq, in int projection)
+bool cull_obq(in vec3 obq)
 {
     bool result = false;
-    if (projection == ORTHOGRAPHIC_PROJECTION) {
+    if (ub.projection == ORTHOGRAPHIC_PROJECTION) {
         result = obq.x < 0;
     }
     return result;
@@ -87,26 +88,26 @@ vec2 mercator_for_lonlat(in vec2 lonlat)
 }
 
 // Convert oblique geocentric coordinates to normalized map coordinates
-vec3 nmc_for_obq(in vec3 obq, in int projection)
+vec3 nmc_for_obq(in vec3 obq)
 {
-    if (projection == EQUIRECTANGULAR_PROJECTION)
+    if (ub.projection == EQUIRECTANGULAR_PROJECTION)
         return vec3(atan(obq.y, obq.x), asin(obq.z), 1);
-    else if (projection == ORTHOGRAPHIC_PROJECTION)
+    else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
         return vec3(obq.y, obq.z, 1);
     else
         return vec3(0);  // whatever...
 }
 
 // Convert normalized map coordinates to oblique geocentric coorinates
-vec3 obq_for_nmc(in vec3 nmc, in int projection)
+vec3 obq_for_nmc(in vec3 nmc)
 {
     vec2 prj = nmc.xy / nmc.z;
-    if (projection == EQUIRECTANGULAR_PROJECTION)
+    if (ub.projection == EQUIRECTANGULAR_PROJECTION)
         return vec3(
             cos(prj.x) * cos(prj.y),
             sin(prj.x) * cos(prj.y),
             sin(prj.y));
-    else if (projection == ORTHOGRAPHIC_PROJECTION)
+    else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
         return vec3(
             sqrt(1.0 - dot(prj.xy, prj.xy)),
             prj.x,

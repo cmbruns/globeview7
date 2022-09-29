@@ -9,17 +9,17 @@ void main()
 
     // some projections e.g. orthographic like to clip in obq space
     Segment3 clipped;
-    int obq_seg_count = clip_obq_segment(obq, ub.projection, clipped);
+    int obq_seg_count = clip_obq_segment(obq, clipped);
     if (obq_seg_count < 1)
         return;
 
     Segment3 nmc = Segment3(
-        nmc_for_obq(clipped.p1, ub.projection),
-        nmc_for_obq(clipped.p2, ub.projection));
+        nmc_for_obq(clipped.p1),
+        nmc_for_obq(clipped.p2));
 
     // some projections e.g. equirectangular like to clip in nmc space
     Segment3 clipped2[2];
-    int nmc_seg_count = clip_nmc_segment(nmc, ub.projection, clipped2);
+    int nmc_seg_count = clip_nmc_segment(nmc, clipped2);
     if (nmc_seg_count < 1)
         return;
 

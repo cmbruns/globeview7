@@ -8,7 +8,7 @@ out vec4 frag_color;
 
 void main()
 {
-    vec3 obq = obq_for_nmc(nmc, ub.projection);
+    vec3 obq = obq_for_nmc(nmc);
     mat3 ecf_X_obq = mat3(ub.ecf_X_obq4);
     vec3 ecf = ecf_X_obq * obq;
     vec2 wgs = wgs_for_ecf(ecf);
