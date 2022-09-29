@@ -167,6 +167,11 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         m4[:3, :3] = vs.nmc_X_ndc.T
         GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 208, 64, m4)
 
+        # Shared OpenGL state - in initialize?
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glEnable(GL.GL_LINE_SMOOTH)
+
         # TODO: more separate generic layer classes
         for layer in reversed(self.layers):  # top layer last
             if not layer.is_visible:

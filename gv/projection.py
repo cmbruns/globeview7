@@ -1,6 +1,5 @@
 import abc
 import enum
-import inspect
 from math import cos, pi, radians, sin
 
 import numpy
@@ -74,9 +73,6 @@ class OrthographicProjection(DisplayProjection):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(1)
         GL.glUseProgram(self.boundary_shader)
         # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
@@ -160,10 +156,6 @@ class EquirectangularProjection(DisplayProjection):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
-        # TODO: common gl state for all?
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(1)
         GL.glUseProgram(self.boundary_shader)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))

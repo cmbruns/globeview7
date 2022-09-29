@@ -56,9 +56,6 @@ class Coastline(ILayer):
             self.initialize_opengl()
         self.vertices.bind()
         GL.glUseProgram(self.shader)
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
-        GL.glEnable(GL.GL_BLEND)
-        GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(2)
         GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
         # TODO: drive multiple equirect instances from CPU side
