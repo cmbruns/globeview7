@@ -45,7 +45,7 @@ class RootRasterTile(ILayer):
 
     def initialize_opengl(self):
         self.shader = compileProgram(
-            shader.from_files(["projection.glsl", "ndc_from_nmc.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
         )
         self.texture = GL.glGenTextures(1)

@@ -9,6 +9,7 @@ from OpenGL.GL.shaders import compileShader, compileProgram
 
 from gv.frame import NMCPoint, OBQPoint, FramedPoint
 from gv.vertex_buffer import VertexBuffer
+from gv import shader
 
 
 class Projection(enum.IntEnum):
@@ -65,27 +66,8 @@ class OrthographicProjection(DisplayProjection):
             return
         self.boundary_vertices.initialize_opengl()
         self.boundary_shader = compileProgram(
-            compileShader(inspect.cleandoc("""
-                #version 430
-
-                in vec3 nmc;
-                layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
-
-                void main() {
-                    vec3 ndc = ndc_X_nmc * nmc;
-                    gl_Position = vec4(ndc.xy, 0, ndc.z);
-                }
-            """), GL.GL_VERTEX_SHADER),
-            compileShader(inspect.cleandoc("""
-                #version 430
-
-                out vec4 fragColor;
-
-                void main() {
-                    // TODO: share line color
-                    fragColor = vec4(0.03, 0.34, 0.60, 1);
-                }
-            """), GL.GL_FRAGMENT_SHADER),
+            shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         )
 
     def draw_boundary(self, context):
@@ -97,7 +79,6 @@ class OrthographicProjection(DisplayProjection):
         GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(1)
         GL.glUseProgram(self.boundary_shader)
-        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
         # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
@@ -171,27 +152,8 @@ class EquirectangularProjection(DisplayProjection):
         if self.boundary_shader is None:
             self.boundary_vertices.initialize_opengl()
             self.boundary_shader = compileProgram(
-                compileShader(inspect.cleandoc("""
-                    #version 430
-
-                    in vec3 nmc;
-                    layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
-
-                    void main() {
-                        vec3 ndc = ndc_X_nmc * nmc;
-                        gl_Position = vec4(ndc.xy, 0, ndc.z);
-                    }
-                """), GL.GL_VERTEX_SHADER),
-                compileShader(inspect.cleandoc("""
-                    #version 430
-
-                    out vec4 fragColor;
-
-                    void main() {
-                        // TODO: share line color
-                        fragColor = vec4(0.03, 0.34, 0.60, 1);
-                    }
-                """), GL.GL_FRAGMENT_SHADER),
+                shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+                shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
             )
 
     def draw_boundary(self, context):
@@ -204,7 +166,6 @@ class EquirectangularProjection(DisplayProjection):
         GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(1)
         GL.glUseProgram(self.boundary_shader)
-        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
     def fill_boundary(self, context):
