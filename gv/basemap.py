@@ -1,10 +1,9 @@
-import inspect
 import io
 import requests
 
 import numpy
 from OpenGL import GL
-from OpenGL.GL.shaders import compileShader, compileProgram
+from OpenGL.GL.shaders import compileProgram
 from PIL import Image
 
 from gv import shader
@@ -46,7 +45,7 @@ class RootRasterTile(ILayer):
 
     def initialize_opengl(self):
         self.shader = compileProgram(
-            shader.from_files(["ndc_from_nmc.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "ndc_from_nmc.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
         )
         self.texture = GL.glGenTextures(1)
@@ -84,7 +83,4 @@ class RootRasterTile(ILayer):
             self.initialize_opengl()
         GL.glUseProgram(self.shader)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
-        GL.glUniformMatrix3fv(2, 1, True, context.ecf_X_obq)
-        GL.glUniform1i(4, context.projection.index.value)
         context.projection.fill_boundary(context)

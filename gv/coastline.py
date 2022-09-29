@@ -60,10 +60,6 @@ class Coastline(ILayer):
         GL.glEnable(GL.GL_BLEND)
         GL.glEnable(GL.GL_LINE_SMOOTH)
         GL.glLineWidth(2)
-        GL.glUniformMatrix3fv(1, 1, True, context.ndc_X_nmc)
-        GL.glUniformMatrix3fv(3, 1, True, context.nmc_X_ndc)
-        GL.glUniformMatrix3fv(2, 1, False, context.ecf_X_obq)  # transpose is inverse
-        GL.glUniform1i(4, context.projection.index.value)
         GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
         # TODO: drive multiple equirect instances from CPU side
         # GL.glMultiDrawArraysIndirect(GL.GL_LINE_LOOP, indirect, drawcount, stride)

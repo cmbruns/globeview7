@@ -3,10 +3,6 @@
 
 layout (lines) in;
 layout (line_strip, max_vertices = 36) out;  // 36 = 2-per-segment * 2-for-seam-crossing * 9 worlds shown
-layout(location = 1) uniform mat3 ndc_X_nmc = mat3(1);
-layout(location = 2) uniform mat3 obq_X_ecf = mat3(1);
-layout(location = 3) uniform mat3 nmc_X_ndc = mat3(1);
-layout(location = 4) uniform int projection = EQUIRECTANGULAR_PROJECTION;
 
 out vec4 color;
 
@@ -15,7 +11,7 @@ void drawSegment(in vec3 nmc0, in vec3 nmc1)
     int inmc_xmin = 0;
     int inmc_xmax = 0;
     
-    if (projection == EQUIRECTANGULAR_PROJECTION)
+    if (ub.projection == EQUIRECTANGULAR_PROJECTION)
     {
         // Does the longitude range need to be duplicated?
         // TODO: compute this range on the host
@@ -26,6 +22,7 @@ void drawSegment(in vec3 nmc0, in vec3 nmc1)
             vec3(-1, 1, 0),
             vec3(1, -1, 0),
             vec3(1, 1, 0));
+        mat3 nmc_X_ndc = mat3(ub.nmc_X_ndc4);
         for (int c = 0; c < 4; ++c) {
             vec3 nmc = nmc_X_ndc * corners_ndc[c];
             nmc_xmin = min(nmc_xmin, nmc.x);
@@ -42,6 +39,7 @@ void drawSegment(in vec3 nmc0, in vec3 nmc1)
         }
     }
 
+    mat3 ndc_X_nmc = mat3(ub.ndc_X_nmc4);
     for (int nmcx_offset = inmc_xmin; nmcx_offset <= inmc_xmax; nmcx_offset += 1)
     {
         vec3 offset = vec3(two_pi * nmcx_offset, 0, 0);
@@ -58,6 +56,7 @@ void drawSegment(in vec3 nmc0, in vec3 nmc1)
 vec3 obq_for_wgs_deg(in vec2 wgs_deg) {
     vec2 wgs = radians(wgs_deg);
     vec3 ecf = ecf_for_wgs(wgs);
+    mat3 obq_X_ecf = mat3(ub.obq_X_ecf4);
     vec3 obq = obq_X_ecf * ecf;
     return obq;
 }
@@ -80,14 +79,14 @@ void main()
     vec3 obq0 = obq_for_wgs_deg(wgs_deg0);
     vec3 obq1 = obq_for_wgs_deg(wgs_deg1);
 
-    if (cull_obq(obq0, projection) && cull_obq(obq1, projection))
+    if (cull_obq(obq0, ub.projection) && cull_obq(obq1, ub.projection))
         return;
 
     Segment3 nmc = Segment3(
-        nmc_for_obq(obq0, projection),
-        nmc_for_obq(obq1, projection));
+        nmc_for_obq(obq0, ub.projection),
+        nmc_for_obq(obq1, ub.projection));
     Segment3 nmc_clipped[2];
-    int nmc_seg_count = clip_nmc_segment(nmc, projection, nmc_clipped);
+    int nmc_seg_count = clip_nmc_segment(nmc, ub.projection, nmc_clipped);
     if (nmc_seg_count < 1)
         return;
 
