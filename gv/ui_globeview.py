@@ -118,7 +118,13 @@ class Ui_MainWindow(object):
         self.groupBox_3.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
         self.verticalLayout_5 = QVBoxLayout(self.groupBox_3)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.widget_5 = QWidget(self.groupBox_3)
+        self.widget_9 = QWidget(self.groupBox_3)
+        self.widget_9.setObjectName(u"widget_9")
+        self.horizontalLayout_6 = QHBoxLayout(self.widget_9)
+        self.horizontalLayout_6.setSpacing(0)
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
+        self.widget_5 = QWidget(self.widget_9)
         self.widget_5.setObjectName(u"widget_5")
         self.widget_5.setLayoutDirection(Qt.LeftToRight)
         self.verticalLayout_4 = QVBoxLayout(self.widget_5)
@@ -194,7 +200,14 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addWidget(self.widget_7)
 
 
-        self.verticalLayout_5.addWidget(self.widget_5)
+        self.horizontalLayout_6.addWidget(self.widget_5)
+
+        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_6.addItem(self.horizontalSpacer_5)
+
+
+        self.verticalLayout_5.addWidget(self.widget_9)
 
         self.label = QLabel(self.groupBox_3)
         self.label.setObjectName(u"label")
