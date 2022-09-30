@@ -9,8 +9,7 @@ from PIL.ImageQt import ImageQt
 from PySide6 import QtCore, QtOpenGLWidgets, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 
-import h3cell
-from gv import basemap
+from gv import basemap, h3cell
 from gv import coastline
 from gv import frame
 from gv.frame import NMCPoint
