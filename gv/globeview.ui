@@ -50,8 +50,10 @@
        </property>
        <item>
         <widget class="QSplitter" name="splitter_2">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+         <property name="styleSheet">
+          <string notr="true">QSplitter::handle {
+    background-color: #99a;
+}</string>
          </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>

@@ -16,11 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFrame, QGroupBox,
-    QHBoxLayout, QLabel, QListWidgetItem, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QSizePolicy,
-    QSpacerItem, QSplitter, QStatusBar, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QGroupBox, QHBoxLayout,
+    QLabel, QListWidgetItem, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QSizePolicy, QSpacerItem,
+    QSplitter, QStatusBar, QVBoxLayout, QWidget)
 
 from circular_combobox import CircularCombobox
 from geocanvas import GeoCanvas
@@ -54,7 +53,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.splitter_2 = QSplitter(self.widget_8)
         self.splitter_2.setObjectName(u"splitter_2")
-        self.splitter_2.setFrameShape(QFrame.NoFrame)
+        self.splitter_2.setStyleSheet(u"QSplitter::handle {\n"
+"    background-color: #99a;\n"
+"}")
         self.splitter_2.setOrientation(Qt.Horizontal)
         self.splitter = QSplitter(self.splitter_2)
         self.splitter.setObjectName(u"splitter")
