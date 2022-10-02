@@ -43,10 +43,20 @@ class Coastline(ILayer):
         for polygon in shapefile_polygons:
             for ring in polygon:
                 start_indices.append(current_start_index)
-                current_start_index += len(ring)
-                vertex_counts.append(len(ring))
+                nv = 0
                 for vertex in ring:
+                    # Hack to remove antarctica lines
+                    if vertex[1] == -90:
+                        # End this ring, start another
+                        start_indices.append(current_start_index)
+                        vertex_counts.append(nv)
+                        current_start_index += nv
+                        nv = 0
+                        continue  # Discard all points exactly at the south pole
                     vertices.append(vertex)
+                    nv += 1
+                current_start_index += nv
+                vertex_counts.append(nv)
         self.start_indices = numpy.array(start_indices, dtype=numpy.int32)
         self.vertex_counts = numpy.array(vertex_counts, dtype=numpy.int32)
         self.vertices = VertexBuffer(vertices)
@@ -57,6 +67,6 @@ class Coastline(ILayer):
         self.vertices.bind()
         GL.glUseProgram(self.shader)
         GL.glLineWidth(2)
-        GL.glMultiDrawArrays(GL.GL_LINE_LOOP, self.start_indices, self.vertex_counts, len(self.start_indices))
+        GL.glMultiDrawArrays(GL.GL_LINE_STRIP, self.start_indices, self.vertex_counts, len(self.start_indices))
         # TODO: drive multiple equirect instances from CPU side
         # GL.glMultiDrawArraysIndirect(GL.GL_LINE_LOOP, indirect, drawcount, stride)

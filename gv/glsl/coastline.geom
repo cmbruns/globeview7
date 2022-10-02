@@ -66,16 +66,6 @@ void main()
     vec2 wgs_deg0 = gl_in[0].gl_Position.xy;
     vec2 wgs_deg1 = gl_in[1].gl_Position.xy;
 
-    // Hack to remove antarctica lines in coastline database
-    if (wgs_deg0.y == -90)
-       return;
-    if (wgs_deg1.y == -90)
-       return;
-    if (wgs_deg0.x == 180 && wgs_deg1.x == 180)
-        return;
-    if (wgs_deg0.x == -180 && wgs_deg1.x == -180)
-        return;
-
     vec3 obq0 = obq_for_wgs_deg(wgs_deg0);
     vec3 obq1 = obq_for_wgs_deg(wgs_deg1);
 

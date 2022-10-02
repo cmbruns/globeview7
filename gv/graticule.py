@@ -1,3 +1,4 @@
+import numpy
 from OpenGL import GL
 from OpenGL.GL.shaders import compileProgram
 
@@ -11,6 +12,8 @@ class Graticule(ILayer):
         super().__init__(name=name)
         self.shader = None
         self.vertices = None
+        self.start_indices = None
+        self.vertex_counts = None
 
     def initialize_opengl(self):
         if self.shader is not None:
@@ -21,15 +24,55 @@ class Graticule(ILayer):
             shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
         )
         polygons = []
+        start_indices = []
+        vertex_counts = []
+        current_start_index = 0
         # Parallels
         nsegs = 100
-        for lat in [0]:  # TODO: more parallels
+        interval = 10  # Draw a grid line every X degrees
+        assert 90 % interval == 0
+        for lat in range(-90 + interval, 90, interval):  # TODO: more parallels
+            start_indices.append(current_start_index)
             polygon = []
             for segment in range(nsegs):
-                polygon.append([360 * segment / nsegs, lat])
+                polygon.append([360 * segment / (nsegs - 1), lat])
+            current_start_index += len(polygon)
+            vertex_counts.append(len(polygon))
             polygons.extend(polygon)
+        # Meridians
+        for lon in range(0, 360, interval):
+            start_indices.append(current_start_index)
+            polygon = []
+            for segment in range(nsegs):
+                polygon.append([lon, -90 + interval + (180 - 2 * interval) * segment / (nsegs - 1)])
+            current_start_index += len(polygon)
+            vertex_counts.append(len(polygon))
+            polygons.extend(polygon)
+        # Draw a cross at the North pole
+        dn = interval / 6  # Size of cross / 2
+        n0 = 90 - dn  # starting latitude
+        for lon in [0, 90, 180, 270]:  # four spokes of polar cross
+            start_indices.append(current_start_index)
+            polygon = []
+            for seg in range(10):
+                polygon.append([lon, n0 + dn * seg / 9])
+            current_start_index += len(polygon)
+            vertex_counts.append(len(polygon))
+            polygons.extend(polygon)
+        # South pole
+        n0 = -90 + dn
+        for lon in [0, 90, 180, 270]:
+            start_indices.append(current_start_index)
+            polygon = []
+            for seg in range(10):
+                polygon.append([lon, n0 - dn * seg / 9])
+            current_start_index += len(polygon)
+            vertex_counts.append(len(polygon))
+            polygons.extend(polygon)
+
+        self.start_indices = numpy.array(start_indices, dtype=numpy.int32)
+        self.vertex_counts = numpy.array(vertex_counts, dtype=numpy.int32)
         self.vertices = VertexBuffer(polygons)
-        # TODO: meridians
 
     def paint_opengl(self, context):
         if self.shader is None:
@@ -37,4 +80,4 @@ class Graticule(ILayer):
         GL.glUseProgram(self.shader)
         GL.glLineWidth(1)
         self.vertices.bind()
-        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.vertices))
+        GL.glMultiDrawArrays(GL.GL_LINE_STRIP, self.start_indices, self.vertex_counts, len(self.start_indices))
