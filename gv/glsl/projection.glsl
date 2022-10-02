@@ -71,6 +71,12 @@ bool cull_obq(in vec3 obq)
     if (ub.projection == ORTHOGRAPHIC_PROJECTION) {
         result = obq.x < 0;
     }
+    else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
+        // avoid very long segments because they might cross the center.
+        // especially the graticule at the south pole.
+        // -0.98 is too low, clips some at min zoom
+        result = obq.x < -0.999;
+    }
     return result;
 }
 
