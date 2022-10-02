@@ -127,7 +127,7 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
-               <widget class="QComboBox" name="projectionComboBox">
+               <widget class="CircularCombobox" name="projectionComboBox">
                 <item>
                  <property name="text">
                   <string>Equirectangular</string>
@@ -478,7 +478,12 @@
   <customwidget>
    <class>LayerListWidget</class>
    <extends>QListWidget</extends>
-   <header location="global">gv/layer.h</header>
+   <header>gv/layer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CircularCombobox</class>
+   <extends>QComboBox</extends>
+   <header>circular_combobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
