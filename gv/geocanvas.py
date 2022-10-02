@@ -13,7 +13,7 @@ from gv import basemap, h3cell
 from gv import coastline
 from gv import frame
 from gv.frame import NMCPoint
-from gv.projection import Projection, OrthographicProjection, EquirectangularProjection
+from gv.projection import *
 from gv.view_state import ProjectionOutlineLayer, ViewState
 
 
@@ -76,11 +76,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         if not self.view_state.projection.is_valid_nmc(NMCPoint(p_nmc)):
             return
         p_prj = p_nmc
-        p_obq = numpy.array([
-            math.cos(p_prj[0]) * math.cos(p_prj[1]),
-            math.sin(p_prj[0]) * math.cos(p_prj[1]),
-            math.sin(p_prj[1])
-        ], dtype=numpy.float)
+
+        p_obq = self.view_state.projection.obq_for_nmc(p_nmc)
         p_ecf = self.view_state.ecf_X_obq @ p_obq  # Adjust for center longitude
         # Back to wgs84
         p_wgs = numpy.array([
@@ -211,6 +208,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
             self.view_state._projection = EquirectangularProjection()
         elif projection == Projection.ORTHOGRAPHIC:
             self.view_state._projection = OrthographicProjection()
+        elif projection == Projection.STEREOGRAPHIC:
+            self.view_state._projection = StereographicProjection()
         else:
             raise NotImplementedError
         self.update()

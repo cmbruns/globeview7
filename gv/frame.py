@@ -30,6 +30,9 @@ class FramedPoint(abc.ABC):
     def __len__(self):
         return len(self.vector)
 
+    def __str__(self):
+        return str(self.vector)
+
     @classmethod
     @property
     @abc.abstractmethod

@@ -3,6 +3,7 @@
 // Keep these values in sync with projection.py
 const int EQUIRECTANGULAR_PROJECTION = 0;
 const int ORTHOGRAPHIC_PROJECTION = 1;
+const int STEREOGRAPHIC_PROJECTION = 2;
 
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
@@ -94,6 +95,13 @@ vec3 nmc_for_obq(in vec3 obq)
         return vec3(atan(obq.y, obq.x), asin(obq.z), 1);
     else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
         return vec3(obq.y, obq.z, 1);
+    else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
+        float d = 1 + obq.x;
+        if (d <= 0)
+            return vec3(0, 0, 1);
+        else
+            return vec3(2 * obq.y / d, 2 * obq.z / d, 1);
+    }
     else
         return vec3(0);  // whatever...
 }
@@ -112,6 +120,14 @@ vec3 obq_for_nmc(in vec3 nmc)
             sqrt(1.0 - dot(prj.xy, prj.xy)),
             prj.x,
             prj.y);
+    else if (ub.projection == STEREOGRAPHIC_PROJECTION)
+    {
+        float d = 4.0 + prj.x * prj.x + prj.y * prj.y;
+        return vec3(
+            (8.0 - d) / d,
+            4.0 * prj.x / d,
+            4.0 * prj.y / d);
+    }
     else
         return vec3(0);  // whatever...
 }
