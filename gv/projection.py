@@ -200,12 +200,25 @@ class StereographicProjection(DisplayProjection):
 
     def __init__(self):
         super().__init__()
+        self.boundary_vertices = VertexBuffer([
+            # Infinity NMC (clips to full screen quad)
+            [0, 0, 1],  # center of screen
+            [-1, +1, 0],  # upper left infinity
+            [+1, +1, 0],  # upper right infinity
+            [+1, -1, 0],  # lower right infinity
+            [-1, -1, 0],  # lower left infinity
+            [-1, +1, 0],  # upper left infinity
+        ])
 
     def initialize_gl(self):
-        pass
+        self.boundary_vertices.initialize_opengl()
 
     def draw_boundary(self, context):
         pass
+
+    def fill_boundary(self, context):
+        self.boundary_vertices.bind()
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
 
     @staticmethod
     def dobq_for_dnmc(dnmc, p_nmc: NMCPoint):

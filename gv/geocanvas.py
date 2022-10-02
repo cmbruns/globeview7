@@ -115,7 +115,12 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                 # TODO: dragging north-south at lon-lon0==90 does nothing. should it?
                 dlat0_factor = math.cos(p_wgs[0] - self.view_state.center_location[0])
                 dlat2 = dwgs[1] * dlat0_factor
-                self.view_state.center_location -= numpy.array([dwgs[0], dlat2])  # TODO: simplify dlon
+                dlon = dwgs[0]
+                # limit size of longitude movement when dragging near poles
+                max_dlon = radians(5)
+                dlon = min(dlon, max_dlon)
+                dlon = max(dlon, -max_dlon)
+                self.view_state.center_location -= numpy.array([dlon, dlat2])  # TODO: simplify dlon
                 self.update()
             self.previous_mouse = xyw_win
             return
