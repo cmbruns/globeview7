@@ -2,8 +2,6 @@ import functools
 import math
 import pkg_resources
 
-import numpy
-from OpenGL import GL
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PySide6 import QtCore, QtOpenGLWidgets, QtGui, QtWidgets
@@ -12,7 +10,7 @@ from PySide6.QtCore import Qt
 from gv import basemap, h3cell
 from gv import coastline
 from gv import frame
-from gv.frame import NMCPoint
+from gv import graticule
 from gv.projection import *
 from gv.view_state import ProjectionOutlineLayer, ViewState
 
@@ -34,6 +32,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.layers.append(ProjectionOutlineLayer(self.view_state))
         self.layers.append(h3cell.H3Cell())
         self.layers.append(coastline.Coastline("Coast Lines"))
+        self.layers.append(graticule.Graticule("Graticule"))
         self.layers.append(basemap.RootRasterTile("Satellite"))
         for layer in self.layers:
             layer.visibility_changed.connect(self.update)
