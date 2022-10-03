@@ -116,9 +116,10 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                 dlat2 = dwgs[1] * dlat0_factor
                 dlon = dwgs[0]
                 # limit size of longitude movement when dragging near poles
-                max_dlon = radians(5)
-                dlon = min(dlon, max_dlon)
-                dlon = max(dlon, -max_dlon)
+                if abs(p_wgs[1]) > radians(80):
+                    max_dlon = radians(5)
+                    dlon = min(dlon, max_dlon)
+                    dlon = max(dlon, -max_dlon)
                 self.view_state.center_location -= numpy.array([dlon, dlat2])  # TODO: simplify dlon
                 self.update()
             self.previous_mouse = xyw_win
