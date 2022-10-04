@@ -145,6 +145,11 @@
                   <string>Stereographic</string>
                  </property>
                 </item>
+                <item>
+                 <property name="text">
+                  <string>Gnomonic</string>
+                 </property>
+                </item>
                </widget>
               </item>
              </layout>

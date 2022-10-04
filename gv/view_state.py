@@ -180,8 +180,8 @@ class ViewState(QtCore.QObject):
 
     @zoom.setter
     def zoom(self, zoom):
-        if zoom < 0.05:
-            zoom = 0.05
+        if zoom < 0.2:
+            zoom = 0.2
         if self._zoom == zoom:
             return
         self._zoom = zoom

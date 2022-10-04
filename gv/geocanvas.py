@@ -211,6 +211,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
             return  # No Change
         if projection == Projection.EQUIRECTANGULAR:
             self.view_state._projection = EquirectangularProjection()
+        elif projection == Projection.GNOMONIC:
+            self.view_state._projection = GnomonicProjection()
         elif projection == Projection.ORTHOGRAPHIC:
             self.view_state._projection = OrthographicProjection()
         elif projection == Projection.STEREOGRAPHIC:

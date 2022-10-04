@@ -4,17 +4,19 @@ from math import cos, pi, radians, sin
 
 import numpy
 from OpenGL import GL
-from OpenGL.GL.shaders import compileShader, compileProgram
+from OpenGL.GL.shaders import compileProgram
 
-from gv.frame import NMCPoint, OBQPoint, FramedPoint
+from gv.frame import NMCPoint, OBQPoint
 from gv.vertex_buffer import VertexBuffer
 from gv import shader
 
 
 class Projection(enum.IntEnum):
+    # Keep these values in sync with projection.glsl and projectionComboBox
     EQUIRECTANGULAR = 0
     ORTHOGRAPHIC = 1
     STEREOGRAPHIC = 2
+    GNOMONIC = 3
 
 
 class DisplayProjection(abc.ABC):
@@ -124,6 +126,59 @@ class EquirectangularProjection(DisplayProjection):
             [0, c1]], dtype=numpy.float)
         dwgs84prj = dnmc  # Radians are normalized units
         result = obq_J_wgs84prj @ dwgs84prj
+        return result
+
+
+class GnomonicProjection(DisplayProjection):
+    index = Projection.GNOMONIC
+
+    def __init__(self):
+        super().__init__()
+        self.boundary_vertices = VertexBuffer([
+            # Infinity NMC (clips to full screen quad)
+            [0, 0, 1],  # center of screen
+            [-1, +1, 0],  # upper left infinity
+            [+1, +1, 0],  # upper right infinity
+            [+1, -1, 0],  # lower right infinity
+            [-1, -1, 0],  # lower left infinity
+            [-1, +1, 0],  # upper left infinity
+        ])
+
+    def initialize_gl(self):
+        self.boundary_vertices.initialize_opengl()
+
+    def draw_boundary(self, context):
+        pass
+
+    def fill_boundary(self, context):
+        self.boundary_vertices.bind()
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
+
+    @staticmethod
+    def dobq_for_dnmc(dnmc, p_nmc: NMCPoint):
+        x, y = p_nmc[:2]
+        d = (x**2 + y**2 + 1.0) ** 0.5
+        d3 = d**3
+        obq_J_prj = numpy.array([
+            [-x / d3, -y / d3],
+            [-x**2 / d3 + 1 / d, -x * y / d3],
+            [-x * y / d3, -y**2 / d3 + 1 / d]], dtype=numpy.float)
+        result = obq_J_prj @ dnmc
+        return result
+
+    @staticmethod
+    def is_valid_nmc(p_nmc: NMCPoint) -> bool:
+        return True
+
+    @staticmethod
+    def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:
+        x, y = p_nmc[:2]
+        oy = 1.0 / ((x**2 + y**2 + 1.0) ** 0.5)
+        result = OBQPoint((
+            oy,
+            x * oy,
+            y * oy,
+        ))
         return result
 
 

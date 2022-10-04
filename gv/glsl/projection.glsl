@@ -4,6 +4,7 @@
 const int EQUIRECTANGULAR_PROJECTION = 0;
 const int ORTHOGRAPHIC_PROJECTION = 1;
 const int STEREOGRAPHIC_PROJECTION = 2;
+const int GNOMONIC_PROJECTION = 3;
 
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
@@ -50,6 +51,12 @@ int clip_nmc_segment(in Segment3 nmc, out Segment3[2] result)
             return 2;
         }
     }
+    else if (ub.projection == GNOMONIC_PROJECTION) {
+        vec2 diff = nmc.p1.xy - nmc.p2.xy;
+        float d2 = dot(diff, diff);
+        if (d2 > 100)
+            return 0;
+    }
     result[0] = nmc;
     return 1;  // number of output segments
 }
@@ -76,6 +83,9 @@ bool cull_obq(in vec3 obq)
         // especially the graticule at the south pole.
         // -0.98 is too low, clips some at min zoom
         result = obq.x < -0.999;
+    }
+    else if (ub.projection == GNOMONIC_PROJECTION) {
+        result = obq.x <= 0;
     }
     return result;
 }
@@ -108,6 +118,8 @@ vec3 nmc_for_obq(in vec3 obq)
         else
             return vec3(2 * obq.y / d, 2 * obq.z / d, 1);
     }
+    else if (ub.projection == GNOMONIC_PROJECTION)
+        return vec3(obq.y / obq.x, obq.z / obq.x, 1);
     else
         return vec3(0);  // whatever...
 }
@@ -133,6 +145,14 @@ vec3 obq_for_nmc(in vec3 nmc)
             (8.0 - d) / d,
             4.0 * prj.x / d,
             4.0 * prj.y / d);
+    }
+    else if (ub.projection == GNOMONIC_PROJECTION)
+    {
+        float oy = 1.0 / sqrt(1.0 + prj.x * prj.x + prj.y * prj.y);
+        return vec3(
+            oy,
+            prj.x * oy,
+            prj.y * oy);
     }
     else
         return vec3(0);  // whatever...
