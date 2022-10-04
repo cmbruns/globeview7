@@ -52,6 +52,7 @@ int clip_nmc_segment(in Segment3 nmc, out Segment3[2] result)
         }
     }
     else if (ub.projection == GNOMONIC_PROJECTION) {
+        // avoid very long segments that might cause artifacts
         vec2 diff = nmc.p1.xy - nmc.p2.xy;
         float d2 = dot(diff, diff);
         if (d2 > 100)
@@ -63,8 +64,15 @@ int clip_nmc_segment(in Segment3 nmc, out Segment3[2] result)
 
 int clip_obq_segment(in Segment3 obq, out Segment3 result)
 {
-    if (ub.projection == ORTHOGRAPHIC_PROJECTION) {
+    if (ub.projection == ORTHOGRAPHIC_PROJECTION)
+    {
         if (obq.p1.x < 0 && obq.p2.x < 0)
+            return 0;  // Segment lies on the far side of the earth
+        // TODO: compute clipped segment
+    }
+    else if (ub.projection == GNOMONIC_PROJECTION)
+    {
+        if (obq.p1.x <= 0 && obq.p2.x <= 0)
             return 0;  // Segment lies on the far side of the earth
         // TODO: compute clipped segment
     }
