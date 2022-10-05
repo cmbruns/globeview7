@@ -142,6 +142,11 @@
                 </item>
                 <item>
                  <property name="text">
+                  <string>Azimuthal Equal Area</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>Stereographic</string>
                  </property>
                 </item>

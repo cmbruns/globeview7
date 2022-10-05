@@ -207,18 +207,9 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.update()
 
     def set_projection(self, projection: Projection):
-        if projection == self.view_state._projection.index:
+        if projection == self.view_state.projection.index:
             return  # No Change
-        if projection == Projection.EQUIRECTANGULAR:
-            self.view_state._projection = EquirectangularProjection()
-        elif projection == Projection.GNOMONIC:
-            self.view_state._projection = GnomonicProjection()
-        elif projection == Projection.ORTHOGRAPHIC:
-            self.view_state._projection = OrthographicProjection()
-        elif projection == Projection.STEREOGRAPHIC:
-            self.view_state._projection = StereographicProjection()
-        else:
-            raise NotImplementedError
+        self.view_state._projection = projection_for_enum(projection)()
         self.update()
 
     statusMessageRequested = QtCore.Signal(str, int)

@@ -115,6 +115,7 @@ class Ui_MainWindow(object):
         self.projectionComboBox.addItem("")
         self.projectionComboBox.addItem("")
         self.projectionComboBox.addItem("")
+        self.projectionComboBox.addItem("")
         self.projectionComboBox.setObjectName(u"projectionComboBox")
 
         self.verticalLayout_6.addWidget(self.projectionComboBox)
@@ -291,8 +292,9 @@ class Ui_MainWindow(object):
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Display Projection", None))
         self.projectionComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Equirectangular", None))
         self.projectionComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Orthographic", None))
-        self.projectionComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Stereographic", None))
-        self.projectionComboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"Gnomonic", None))
+        self.projectionComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Azimuthal Equal Area", None))
+        self.projectionComboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"Stereographic", None))
+        self.projectionComboBox.setItemText(4, QCoreApplication.translate("MainWindow", u"Gnomonic", None))
 
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"North Direction", None))
         self.northUpButton.setText(QCoreApplication.translate("MainWindow", u"Up", None))

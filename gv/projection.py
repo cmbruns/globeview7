@@ -15,8 +15,9 @@ class Projection(enum.IntEnum):
     # Keep these values in sync with projection.glsl and projectionComboBox
     EQUIRECTANGULAR = 0
     ORTHOGRAPHIC = 1
-    STEREOGRAPHIC = 2
-    GNOMONIC = 3
+    AZIMUTHAL_EQUAL_AREA = 2
+    STEREOGRAPHIC = 3
+    GNOMONIC = 4
 
 
 class DisplayProjection(abc.ABC):
@@ -50,6 +51,71 @@ class DisplayProjection(abc.ABC):
         Convert from normalized map coordinates to rotated geocentric coordinates.
         """
         pass
+
+
+class AzimuthalEqualAreaProjection(DisplayProjection):
+    index = Projection.AZIMUTHAL_EQUAL_AREA
+
+    def __init__(self):
+        super().__init__()
+        self.boundary_shader = None
+        r = radians(180)
+        cverts = 100
+        verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
+        self.boundary_vertices = VertexBuffer(verts)
+
+    def initialize_gl(self):
+        if self.boundary_shader is not None:
+            return
+        self.boundary_vertices.initialize_opengl()
+        self.boundary_shader = compileProgram(
+            shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+        )
+
+    def draw_boundary(self, context):
+        if self.boundary_shader is None:
+            self.initialize_gl()
+        self.boundary_vertices.bind()
+        GL.glLineWidth(1)
+        GL.glUseProgram(self.boundary_shader)
+        # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
+        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+
+    def fill_boundary(self, context):
+        if self.boundary_shader is None:
+            self.initialize_gl()
+        self.boundary_vertices.bind()
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
+
+    @staticmethod
+    def dobq_for_dnmc(dnmc, p_nmc: NMCPoint):
+        x, y = p_nmc[:2]
+        d = (1 - (x**2 - y**2) / 4)**0.5
+        d4 = d * 4
+        obq_J_prj = numpy.array([
+            [-x, -y],
+            [d - x**2 / d4, -x * y / d4],
+            [-x * y / d4, d - y**2 / d4],
+        ], dtype=numpy.float)
+        result = obq_J_prj @ dnmc
+        return result
+
+    @staticmethod
+    def is_valid_nmc(p_nmc: NMCPoint) -> bool:
+        return True
+
+    @staticmethod
+    def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:
+        x, y = p_nmc[:2]
+        d1 = (x**2 + y**2) / 2
+        d2 = (1 - d1 / 2)**0.5
+        result = OBQPoint((
+            1 - d1,
+            x * d2,
+            y * d2,
+        ))
+        return result
 
 
 # TODO: maybe use instanced geometry for tiled copies of the world
@@ -300,3 +366,15 @@ class StereographicProjection(DisplayProjection):
         ))
         return result
 
+
+_projection_for_index = {
+    Projection.AZIMUTHAL_EQUAL_AREA: AzimuthalEqualAreaProjection,
+    Projection.EQUIRECTANGULAR: EquirectangularProjection,
+    Projection.GNOMONIC: GnomonicProjection,
+    Projection.ORTHOGRAPHIC: OrthographicProjection,
+    Projection.STEREOGRAPHIC: StereographicProjection,
+}
+
+
+def projection_for_enum(projection: Projection) -> type:
+    return _projection_for_index[projection]

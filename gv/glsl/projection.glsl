@@ -3,8 +3,9 @@
 // Keep these values in sync with projection.py
 const int EQUIRECTANGULAR_PROJECTION = 0;
 const int ORTHOGRAPHIC_PROJECTION = 1;
-const int STEREOGRAPHIC_PROJECTION = 2;
-const int GNOMONIC_PROJECTION = 3;
+const int AZIMUTHAL_EQUAL_AREA = 2;
+const int STEREOGRAPHIC_PROJECTION = 3;
+const int GNOMONIC_PROJECTION = 4;
 
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
@@ -117,6 +118,11 @@ vec3 nmc_for_obq(in vec3 obq)
 {
     if (ub.projection == EQUIRECTANGULAR_PROJECTION)
         return vec3(atan(obq.y, obq.x), asin(obq.z), 1);
+    else if (ub.projection == AZIMUTHAL_EQUAL_AREA)
+    {
+        float d = sqrt(2 / (1 + obq.x));
+        return vec3(d * obq.y, d * obq.z, 1);
+    }
     else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
         return vec3(obq.y, obq.z, 1);
     else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
@@ -141,6 +147,15 @@ vec3 obq_for_nmc(in vec3 nmc)
             cos(prj.x) * cos(prj.y),
             sin(prj.x) * cos(prj.y),
             sin(prj.y));
+    else if (ub.projection == AZIMUTHAL_EQUAL_AREA)
+    {
+        float d1 = dot(prj, prj) / 2;
+        float d2 = sqrt(1 - d1 / 2);
+        return vec3(
+            1 - d1,
+            prj.x * d2,
+            prj.y * d2);
+    }
     else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
         return vec3(
             sqrt(1.0 - dot(prj.xy, prj.xy)),
