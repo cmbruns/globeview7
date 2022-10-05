@@ -93,6 +93,9 @@ bool cull_obq(in vec3 obq)
         // -0.98 is too low, clips some at min zoom
         result = obq.x < -0.999;
     }
+    else if (ub.projection == AZIMUTHAL_EQUAL_AREA) {
+        result = obq.x < -0.99;
+    }
     else if (ub.projection == GNOMONIC_PROJECTION) {
         result = obq.x <= 0;
     }

@@ -59,7 +59,7 @@ class AzimuthalEqualAreaProjection(DisplayProjection):
     def __init__(self):
         super().__init__()
         self.boundary_shader = None
-        r = radians(180)
+        r = 2
         cverts = 100
         verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
         self.boundary_vertices = VertexBuffer(verts)
@@ -103,7 +103,9 @@ class AzimuthalEqualAreaProjection(DisplayProjection):
 
     @staticmethod
     def is_valid_nmc(p_nmc: NMCPoint) -> bool:
-        return True
+        x, y = p_nmc[0] / p_nmc[2], p_nmc[1] / p_nmc[2]
+        r2 = x**2 + y**2
+        return r2 < 4
 
     @staticmethod
     def obq_for_nmc(p_nmc: NMCPoint) -> OBQPoint:
