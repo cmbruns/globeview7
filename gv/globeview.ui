@@ -147,6 +147,11 @@
                 </item>
                 <item>
                  <property name="text">
+                  <string>Azimuthal Equidistant</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>Stereographic</string>
                  </property>
                 </item>

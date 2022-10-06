@@ -4,8 +4,9 @@
 const int EQUIRECTANGULAR_PROJECTION = 0;
 const int ORTHOGRAPHIC_PROJECTION = 1;
 const int AZIMUTHAL_EQUAL_AREA = 2;
-const int STEREOGRAPHIC_PROJECTION = 3;
-const int GNOMONIC_PROJECTION = 4;
+const int AZIMUTHAL_EQUIDISTANT = 3;
+const int STEREOGRAPHIC_PROJECTION = 4;
+const int GNOMONIC_PROJECTION = 5;
 
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
@@ -84,7 +85,16 @@ int clip_obq_segment(in Segment3 obq, out Segment3 result)
 bool cull_obq(in vec3 obq)
 {
     bool result = false;
-    if (ub.projection == ORTHOGRAPHIC_PROJECTION) {
+    if (ub.projection == AZIMUTHAL_EQUAL_AREA) {
+        result = obq.x < -0.99;
+    }
+    else if (ub.projection == AZIMUTHAL_EQUIDISTANT) {
+        result = obq.x < -0.99;
+    }
+    else if (ub.projection == GNOMONIC_PROJECTION) {
+        result = obq.x <= 0;
+    }
+    else if (ub.projection == ORTHOGRAPHIC_PROJECTION) {
         result = obq.x < 0;
     }
     else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
@@ -92,12 +102,6 @@ bool cull_obq(in vec3 obq)
         // especially the graticule at the south pole.
         // -0.98 is too low, clips some at min zoom
         result = obq.x < -0.999;
-    }
-    else if (ub.projection == AZIMUTHAL_EQUAL_AREA) {
-        result = obq.x < -0.99;
-    }
-    else if (ub.projection == GNOMONIC_PROJECTION) {
-        result = obq.x <= 0;
     }
     return result;
 }
@@ -124,6 +128,11 @@ vec3 nmc_for_obq(in vec3 obq)
     else if (ub.projection == AZIMUTHAL_EQUAL_AREA)
     {
         float d = sqrt(2 / (1 + obq.x));
+        return vec3(d * obq.y, d * obq.z, 1);
+    }
+    else if (ub.projection == AZIMUTHAL_EQUIDISTANT)
+    {
+        float d = acos(obq.x) / sqrt(1.0 - obq.x * obq.x);
         return vec3(d * obq.y, d * obq.z, 1);
     }
     else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
@@ -158,6 +167,15 @@ vec3 obq_for_nmc(in vec3 nmc)
             1 - d1,
             prj.x * d2,
             prj.y * d2);
+    }
+    else if (ub.projection == AZIMUTHAL_EQUIDISTANT)
+    {
+        float d = length(prj);
+        float sdd = sin(d) / d;
+        return vec3(
+            cos(d),
+            prj.x * sdd,
+            prj.y * sdd);
     }
     else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
         return vec3(
