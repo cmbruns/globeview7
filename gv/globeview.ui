@@ -132,17 +132,17 @@
                <widget class="CircularCombobox" name="projectionComboBox">
                 <item>
                  <property name="text">
-                  <string>Equirectangular</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
                   <string>Orthographic</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
                   <string>Azimuthal Equal Area</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Equirectangular</string>
                  </property>
                 </item>
                 <item>

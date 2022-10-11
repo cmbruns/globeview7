@@ -1,9 +1,9 @@
 #line 2
 
 // Keep these values in sync with projection.py
-const int EQUIRECTANGULAR_PROJECTION = 0;
-const int ORTHOGRAPHIC_PROJECTION = 1;
-const int AZIMUTHAL_EQUAL_AREA = 2;
+const int ORTHOGRAPHIC_PROJECTION = 0;
+const int AZIMUTHAL_EQUAL_AREA = 1;
+const int EQUIRECTANGULAR_PROJECTION = 2;
 const int AZIMUTHAL_EQUIDISTANT = 3;
 const int STEREOGRAPHIC_PROJECTION = 4;
 const int GNOMONIC_PROJECTION = 5;

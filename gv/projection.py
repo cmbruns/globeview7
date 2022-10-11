@@ -13,9 +13,9 @@ from gv import shader
 
 class Projection(enum.IntEnum):
     # Keep these values in sync with projection.glsl and projectionComboBox
-    EQUIRECTANGULAR = 0
-    ORTHOGRAPHIC = 1
-    AZIMUTHAL_EQUAL_AREA = 2
+    ORTHOGRAPHIC = 0
+    AZIMUTHAL_EQUAL_AREA = 1
+    EQUIRECTANGULAR = 2
     AZIMUTHAL_EQUIDISTANT = 3
     STEREOGRAPHIC = 4
     GNOMONIC = 5
