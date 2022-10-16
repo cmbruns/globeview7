@@ -16,12 +16,12 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QGroupBox, QHBoxLayout,
-    QLabel, QListWidgetItem, QMainWindow, QMenu,
-    QMenuBar, QPushButton, QSizePolicy, QSpacerItem,
-    QSplitter, QStatusBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QGroupBox,
+    QHBoxLayout, QLabel, QListWidgetItem, QMainWindow,
+    QMenu, QMenuBar, QPushButton, QSizePolicy,
+    QSpacerItem, QSplitter, QStatusBar, QVBoxLayout,
+    QWidget)
 
-from circular_combobox import CircularCombobox
 from geocanvas import GeoCanvas
 from gv.layer import LayerListWidget
 
@@ -110,7 +110,7 @@ class Ui_MainWindow(object):
         self.groupBox.setObjectName(u"groupBox")
         self.verticalLayout_6 = QVBoxLayout(self.groupBox)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.projectionComboBox = CircularCombobox(self.groupBox)
+        self.projectionComboBox = QComboBox(self.groupBox)
         self.projectionComboBox.addItem("")
         self.projectionComboBox.addItem("")
         self.projectionComboBox.addItem("")

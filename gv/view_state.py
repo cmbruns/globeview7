@@ -4,7 +4,7 @@ import numpy
 from PySide6 import QtCore
 
 from gv.frame import WGS84Point, WindowPoint
-from gv.projection import EquirectangularProjection
+from gv.projection import OrthographicProjection
 from gv.layer import ILayer
 
 
@@ -17,7 +17,7 @@ class Transform(object):
 class ViewState(QtCore.QObject):
     def __init__(self):
         super().__init__()
-        self._projection = EquirectangularProjection()
+        self._projection = OrthographicProjection()
         self._window_size = [1, 1]
         # TODO: should center be in degrees? Does the principle of best exactness apply here?
         self._center_location = [radians(0), radians(0)]

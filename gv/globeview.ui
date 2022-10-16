@@ -129,7 +129,7 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
-               <widget class="CircularCombobox" name="projectionComboBox">
+               <widget class="QComboBox" name="projectionComboBox">
                 <item>
                  <property name="text">
                   <string>Orthographic</string>
@@ -496,11 +496,6 @@
    <class>LayerListWidget</class>
    <extends>QListWidget</extends>
    <header>gv/layer.h</header>
-  </customwidget>
-  <customwidget>
-   <class>CircularCombobox</class>
-   <extends>QComboBox</extends>
-   <header>circular_combobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
