@@ -43,13 +43,22 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.previous_mouse = None
         self.actionReset_View = None
         self.view_state.azimuth_changed.connect(self.azimuth_changed)
+        self.view_state.center_location_changed.connect(self.center_location_changed)
         self.ubo = None
 
     azimuth_changed = QtCore.Signal(float)
 
+    def center_location_changed(self, center):
+        lon, lat = center
+        self.center_longitude_changed.emit(lon)
+        self.center_latitude_changed.emit(lat)
+
+    center_latitude_changed = QtCore.Signal(float)
+    center_longitude_changed = QtCore.Signal(float)
+
     def center_on_window_pixel(self, pos: QtCore.QPoint):
         wgs = self.view_state.wgs_for_window_point(frame.WindowPoint.from_qpoint(pos))
-        self.view_state.center_location = wgs
+        self.view_state.center_location = [math.degrees(a) for a in wgs]
         self.update()
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
@@ -112,12 +121,12 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                 dwgs = wgs_J_ecf @ decf
                 # Latitude angle has a discontinuity; below seems like the right correction.
                 # TODO: dragging north-south at lon-lon0==90 does nothing. should it?
-                dlat0_factor = math.cos(p_wgs[0] - self.view_state.center_location[0])
-                dlat2 = dwgs[1] * dlat0_factor
-                dlon = dwgs[0]
+                dlat0_factor = math.cos(p_wgs[0] - radians(self.view_state.center_location[0]))
+                dlat2 = math.degrees(dwgs[1] * dlat0_factor)
+                dlon = math.degrees(dwgs[0])
                 # limit size of longitude movement when dragging near poles
                 if abs(p_wgs[1]) > radians(80):
-                    max_dlon = radians(5)
+                    max_dlon = 5
                     dlon = min(dlon, max_dlon)
                     dlon = max(dlon, -max_dlon)
                 self.view_state.center_location -= numpy.array([dlon, dlat2])  # TODO: simplify dlon
@@ -228,6 +237,20 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
 
     def set_azimuth(self, azimuth_degrees):
         self.view_state.azimuth = azimuth_degrees
+        self.update()
+
+    def set_center_latitude(self, lat_degrees):
+        lon, lat = self.view_state.center_location
+        if lat == lat_degrees:
+            return
+        self.view_state.center_location = lon, lat_degrees
+        self.update()
+
+    def set_center_longitude(self, lon_degrees):
+        lon, lat = self.view_state.center_location
+        if lon == lon_degrees:
+            return
+        self.view_state.center_location = lon_degrees, lat
         self.update()
 
     def set_projection(self, projection: Projection):

@@ -20,7 +20,7 @@ class ViewState(QtCore.QObject):
         self._projection = OrthographicProjection()
         self._window_size = [1, 1]
         # TODO: should center be in degrees? Does the principle of best exactness apply here?
-        self._center_location = [radians(0), radians(0)]
+        self._center_location = [0, 0]
         self._zoom = 0.7  # windows per radian
         self._azimuth = 0  # "up" compass direction degrees
         self._ecf_X_obq = Transform()
@@ -49,30 +49,33 @@ class ViewState(QtCore.QObject):
     def center_location(self):
         return self._center_location
 
+    center_location_changed = QtCore.Signal(list)
+
     @center_location.setter
     def center_location(self, center):
         lon, lat = center
-        if lat > pi / 2:
-            lat = pi / 2
-        if lat < -pi / 2:
-            lat = -pi / 2
+        if lat > 90:
+            lat = 90
+        if lat < -90:
+            lat = -90
         if self._center_location[0] == lon and self._center_location[1] == lat:
             return  # No change
         self._center_location[:] = lon, lat
         self._ecf_X_obq.dirty = True
+        self.center_location_changed.emit(self._center_location)
 
     @property
     def ecf_X_obq(self):
         if self._ecf_X_obq.dirty:
-            clon = cos(self._center_location[0])
-            slon = sin(self._center_location[0])
+            clon = cos(radians(self._center_location[0]))
+            slon = sin(radians(self._center_location[0]))
             rot_lon = numpy.array([
                 [clon, -slon, 0],
                 [slon, clon, 0],
                 [0, 0, 1]
             ], dtype=numpy.float)
-            clat = cos(self._center_location[1])
-            slat = sin(self._center_location[1])
+            clat = cos(radians(self._center_location[1]))
+            slat = sin(radians(self._center_location[1]))
             rot_lat = numpy.array([
                 [clat, 0, -slat],
                 [0, 1, 0],

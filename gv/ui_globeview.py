@@ -16,11 +16,11 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QGroupBox,
-    QHBoxLayout, QLabel, QListWidgetItem, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QSizePolicy,
-    QSpacerItem, QSplitter, QStatusBar, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QComboBox, QDoubleSpinBox,
+    QGroupBox, QHBoxLayout, QLabel, QListWidgetItem,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QSpacerItem, QSplitter, QStatusBar,
+    QVBoxLayout, QWidget)
 
 from geocanvas import GeoCanvas
 from gv.layer import LayerListWidget
@@ -106,6 +106,69 @@ class Ui_MainWindow(object):
         self.rightArea_widget.setObjectName(u"rightArea_widget")
         self.verticalLayout_2 = QVBoxLayout(self.rightArea_widget)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.groupBox_4 = QGroupBox(self.rightArea_widget)
+        self.groupBox_4.setObjectName(u"groupBox_4")
+        self.verticalLayout_8 = QVBoxLayout(self.groupBox_4)
+        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.widget = QWidget(self.groupBox_4)
+        self.widget.setObjectName(u"widget")
+        self.horizontalLayout_7 = QHBoxLayout(self.widget)
+        self.horizontalLayout_7.setSpacing(6)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.label_2 = QLabel(self.widget)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_7.addWidget(self.label_2)
+
+        self.lonSpinBox = QDoubleSpinBox(self.widget)
+        self.lonSpinBox.setObjectName(u"lonSpinBox")
+        self.lonSpinBox.setWrapping(True)
+        self.lonSpinBox.setButtonSymbols(QAbstractSpinBox.PlusMinus)
+        self.lonSpinBox.setAccelerated(True)
+        self.lonSpinBox.setKeyboardTracking(False)
+        self.lonSpinBox.setDecimals(4)
+        self.lonSpinBox.setMinimum(-180.000000000000000)
+        self.lonSpinBox.setMaximum(180.000000000000000)
+        self.lonSpinBox.setSingleStep(5.000000000000000)
+
+        self.horizontalLayout_7.addWidget(self.lonSpinBox)
+
+
+        self.verticalLayout_8.addWidget(self.widget)
+
+        self.widget_2 = QWidget(self.groupBox_4)
+        self.widget_2.setObjectName(u"widget_2")
+        self.horizontalLayout_8 = QHBoxLayout(self.widget_2)
+        self.horizontalLayout_8.setSpacing(6)
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
+        self.label_3 = QLabel(self.widget_2)
+        self.label_3.setObjectName(u"label_3")
+        self.label_3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.horizontalLayout_8.addWidget(self.label_3)
+
+        self.latSpinBox = QDoubleSpinBox(self.widget_2)
+        self.latSpinBox.setObjectName(u"latSpinBox")
+        self.latSpinBox.setWrapping(False)
+        self.latSpinBox.setButtonSymbols(QAbstractSpinBox.PlusMinus)
+        self.latSpinBox.setAccelerated(True)
+        self.latSpinBox.setKeyboardTracking(False)
+        self.latSpinBox.setDecimals(4)
+        self.latSpinBox.setMinimum(-90.000000000000000)
+        self.latSpinBox.setMaximum(90.000000000000000)
+        self.latSpinBox.setSingleStep(5.000000000000000)
+
+        self.horizontalLayout_8.addWidget(self.latSpinBox)
+
+
+        self.verticalLayout_8.addWidget(self.widget_2)
+
+
+        self.verticalLayout_2.addWidget(self.groupBox_4)
+
         self.groupBox = QGroupBox(self.rightArea_widget)
         self.groupBox.setObjectName(u"groupBox")
         self.verticalLayout_6 = QVBoxLayout(self.groupBox)
@@ -263,6 +326,8 @@ class Ui_MainWindow(object):
         self.statusbar.setFont(font)
         MainWindow.setStatusBar(self.statusbar)
 #if QT_CONFIG(shortcut)
+        self.label_2.setBuddy(self.lonSpinBox)
+        self.label_3.setBuddy(self.lonSpinBox)
         self.label.setBuddy(self.azimuthSpinBox)
 #endif // QT_CONFIG(shortcut)
 
@@ -290,6 +355,11 @@ class Ui_MainWindow(object):
         self.actionNormal_View.setShortcut(QCoreApplication.translate("MainWindow", u"Esc", None))
 #endif // QT_CONFIG(shortcut)
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Layers", None))
+        self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"Center Location", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Longitude", None))
+        self.lonSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u"\u00b0", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Latitude", None))
+        self.latSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u"\u00b0", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Display Projection", None))
         self.projectionComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Orthographic", None))
         self.projectionComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Azimuthal Equal Area", None))

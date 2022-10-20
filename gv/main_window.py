@@ -13,6 +13,8 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.actionQuit.setShortcut(QtGui.QKeySequence.Quit)  # no effect on Windows
         self.openGLWidget.actionReset_View = self.actionReset_View
         self.openGLWidget.azimuth_changed.connect(self.azimuthSpinBox.setValue)
+        self.openGLWidget.center_longitude_changed.connect(self.lonSpinBox.setValue)
+        self.openGLWidget.center_latitude_changed.connect(self.latSpinBox.setValue)
         # Allow action shortcuts even when toolbar and menu bar are hidden
         self.addAction(self.actionFull_Screen)
         self.addAction(self.actionNormal_View)
@@ -58,6 +60,14 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     @QtCore.Slot(float)
     def on_azimuthSpinBox_valueChanged(self, azimuth_degrees):
         self.openGLWidget.set_azimuth(azimuth_degrees)
+
+    @QtCore.Slot(float)
+    def on_latSpinBox_valueChanged(self, lat_degrees):
+        self.openGLWidget.set_center_latitude(lat_degrees)
+
+    @QtCore.Slot(float)
+    def on_lonSpinBox_valueChanged(self, lon_degrees):
+        self.openGLWidget.set_center_longitude(lon_degrees)
 
     @QtCore.Slot()
     def on_northDownButton_clicked(self):
