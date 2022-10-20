@@ -1,4 +1,5 @@
 import io
+import json
 import requests
 
 import numpy
@@ -16,6 +17,7 @@ class RootRasterTile(ILayer):
         self.vao = None
         self.shader = None
         self.texture = None
+        self.attribution = None
         # Read personal access token from outside of source control
         with open("C:/Users/cmbruns/biospud_arcgis_api_key.txt") as fh:
             access_token = fh.read().strip()
@@ -33,6 +35,7 @@ class RootRasterTile(ILayer):
         for source, content in sources.items():
             if content["type"] == "raster":
                 raster_tile_url = content["tiles"][0]
+                self.attribution = content["attribution"]
                 break
         # Fetch root tile
         x = y = z = 0

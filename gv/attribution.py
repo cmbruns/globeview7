@@ -1,0 +1,4 @@
+
+
+class EsriAttribution(object):
+    pass

@@ -191,6 +191,30 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         painter.setFont(self.font)
         painter.setPen(QtGui.QColor("#07495f"))  # Dark blue
         painter.drawText(50, 50, "Some Text")
+        for layer in self.layers:
+            if not layer.is_visible:
+                continue
+            if not hasattr(layer, "attribution"):
+                continue
+            attribution = layer.attribution
+            # Attribution : TODO
+            # TODO: only when esri basemap is shown
+            font = QtGui.QFont(["Avenir Next W00", "Helvetica Neue", "Helvetica", "Ariel"], 8)
+            painter.setFont(font)
+            fm = QtGui.QFontMetrics(font)
+            th = fm.height()  # text box height
+            bh = th + 6
+            w, h = self.width(), self.height()
+            # 65% transparent white background
+            painter.fillRect(0, h - bh, w, bh, QtGui.QColor("#a6ffffff"))
+            # painter.setClipRect(0, h - bh, w - tw, bh)
+            painter.setPen(QtGui.QColor("#323232"))  # default esri style
+            t = "Powered by Esri"
+            tw = fm.horizontalAdvance(t)
+            painter.drawText(w - tw - 4, h - 6, t)
+            painter.setClipRect(0, h - bh, w - tw - 10, bh)
+            painter.drawText(4, h - 6, attribution)
+            # painter.setClipRect(None)
 
     def reset_view(self):
         self.view_state.center_location = [0, 0]
