@@ -180,6 +180,7 @@ class Ui_MainWindow(object):
         self.projectionComboBox.addItem("")
         self.projectionComboBox.addItem("")
         self.projectionComboBox.addItem("")
+        self.projectionComboBox.addItem("")
         self.projectionComboBox.setObjectName(u"projectionComboBox")
 
         self.verticalLayout_6.addWidget(self.projectionComboBox)
@@ -292,6 +293,7 @@ class Ui_MainWindow(object):
         self.azimuthSpinBox.setObjectName(u"azimuthSpinBox")
         self.azimuthSpinBox.setWrapping(True)
         self.azimuthSpinBox.setAccelerated(True)
+        self.azimuthSpinBox.setKeyboardTracking(False)
         self.azimuthSpinBox.setMaximum(360.000000000000000)
         self.azimuthSpinBox.setSingleStep(5.000000000000000)
 
@@ -339,6 +341,9 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
+        self.projectionComboBox.setCurrentIndex(2)
+
+
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
@@ -361,12 +366,13 @@ class Ui_MainWindow(object):
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Latitude", None))
         self.latSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u"\u00b0", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Display Projection", None))
-        self.projectionComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Orthographic", None))
-        self.projectionComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Azimuthal Equal Area", None))
-        self.projectionComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Equirectangular", None))
-        self.projectionComboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"Azimuthal Equidistant", None))
-        self.projectionComboBox.setItemText(4, QCoreApplication.translate("MainWindow", u"Stereographic", None))
-        self.projectionComboBox.setItemText(5, QCoreApplication.translate("MainWindow", u"Gnomonic", None))
+        self.projectionComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Perspective", None))
+        self.projectionComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Orthographic", None))
+        self.projectionComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Azimuthal Equal Area", None))
+        self.projectionComboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"Equirectangular", None))
+        self.projectionComboBox.setItemText(4, QCoreApplication.translate("MainWindow", u"Azimuthal Equidistant", None))
+        self.projectionComboBox.setItemText(5, QCoreApplication.translate("MainWindow", u"Stereographic", None))
+        self.projectionComboBox.setItemText(6, QCoreApplication.translate("MainWindow", u"Gnomonic", None))
 
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"North Direction", None))
         self.northUpButton.setText(QCoreApplication.translate("MainWindow", u"Up", None))

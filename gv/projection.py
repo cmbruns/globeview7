@@ -13,12 +13,13 @@ from gv import shader
 
 class Projection(enum.IntEnum):
     # Keep these values in sync with projection.glsl and projectionComboBox
-    ORTHOGRAPHIC = 0
-    AZIMUTHAL_EQUAL_AREA = 1
-    EQUIRECTANGULAR = 2
-    AZIMUTHAL_EQUIDISTANT = 3
-    STEREOGRAPHIC = 4
-    GNOMONIC = 5
+    PERSPECTIVE = 0
+    ORTHOGRAPHIC = 1
+    AZIMUTHAL_EQUAL_AREA = 2
+    EQUIRECTANGULAR = 3
+    AZIMUTHAL_EQUIDISTANT = 4
+    STEREOGRAPHIC = 5
+    GNOMONIC = 6
 
 
 class DisplayProjection(abc.ABC):
@@ -389,6 +390,79 @@ class OrthographicProjection(DisplayProjection):
         return result
 
 
+class PerspectiveProjection(DisplayProjection):
+    index = Projection.PERSPECTIVE
+
+    def __init__(self):
+        super().__init__()
+        self.view_distance_radians = 1.0  # TODO: make adjustable parameter
+        self.boundary_shader = None
+        v = self.view_distance_radians
+        r = (v / (2 + v))**0.5
+        self.boundary_radius = r
+        cverts = 100
+        verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
+        self.boundary_vertices = VertexBuffer(verts)
+
+    def initialize_gl(self):
+        if self.boundary_shader is not None:
+            return
+        self.boundary_vertices.initialize_opengl()
+        self.boundary_shader = compileProgram(
+            shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+        )
+
+    def draw_boundary(self, context):
+        if self.boundary_shader is None:
+            self.initialize_gl()
+        self.boundary_vertices.bind()
+        GL.glLineWidth(1)
+        GL.glUseProgram(self.boundary_shader)
+        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+
+    def fill_boundary(self, context):
+        if self.boundary_shader is None:
+            self.initialize_gl()
+        self.boundary_vertices.bind()
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
+
+    def dobq_for_dnmc(self, dnmc, p_nmc: NMCPoint):
+        # TODO: this is wrong, it's copied from orthographic
+        p_prj = p_nmc  # Radians are normalized units
+        x, y = p_prj[:2]
+        v = self.view_distance_radians
+        maxr2 = v / (2 + v)
+        r2 = x**2 + y**2
+        if r2 > maxr2:
+            raise RuntimeError("invalid location")
+        denom = (v**2 + r2)**2 * v*(v - (v+2)*r2)**0.5  # TODO: this is just a start...
+        obq_J_prj = numpy.array([
+            [-x / denom, -y / denom],
+            [1, 0],
+            [0, 1]], dtype=numpy.float)
+        dprj = dnmc  # Radians are normalized units
+        result = obq_J_prj @ dprj
+        return result
+
+    def is_valid_nmc(self, p_nmc: NMCPoint) -> bool:
+        if p_nmc.x**2 + p_nmc.y**2 >= self.boundary_radius**2:
+            return False
+        return True
+
+    def obq_for_nmc(self, p_nmc: NMCPoint) -> OBQPoint:
+        x, y = p_nmc[:2]
+        v = self.view_distance_radians
+        r2 = x**2 + y**2
+        ox = (v * (v**2 - v * (v + 2) * r2)**0.5 + v * r2 + r2) / (v**2 + r2)
+        result = OBQPoint((
+            ox,
+            x * (v + 1 - ox),
+            y * (v + 1 - ox),
+        ))
+        return result
+
+
 class StereographicProjection(DisplayProjection):
     index = Projection.STEREOGRAPHIC
 
@@ -446,6 +520,7 @@ _projection_for_index = {
     Projection.EQUIRECTANGULAR: EquirectangularProjection,
     Projection.GNOMONIC: GnomonicProjection,
     Projection.ORTHOGRAPHIC: OrthographicProjection,
+    Projection.PERSPECTIVE: PerspectiveProjection,
     Projection.STEREOGRAPHIC: StereographicProjection,
 }
 

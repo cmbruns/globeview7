@@ -269,6 +269,14 @@
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
                <widget class="QComboBox" name="projectionComboBox">
+                <property name="currentIndex">
+                 <number>2</number>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>Perspective</string>
+                 </property>
+                </item>
                 <item>
                  <property name="text">
                   <string>Orthographic</string>

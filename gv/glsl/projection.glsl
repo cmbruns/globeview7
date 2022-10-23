@@ -1,15 +1,18 @@
 #line 2
 
 // Keep these values in sync with projection.py
-const int ORTHOGRAPHIC_PROJECTION = 0;
-const int AZIMUTHAL_EQUAL_AREA = 1;
-const int EQUIRECTANGULAR_PROJECTION = 2;
-const int AZIMUTHAL_EQUIDISTANT = 3;
-const int STEREOGRAPHIC_PROJECTION = 4;
-const int GNOMONIC_PROJECTION = 5;
+const int PERSPECTIVE_PROJECTION = 0;
+const int ORTHOGRAPHIC_PROJECTION = 1;
+const int AZIMUTHAL_EQUAL_AREA = 2;
+const int EQUIRECTANGULAR_PROJECTION = 3;
+const int AZIMUTHAL_EQUIDISTANT = 4;
+const int STEREOGRAPHIC_PROJECTION = 5;
+const int GNOMONIC_PROJECTION = 6;
 
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
+
+const float psp_view_distance_nmc = 1.0;  // TODO: uniform
 
 layout(std140, binding = 2) uniform TransformBlock
 {
@@ -78,6 +81,11 @@ int clip_obq_segment(in Segment3 obq, out Segment3 result)
             return 0;  // Segment lies on the far side of the earth
         // TODO: compute clipped segment
     }
+    else if (ub.projection == PERSPECTIVE_PROJECTION) {
+        float minx = 1 / (psp_view_distance_nmc + 1);
+        if (obq.p1.x < minx && obq.p2.x < minx)
+            return 0;  // Segment lies on the far side of the earth
+    }
     result = obq;
     return 1;  // number of output segments
 }
@@ -96,6 +104,10 @@ bool cull_obq(in vec3 obq)
     }
     else if (ub.projection == ORTHOGRAPHIC_PROJECTION) {
         result = obq.x < 0;
+    }
+    else if (ub.projection == PERSPECTIVE_PROJECTION) {
+        float minx = 1 / (psp_view_distance_nmc + 1);
+        result = obq.x < minx;  // TODO: depend on view distance
     }
     else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
         // avoid very long segments because they might cross the center.
@@ -137,6 +149,12 @@ vec3 nmc_for_obq(in vec3 obq)
     }
     else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
         return vec3(obq.y, obq.z, 1);
+    else if (ub.projection == PERSPECTIVE_PROJECTION)
+    {
+        float v = psp_view_distance_nmc;
+        float d = 1.0 / (v - obq.x + 1.0);
+        return vec3(obq.y * d, obq.z * d, 1);
+    }
     else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
         float d = 1 + obq.x;
         if (d <= 0)
@@ -182,6 +200,16 @@ vec3 obq_for_nmc(in vec3 nmc)
             sqrt(1.0 - dot(prj.xy, prj.xy)),
             prj.x,
             prj.y);
+    else if (ub.projection == PERSPECTIVE_PROJECTION)
+    {
+        float v = psp_view_distance_nmc;
+        float r2 = dot(prj.xy, prj.xy);
+        float ox = (v * sqrt(v*v - v * (v + 2) * r2) + v * r2 + r2) / (v*v + r2);
+        return vec3(
+            ox,
+            prj.x * (v + 1 - ox),
+            prj.y * (v + 1 - ox));
+    }
     else if (ub.projection == STEREOGRAPHIC_PROJECTION)
     {
         float d = 4.0 + prj.x * prj.x + prj.y * prj.y;
