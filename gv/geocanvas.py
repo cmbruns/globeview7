@@ -11,6 +11,7 @@ from gv import basemap, h3cell
 from gv import coastline
 from gv import frame
 from gv import graticule
+from gv import planet
 from gv.projection import *
 from gv.view_state import ProjectionOutlineLayer, ViewState
 
@@ -24,6 +25,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.setCursor(cursor)
         self.setMouseTracking(True)
         self.view_state = ViewState()
+        self.planet = planet.Earth()
         #
         self.painter = QtGui.QPainter()
         self.font = self.painter.font()
@@ -167,6 +169,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         vs = self.view_state
         GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 0, 4,  # Projection
                            numpy.array([vs.projection.index.value], dtype=numpy.int32))
+        GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 8, 4,  # Altitude
+                           numpy.array([vs.altitude], dtype=numpy.float32))
         # Create 4x4 versions of transform matrices - because std140
         m4 = numpy.eye(4, dtype=numpy.float32)
         m4[:3, :3] = vs.ndc_X_nmc.T  # transpose to convert to OpenGL expectations
@@ -230,10 +234,15 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.view_state.center_location = [0, 0]
         self.view_state.azimuth = 0
         self.view_state.zoom = 0.7
+        self.view_state.altitude = 6378
         self.update()
 
     def resizeGL(self, width: int, height: int) -> None:
         self.view_state.window_size = width, height
+        self.update()
+
+    def set_altitude(self, altitude_km):
+        self.view_state.altitude = altitude_km / self.planet.radius_km
         self.update()
 
     def set_azimuth(self, azimuth_degrees):
@@ -257,7 +266,10 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
     def set_projection(self, projection: Projection):
         if projection == self.view_state.projection.index:
             return  # No Change
-        self.view_state._projection = projection_for_enum(projection)()
+        if projection == Projection.PERSPECTIVE:
+            self.view_state._projection = projection_for_enum(projection)(self.view_state)
+        else:
+            self.view_state._projection = projection_for_enum(projection)()
         self.update()
 
     statusMessageRequested = QtCore.Signal(str, int)

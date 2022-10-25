@@ -12,13 +12,12 @@ const int GNOMONIC_PROJECTION = 6;
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
 
-const float psp_view_distance_nmc = 1.0;  // TODO: uniform
-
 layout(std140, binding = 2) uniform TransformBlock
 {
     int projection;  // 0 TODO: use a uniform block like this...
     int instanceID;  // 4 for (future) tiling equirectangular projection
-    // there is room for 2 more scalars here...
+    float view_height_radians;
+    // there is room for 1 more scalar here...
 
     // linear transforms: display toward data
     mat4 ndc_X_nmc4;  // 16
@@ -82,7 +81,7 @@ int clip_obq_segment(in Segment3 obq, out Segment3 result)
         // TODO: compute clipped segment
     }
     else if (ub.projection == PERSPECTIVE_PROJECTION) {
-        float minx = 1 / (psp_view_distance_nmc + 1);
+        float minx = 1 / (ub.view_height_radians + 1);
         if (obq.p1.x < minx && obq.p2.x < minx)
             return 0;  // Segment lies on the far side of the earth
     }
@@ -106,7 +105,7 @@ bool cull_obq(in vec3 obq)
         result = obq.x < 0;
     }
     else if (ub.projection == PERSPECTIVE_PROJECTION) {
-        float minx = 1 / (psp_view_distance_nmc + 1);
+        float minx = 1 / (ub.view_height_radians + 1);
         result = obq.x < minx;  // TODO: depend on view distance
     }
     else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
@@ -151,8 +150,8 @@ vec3 nmc_for_obq(in vec3 obq)
         return vec3(obq.y, obq.z, 1);
     else if (ub.projection == PERSPECTIVE_PROJECTION)
     {
-        float v = psp_view_distance_nmc;
-        float d = 1.0 / (v - obq.x + 1.0);
+        float v = ub.view_height_radians;
+        float d = v / (v - obq.x + 1.0);
         return vec3(obq.y * d, obq.z * d, 1);
     }
     else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
@@ -202,13 +201,13 @@ vec3 obq_for_nmc(in vec3 nmc)
             prj.y);
     else if (ub.projection == PERSPECTIVE_PROJECTION)
     {
-        float v = psp_view_distance_nmc;
+        float v = ub.view_height_radians;
         float r2 = dot(prj.xy, prj.xy);
         float ox = (v * sqrt(v*v - v * (v + 2) * r2) + v * r2 + r2) / (v*v + r2);
         return vec3(
             ox,
-            prj.x * (v + 1 - ox),
-            prj.y * (v + 1 - ox));
+            prj.x * (v + 1 - ox) / v,
+            prj.y * (v + 1 - ox) / v);
     }
     else if (ub.projection == STEREOGRAPHIC_PROJECTION)
     {

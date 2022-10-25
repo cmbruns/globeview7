@@ -9,6 +9,7 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
+        self._setting_named_altitude = False
         self.openGLWidget.statusMessageRequested.connect(self.statusbar.showMessage)
         self.actionQuit.setShortcut(QtGui.QKeySequence.Quit)  # no effect on Windows
         self.openGLWidget.actionReset_View = self.actionReset_View
@@ -57,6 +58,33 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     def on_actionQuit_triggered(self):
         QtCore.QCoreApplication.quit()
 
+    @QtCore.Slot(int)
+    def on_altitudeComboBox_currentIndexChanged(self, index: int):
+        self._setting_named_altitude = True
+        if index == 1:
+            self.altitudeSpinBox.setValue(12.8)
+        if index == 2:
+            self.altitudeSpinBox.setValue(25.9)
+        if index == 3:
+            self.altitudeSpinBox.setValue(188)
+        elif index == 4:
+            self.altitudeSpinBox.setValue(254)
+        elif index == 5:
+            self.altitudeSpinBox.setValue(408)
+        elif index == 6:
+            self.altitudeSpinBox.setValue(6378)
+        elif index == 7:
+            self.altitudeSpinBox.setValue(36000)
+        elif index == 8:
+            self.altitudeSpinBox.setValue(384000)
+        self._setting_named_altitude = False
+
+    @QtCore.Slot(float)
+    def on_altitudeSpinBox_valueChanged(self, altitude_km):
+        self.openGLWidget.set_altitude(altitude_km)
+        if not self._setting_named_altitude:
+            self.altitudeComboBox.setCurrentIndex(0)  # "Custom"
+
     @QtCore.Slot(float)
     def on_azimuthSpinBox_valueChanged(self, azimuth_degrees):
         self.openGLWidget.set_azimuth(azimuth_degrees)
@@ -87,4 +115,5 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
 
     @QtCore.Slot(int)
     def on_projectionComboBox_currentIndexChanged(self, projection: int):
+        self.altitudeGroupBox.setEnabled(projection == Projection.PERSPECTIVE.value)
         self.openGLWidget.set_projection(Projection(projection))

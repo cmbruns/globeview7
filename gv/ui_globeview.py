@@ -302,6 +302,41 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.groupBox_3)
 
+        self.altitudeGroupBox = QGroupBox(self.rightArea_widget)
+        self.altitudeGroupBox.setObjectName(u"altitudeGroupBox")
+        self.altitudeGroupBox.setEnabled(False)
+        self.verticalLayout_9 = QVBoxLayout(self.altitudeGroupBox)
+        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
+        self.altitudeComboBox = QComboBox(self.altitudeGroupBox)
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.addItem("")
+        self.altitudeComboBox.setObjectName(u"altitudeComboBox")
+
+        self.verticalLayout_9.addWidget(self.altitudeComboBox)
+
+        self.altitudeSpinBox = QDoubleSpinBox(self.altitudeGroupBox)
+        self.altitudeSpinBox.setObjectName(u"altitudeSpinBox")
+        self.altitudeSpinBox.setAccelerated(True)
+        self.altitudeSpinBox.setKeyboardTracking(False)
+        self.altitudeSpinBox.setDecimals(0)
+        self.altitudeSpinBox.setMinimum(1.000000000000000)
+        self.altitudeSpinBox.setMaximum(1000000.000000000000000)
+        self.altitudeSpinBox.setSingleStep(500.000000000000000)
+        self.altitudeSpinBox.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        self.altitudeSpinBox.setValue(6378.000000000000000)
+
+        self.verticalLayout_9.addWidget(self.altitudeSpinBox)
+
+
+        self.verticalLayout_2.addWidget(self.altitudeGroupBox)
+
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
@@ -342,6 +377,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.projectionComboBox.setCurrentIndex(2)
+        self.altitudeComboBox.setCurrentIndex(6)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -381,6 +417,18 @@ class Ui_MainWindow(object):
         self.northDownButton.setText(QCoreApplication.translate("MainWindow", u"Down", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Up Azimuth (degrees)", None))
         self.azimuthSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u"\u00b0", None))
+        self.altitudeGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Altitude Above Surface", None))
+        self.altitudeComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Custom", None))
+        self.altitudeComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Commercial Airline Jet (12.8 km)", None))
+        self.altitudeComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"SR-71 Spy Plane (25.9 km)", None))
+        self.altitudeComboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"Shepard Mercury-Redstone 3 (188 km)", None))
+        self.altitudeComboBox.setItemText(4, QCoreApplication.translate("MainWindow", u"Gagarin Vostok-1 (254 km)", None))
+        self.altitudeComboBox.setItemText(5, QCoreApplication.translate("MainWindow", u"International Space Station (408 km)", None))
+        self.altitudeComboBox.setItemText(6, QCoreApplication.translate("MainWindow", u"Earth Radius (6378 km)", None))
+        self.altitudeComboBox.setItemText(7, QCoreApplication.translate("MainWindow", u"Geosynchronous Satellite (36000 km)", None))
+        self.altitudeComboBox.setItemText(8, QCoreApplication.translate("MainWindow", u"Earth-Moon  Distance (384000 km)", None))
+
+        self.altitudeSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" km", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
     # retranslateUi

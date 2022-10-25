@@ -393,15 +393,13 @@ class OrthographicProjection(DisplayProjection):
 class PerspectiveProjection(DisplayProjection):
     index = Projection.PERSPECTIVE
 
-    def __init__(self):
+    def __init__(self, view_state: "ViewState"):
         super().__init__()
-        self.view_distance_radians = 1.0  # TODO: make adjustable parameter
+        self.view_state = view_state
         self.boundary_shader = None
-        v = self.view_distance_radians
-        r = (v / (2 + v))**0.5
-        self.boundary_radius = r
         cverts = 100
-        verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
+        # Use unit radius, then scale the boundary in the shader
+        verts = [[sin(2 * i * pi / cverts), cos(2 * i * pi / cverts), 1] for i in range(cverts)]
         self.boundary_vertices = VertexBuffer(verts)
 
     def initialize_gl(self):
@@ -409,7 +407,7 @@ class PerspectiveProjection(DisplayProjection):
             return
         self.boundary_vertices.initialize_opengl()
         self.boundary_shader = compileProgram(
-            shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "boundary_psp.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         )
 
@@ -432,7 +430,7 @@ class PerspectiveProjection(DisplayProjection):
         p_prj = p_nmc  # Radians are normalized units
         x, y = p_prj[:2]
 
-        v = self.view_distance_radians
+        v = self.view_state.altitude
         maxr2 = v / (2 + v)
         r2 = x**2 + y**2  # screen space radius squared
         if r2 > maxr2:
@@ -442,14 +440,15 @@ class PerspectiveProjection(DisplayProjection):
         # to keep each source line shorter
         rt2 = r2 + v**2  # r2 and orthogonal view distance
         sr = (v * (v - (v + 2) * r2))**0.5  # frequent term involving square root
-        dn = rt2 ** 2 * sr  # denominator in many Jacobian terms
+        dn1 = rt2 ** 2 * sr  # denominator in many Jacobian terms
         k1 = sr * (v * sr + v * r2 + r2)  # another recurring term
-        xc = (-2 * k1 + (-v ** 2 * (v + 2) + 2 * sr * (v + 1)) * rt2) / dn  # coefficient for dobq_x terms
-        d20 = x * y * (2 * k1 + (v ** 2 * (v + 2) - 2 * sr * (v + 1)) * rt2) / dn
+        xc = (-2 * k1 + (-v ** 2 * (v + 2) + 2 * sr * (v + 1)) * rt2) / dn1  # coefficient for dobq_x terms
+        dn2 = v * dn1
+        d20 = x * y * (2 * k1 + (v ** 2 * (v + 2) - 2 * sr * (v + 1)) * rt2) / dn2
         yzc1 = 2 * k1 + (v ** 2 * (v + 2) - 2 * sr * (v + 1)) * (v ** 2 + r2)  # coefficient for x**2 or y**2
-        yzc2 = sr * (v + 1) * rt2 ** 2 - rt2 * k1
-        d10 = (x**2 * yzc1 + yzc2) / dn
-        d21 = (y**2 * yzc1 + yzc2) / dn
+        yzc2 = sr * rt2 * (-v * sr - v * r2 - r2 + (v + 1) * rt2)
+        d10 = (x**2 * yzc1 + yzc2) / dn2
+        d21 = (y**2 * yzc1 + yzc2) / dn2
 
         obq_J_prj = numpy.array([
             [x * xc, y * xc],
@@ -460,19 +459,21 @@ class PerspectiveProjection(DisplayProjection):
         return result
 
     def is_valid_nmc(self, p_nmc: NMCPoint) -> bool:
-        if p_nmc.x**2 + p_nmc.y**2 >= self.boundary_radius**2:
+        v = self.view_state.altitude
+        r2 = v / (2 + v)
+        if p_nmc.x**2 + p_nmc.y**2 >= r2:
             return False
         return True
 
     def obq_for_nmc(self, p_nmc: NMCPoint) -> OBQPoint:
         x, y = p_nmc[:2]
-        v = self.view_distance_radians
+        v = self.view_state.altitude
         r2 = x**2 + y**2
         ox = (v * (v**2 - v * (v + 2) * r2)**0.5 + v * r2 + r2) / (v**2 + r2)
         result = OBQPoint((
             ox,
-            x * (v + 1 - ox),
-            y * (v + 1 - ox),
+            x * (v + 1 - ox) / v,
+            y * (v + 1 - ox) / v,
         ))
         return result
 

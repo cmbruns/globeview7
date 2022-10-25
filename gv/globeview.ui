@@ -555,6 +555,101 @@
             </widget>
            </item>
            <item>
+            <widget class="QGroupBox" name="altitudeGroupBox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="title">
+              <string>Altitude Above Surface</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_9">
+              <item>
+               <widget class="QComboBox" name="altitudeComboBox">
+                <property name="currentIndex">
+                 <number>6</number>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>Custom</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Commercial Airline Jet (12.8 km)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>SR-71 Spy Plane (25.9 km)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Shepard Mercury-Redstone 3 (188 km)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Gagarin Vostok-1 (254 km)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>International Space Station (408 km)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Earth Radius (6378 km)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Geosynchronous Satellite (36000 km)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Earth-Moon  Distance (384000 km)</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="altitudeSpinBox">
+                <property name="accelerated">
+                 <bool>true</bool>
+                </property>
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="suffix">
+                 <string> km</string>
+                </property>
+                <property name="decimals">
+                 <number>0</number>
+                </property>
+                <property name="minimum">
+                 <double>1.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>1000000.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>500.000000000000000</double>
+                </property>
+                <property name="stepType">
+                 <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+                </property>
+                <property name="value">
+                 <double>6378.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>

@@ -23,11 +23,27 @@ class ViewState(QtCore.QObject):
         self._center_location = [0, 0]
         self._zoom = 0.7  # windows per radian
         self._azimuth = 0  # "up" compass direction degrees
+        self._altitude = 1.0  # viewer height above surface in radians
         self._ecf_X_obq = Transform()
         self._ndc_X_nmc = Transform()
         self._ndc_X_win = Transform()
         self._nmc_X_ndc = Transform()
         self._nmc_J_win = Transform(2)
+
+    altitude_changed = QtCore.Signal(float)
+
+    @property
+    def altitude(self):
+        return self._altitude
+
+    @altitude.setter
+    def altitude(self, altitude_radians):
+        if self._altitude == altitude_radians:
+            return
+        self._altitude = altitude_radians
+        self.altitude_changed.emit(self._altitude)
+
+    azimuth_changed = QtCore.Signal(float)
 
     @property
     def azimuth(self):
@@ -42,8 +58,6 @@ class ViewState(QtCore.QObject):
         self._nmc_X_ndc.dirty = True
         self._nmc_J_win.dirty = True
         self.azimuth_changed.emit(self._azimuth)
-
-    azimuth_changed = QtCore.Signal(float)
 
     @property
     def center_location(self):
