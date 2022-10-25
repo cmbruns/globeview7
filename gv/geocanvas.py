@@ -82,6 +82,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         p_ndc = self.view_state.ndc_X_win @ xyw_win
         p_nmc = self.view_state.nmc_X_ndc @ p_ndc
         if not self.view_state.projection.is_valid_nmc(NMCPoint(p_nmc)):
+            self.previous_mouse = None
             return
         p_prj = p_nmc
 

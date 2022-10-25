@@ -431,16 +431,30 @@ class PerspectiveProjection(DisplayProjection):
         # TODO: this is wrong, it's copied from orthographic
         p_prj = p_nmc  # Radians are normalized units
         x, y = p_prj[:2]
+
         v = self.view_distance_radians
         maxr2 = v / (2 + v)
-        r2 = x**2 + y**2
+        r2 = x**2 + y**2  # screen space radius squared
         if r2 > maxr2:
             raise RuntimeError("invalid location")
-        denom = (v**2 + r2)**2 * v*(v - (v+2)*r2)**0.5  # TODO: this is just a start...
+
+        # This Jacobian is very complex, so we are assigning variables to repeated terms here,
+        # to keep each source line shorter
+        rt2 = r2 + v**2  # r2 and orthogonal view distance
+        sr = (v * (v - (v + 2) * r2))**0.5  # frequent term involving square root
+        dn = rt2 ** 2 * sr  # denominator in many Jacobian terms
+        k1 = sr * (v * sr + v * r2 + r2)  # another recurring term
+        xc = (-2 * k1 + (-v ** 2 * (v + 2) + 2 * sr * (v + 1)) * rt2) / dn  # coefficient for dobq_x terms
+        d20 = x * y * (2 * k1 + (v ** 2 * (v + 2) - 2 * sr * (v + 1)) * rt2) / dn
+        yzc1 = 2 * k1 + (v ** 2 * (v + 2) - 2 * sr * (v + 1)) * (v ** 2 + r2)  # coefficient for x**2 or y**2
+        yzc2 = sr * (v + 1) * rt2 ** 2 - rt2 * k1
+        d10 = (x**2 * yzc1 + yzc2) / dn
+        d21 = (y**2 * yzc1 + yzc2) / dn
+
         obq_J_prj = numpy.array([
-            [-x / denom, -y / denom],
-            [1, 0],
-            [0, 1]], dtype=numpy.float)
+            [x * xc, y * xc],
+            [d10, d20],
+            [d20, d21]], dtype=numpy.float)
         dprj = dnmc  # Radians are normalized units
         result = obq_J_prj @ dprj
         return result
