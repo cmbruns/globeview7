@@ -1,11 +1,12 @@
 import io
 import json
-import requests
+import pathlib
 
 import numpy
 from OpenGL import GL
 from OpenGL.GL.shaders import compileProgram
 from PIL import Image
+import requests
 
 from gv import shader
 from gv.layer import ILayer
@@ -19,7 +20,7 @@ class RootRasterTile(ILayer):
         self.texture = None
         self.attribution = None
         # Read personal access token from outside of source control
-        with open("C:/Users/cmbruns/biospud_arcgis_api_key.txt") as fh:
+        with open(f"{pathlib.Path.home()}/biospud_arcgis_api_key.txt") as fh:
             access_token = fh.read().strip()
         # https://developers.arcgis.com/documentation/mapping-apis-and-services/maps/services/basemap-layer-service/
         basemap_style = "ArcGIS:Imagery"
@@ -47,10 +48,14 @@ class RootRasterTile(ILayer):
         )
 
     def initialize_opengl(self):
+        self.vao = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(self.vao)
         self.shader = compileProgram(
             shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
         )
+        ub_index = GL.glGetUniformBlockIndex(self.shader, "TransformBlock")
+        GL.glUniformBlockBinding(self.shader, ub_index, 2)
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
@@ -84,6 +89,7 @@ class RootRasterTile(ILayer):
     def paint_opengl(self, context):
         if self.texture is None:
             self.initialize_opengl()
+        GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.shader)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         context.projection.fill_boundary(context)

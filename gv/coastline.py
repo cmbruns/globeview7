@@ -1,3 +1,5 @@
+import pathlib
+
 import numpy
 from OpenGL import GL
 from OpenGL.GL.shaders import compileProgram
@@ -15,6 +17,7 @@ class Coastline(ILayer):
         self.vertex_counts = None
         self.vertices = None
         self.shader = None
+        self.line_width = 1.0
 
     def initialize_opengl(self):
         polygons = []
@@ -26,14 +29,19 @@ class Coastline(ILayer):
             #  5, # L5: boundary between Antarctica ice and ocean.
             6,  # L6: boundary between Antarctica grounding-line and ocean.
         ]:
-            polygons.extend(read_shape_file(f"C:/Users/cmbruns/Downloads/gshhg-shp-2.3.7/GSHHS_shp/c/GSHHS_c_L{gshhs}.shp"))
+            polygons.extend(read_shape_file(f"{pathlib.Path.home()}/Downloads/gshhg-shp-2.3.7/GSHHS_shp/c/GSHHS_c_L{gshhs}.shp"))
         self.populate_data(polygons)
-        self.vertices.initialize_opengl()
+        self.vertices.bind()
         self.shader = compileProgram(
             shader.from_files(["coastline.vert", ], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
             shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
         )
+        ub_index = GL.glGetUniformBlockIndex(self.shader, "TransformBlock")
+        GL.glUniformBlockBinding(self.shader, ub_index, 2)
+        line_width_range = GL.glGetIntegerv(GL.GL_ALIASED_LINE_WIDTH_RANGE)
+        self.line_width = min(2, line_width_range[1])
+        GL.glBindVertexArray(0)
 
     def populate_data(self, shapefile_polygons):
         vertices = []
@@ -66,7 +74,7 @@ class Coastline(ILayer):
             self.initialize_opengl()
         self.vertices.bind()
         GL.glUseProgram(self.shader)
-        GL.glLineWidth(2)
+        GL.glLineWidth(self.line_width)  # Limited to 1.0 on Mac OS X
         GL.glMultiDrawArrays(GL.GL_LINE_STRIP, self.start_indices, self.vertex_counts, len(self.start_indices))
         # TODO: drive multiple equirect instances from CPU side
         # GL.glMultiDrawArraysIndirect(GL.GL_LINE_LOOP, indirect, drawcount, stride)

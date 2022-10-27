@@ -18,11 +18,6 @@ class Graticule(ILayer):
     def initialize_opengl(self):
         if self.shader is not None:
             return
-        self.shader = compileProgram(
-            shader.from_files(["coastline.vert", ], GL.GL_VERTEX_SHADER),
-            shader.from_files(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
-            shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
-        )
         polygons = []
         start_indices = []
         vertex_counts = []
@@ -69,15 +64,23 @@ class Graticule(ILayer):
             current_start_index += len(polygon)
             vertex_counts.append(len(polygon))
             polygons.extend(polygon)
-
         self.start_indices = numpy.array(start_indices, dtype=numpy.int32)
         self.vertex_counts = numpy.array(vertex_counts, dtype=numpy.int32)
         self.vertices = VertexBuffer(polygons)
+        self.vertices.bind()
+        self.shader = compileProgram(
+            shader.from_files(["coastline.vert", ], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
+            shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
+        )
+        ub_index = GL.glGetUniformBlockIndex(self.shader, "TransformBlock")
+        GL.glUniformBlockBinding(self.shader, ub_index, 2)
+        GL.glBindVertexArray(0)
 
     def paint_opengl(self, context):
         if self.shader is None:
             self.initialize_opengl()
+        self.vertices.bind()
         GL.glUseProgram(self.shader)
         GL.glLineWidth(1)
-        self.vertices.bind()
         GL.glMultiDrawArrays(GL.GL_LINE_STRIP, self.start_indices, self.vertex_counts, len(self.start_indices))
