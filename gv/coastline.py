@@ -39,7 +39,7 @@ class Coastline(ILayer):
         )
         ub_index = GL.glGetUniformBlockIndex(self.shader, "TransformBlock")
         GL.glUniformBlockBinding(self.shader, ub_index, 2)
-        line_width_range = GL.glGetIntegerv(GL.GL_ALIASED_LINE_WIDTH_RANGE)
+        line_width_range = GL.glGetIntegerv(GL.GL_SMOOTH_LINE_WIDTH_RANGE)
         self.line_width = min(2, line_width_range[1])
         GL.glBindVertexArray(0)
 
