@@ -23,11 +23,11 @@ as opposed to:
   * double precision probably solves all numerical stability issues
 
 Basemap raster tiles:
-  phase 1:
+  phase 1:  DONE
     vertex buffer with corners and in/out directions in ecf 3D coordinates
     display outline
 
-  phase:
+  phase2:
     tesselation shader to curve outline
     use window coordinates and slopes to compute tessellation level
 
@@ -37,3 +37,6 @@ Basemap raster tiles:
 
   phase:
     correct fill when projection singularity is inside tile (could be tricky)
+
+  phase:
+    use instanced rendering with equirectangular and other cylindrical projections

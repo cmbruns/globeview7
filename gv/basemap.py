@@ -93,11 +93,23 @@ class WebMercatorTile(object):
                 in_ecf.append(_norm(dobq_J_dwgs @ in_wgs[i]))
                 out_ecf.append(_norm(dobq_J_dwgs @ out_wgs[i]))
         self.boundary_vertices = gv.vertex_buffer.VertexBuffer(verts_ecf, in_ecf, out_ecf)
+        indexes = []
+        nv = len(verts_ecf)
+        for i in range(nv - 1):
+            indexes.append(i)
+            indexes.append(i + 1)
+        indexes.extend([nv - 1, 0])  # Close loop
+        self.boundary_indexes = numpy.array(indexes, dtype=numpy.int8)
+        self.ibo = None
+
         # TODO: include corner directions in vertex buffer
 
     def initialize_opengl(self):
         self.basemap.initialize_opengl()
         self.boundary_vertices.bind()
+        self.ibo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
+        GL.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, self.boundary_indexes, GL.GL_STATIC_DRAW)
         if self.rez == 0:
             self.fill_shader = self.basemap.root_tile_shader
         else:
@@ -146,8 +158,13 @@ class WebMercatorTile(object):
         if self.boundary_shader is None:
             self.initialize_opengl()
         self.boundary_vertices.bind()
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
         GL.glUseProgram(self.boundary_shader)
-        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
+        # GL.glDrawArrays(GL.GL_PATCHES, 0, len(self.boundary_vertices))
+        # GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        # GL.glDrawElements(GL.GL_LINES, len(self.boundary_indexes), GL.GL_UNSIGNED_BYTE, None)
+        GL.glDrawElements(GL.GL_PATCHES, len(self.boundary_indexes), GL.GL_UNSIGNED_BYTE, None)
 
 
 class Basemap(object):
@@ -201,6 +218,8 @@ class Basemap(object):
         GL.glUniformBlockBinding(self.tile_shader, ub_index, 2)
         self.tile_boundary_shader = compileProgram(
             shader.from_files(["projection.glsl", "boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
+            shader.from_files(["tile_boundary.tese"], GL.GL_TESS_EVALUATION_SHADER),
             shader.from_files(["red.frag"], GL.GL_FRAGMENT_SHADER),
         )
         ub_index = GL.glGetUniformBlockIndex(self.tile_boundary_shader, "TransformBlock")
