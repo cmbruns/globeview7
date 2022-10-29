@@ -7,7 +7,9 @@ class VertexBuffer(object):
         self.vao = None
         self.vbo = None
         self.vertex_count = len(vertices)
-        self.element_count = len(vertices[0])
+        self.element_count = 0
+        if self.vertex_count > 0:
+            self.element_count = len(vertices[0])
         self.vertices = numpy.array(vertices, dtype=numpy.float32).flatten()
 
     def __len__(self):
@@ -26,5 +28,6 @@ class VertexBuffer(object):
             GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
             GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_STATIC_DRAW)
             GL.glEnableVertexAttribArray(0)
-            GL.glVertexAttribPointer(0, self.element_count, GL.GL_FLOAT, False, 0, None)
+            if self.element_count > 0:
+                GL.glVertexAttribPointer(0, self.element_count, GL.GL_FLOAT, False, 0, None)
             GL.glBindVertexArray(0)

@@ -13,6 +13,7 @@ rez = 2  # TODO: determine resolution from zoom and center location
 n = 2 ** rez
 x, y = [floor(n * x) for x in p_img]
 print(x, y)
+# Australia is on tile 3, 2, 2
 
 basemap = gv.basemap.Basemap()
 tile = basemap.fetch_tile(x, y, rez)

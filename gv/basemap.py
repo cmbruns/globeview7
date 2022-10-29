@@ -1,5 +1,6 @@
 import io
 import json
+from math import atan, exp, radians
 import pathlib
 
 import arcgis
@@ -11,6 +12,7 @@ import requests
 
 from gv import shader
 from gv.layer import ILayer
+import gv.vertex_buffer
 
 
 class WebMercatorTile(object):
@@ -25,21 +27,34 @@ class WebMercatorTile(object):
         self.pixels = numpy.frombuffer(
             buffer=self.image.convert("RGBA").tobytes(), dtype=numpy.ubyte
         )
-        self.vao = None
-        self.shader = None
+        self.fill_shader = None
+        self.boundary_shader = None
         self.basemap = basemap
         self.texture = None
+        # compute corner locations
+        verts_wgs = []
+        if rez > 0:
+            verts_ttc = [  # in tile texture coordinates
+                [0, 0],  # upper left
+                [1, 0],  # upper right
+                [1, 1],  # lower right
+                [0, 1],  # lower left
+            ]
+            k = radians(360 / 2**rez)  # map units per tile index
+            o = radians(180)  # origin offset
+            verts_mrc = [(k * (x + tx) - o, o - k * (y + ty)) for tx, ty in verts_ttc]
+            verts_wgs = [(mx, 2 * atan(exp(my)) - radians(90)) for mx, my in verts_mrc]
+        self.boundary_vertices = gv.vertex_buffer.VertexBuffer(verts_wgs)
+        # TODO: include corner directions in vertex buffer
 
     def initialize_opengl(self):
-        self.vao = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(self.vao)
         self.basemap.initialize_opengl()
+        self.boundary_vertices.bind()
         if self.rez == 0:
-            self.shader = self.basemap.root_tile_shader
+            self.fill_shader = self.basemap.root_tile_shader
         else:
-            self.shader = self.basemap.tile_shader
-        ub_index = GL.glGetUniformBlockIndex(self.shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.shader, ub_index, 2)
+            self.fill_shader = self.basemap.tile_shader
+            self.boundary_shader = self.basemap.tile_boundary_shader
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
@@ -68,13 +83,23 @@ class WebMercatorTile(object):
     def paint_opengl(self, context):
         if self.texture is None:
             self.initialize_opengl()
-        GL.glBindVertexArray(self.vao)
-        GL.glUseProgram(self.shader)
+        self.boundary_vertices.bind()
+        GL.glUseProgram(self.fill_shader)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         if self.rez == 0:
             context.projection.fill_boundary(context)
         else:
             raise NotImplementedError
+
+    def paint_boundary(self, context):
+        if self.rez == 0:
+            context.projection.paint_boundary(context)
+            return
+        if self.boundary_shader is None:
+            self.initialize_opengl()
+        self.boundary_vertices.bind()
+        GL.glUseProgram(self.boundary_shader)
+        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
 
 class Basemap(object):
@@ -102,6 +127,7 @@ class Basemap(object):
         self.vao = None
         self.root_tile_shader = None
         self.tile_shader = None
+        self.tile_boundary_shader = None
 
     def fetch_tile(self, x, y, rez):
         # TODO: cache tiles
@@ -114,11 +140,23 @@ class Basemap(object):
             shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
         )
+        ub_index = GL.glGetUniformBlockIndex(self.root_tile_shader, "TransformBlock")
+        GL.glUniformBlockBinding(self.root_tile_shader, ub_index, 2)
         # TODO: is a separate shader needed?
+        # Well, separate shaders for outline vs fill are needed...
+        # ...and it might be an optimization to avoid gradient texture fetch for non-root tiles
         self.tile_shader = compileProgram(
             shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
         )
+        ub_index = GL.glGetUniformBlockIndex(self.tile_shader, "TransformBlock")
+        GL.glUniformBlockBinding(self.tile_shader, ub_index, 2)
+        self.tile_boundary_shader = compileProgram(
+            shader.from_files(["projection.glsl", "boundary_wgs.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["red.frag"], GL.GL_FRAGMENT_SHADER),
+        )
+        ub_index = GL.glGetUniformBlockIndex(self.tile_boundary_shader, "TransformBlock")
+        GL.glUniformBlockBinding(self.tile_boundary_shader, ub_index, 2)
         GL.glBindVertexArray(0)
 
 
@@ -133,3 +171,16 @@ class RootRasterTile(ILayer):
 
     def paint_opengl(self, context):
         self.tile.paint_opengl(context)
+
+
+class TestRasterTile(ILayer):
+    def __init__(self, name: str, x, y, rez):
+        super().__init__(name=name)
+        basemap = Basemap()
+        self.tile = basemap.fetch_tile(x, y, rez)
+
+    def initialize_opengl(self):
+        self.tile.initialize_opengl()
+
+    def paint_opengl(self, context):
+        self.tile.paint_boundary(context)

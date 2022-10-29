@@ -31,6 +31,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.font = self.painter.font()
         # self.font.setPointSize(self.font.pointSize() * 4)
         self.layers = []
+        self.layers.append(basemap.TestRasterTile("Australia", 3, 2, 2))
         self.layers.append(ProjectionOutlineLayer(self.view_state))
         self.layers.append(h3cell.H3Cell())
         self.layers.append(coastline.Coastline("Coast Lines"))
