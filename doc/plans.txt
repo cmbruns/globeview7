@@ -8,11 +8,32 @@
   * Buddhist churches
 
 * Principles:
-  * Smooth: "everything" has continuous first derivatvies
+  * Smooth: "everything" has continuous first derivatives
   * Sparse: small numbers of "rich" locations can accurately reconstruct stuff
   * Accurate: explicitly track fidelity measured in real world units
+  * Numerically stable
+     * avoid catastrophic cancellation
+       * derivatives and local coordinate systems
+     * use exact values when possible
 
 as opposed to:
   * Jagged: overly simple primitives like line segments and triangles
   * Dense: so many primitives needed to get even basic accuracy
-  * Good enough: If it's not obviously wrong, it's probably OK.
+  * Good enough: If it's not obviously wrong, it's probably OK
+  * double precision probably solves all numerical stability issues
+
+Basemap raster tiles:
+  phase 1:
+    vertex buffer with corners and in/out directions in ecf 3D coordinates
+    display outline
+
+  phase:
+    tesselation shader to curve outline
+    use window coordinates and slopes to compute tessellation level
+
+  phase:
+    fill shape with any color
+    fill shape with nonlinear basemap texture
+
+  phase:
+    correct fill when projection singularity is inside tile (could be tricky)

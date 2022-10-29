@@ -239,7 +239,6 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.view_state.center_location = [0, 0]
         self.view_state.azimuth = 0
         self.view_state.zoom = 0.7
-        self.view_state.altitude = 6378
         self.update()
 
     def resizeGL(self, width: int, height: int) -> None:

@@ -52,6 +52,7 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
 
     @QtCore.Slot()
     def on_actionReset_View_triggered(self):
+        self.altitudeComboBox.setCurrentIndex(6)
         self.openGLWidget.reset_view()
 
     @QtCore.Slot()
