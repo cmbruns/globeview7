@@ -1,6 +1,6 @@
 import io
 import json
-from math import atan, exp, radians
+from math import atan, cos, cosh, exp, radians, sin
 import pathlib
 
 import arcgis
@@ -13,6 +13,11 @@ import requests
 from gv import shader
 from gv.layer import ILayer
 import gv.vertex_buffer
+
+
+def _norm(v):
+    s = numpy.linalg.norm(v)
+    return [x / s for x in v]
 
 
 class WebMercatorTile(object):
@@ -31,20 +36,63 @@ class WebMercatorTile(object):
         self.boundary_shader = None
         self.basemap = basemap
         self.texture = None
-        # compute corner locations
-        verts_wgs = []
+        # compute tile corner locations
+        verts_ecf = []
+        in_ecf = []
+        out_ecf = []
         if rez > 0:
+            # Corner locations
             verts_ttc = [  # in tile texture coordinates
                 [0, 0],  # upper left
                 [1, 0],  # upper right
                 [1, 1],  # lower right
                 [0, 1],  # lower left
             ]
+            # Directions into and out of the corners
+            in_ttc = [
+                [0, -1],  # up
+                [1, 0],  # right
+                [0, 1],  # down
+                [-1, 0],  # left
+            ]
+            out_ttc = [
+                [1, 0],  # right
+                [0, 1],  # down
+                [-1, 0],  # left
+                [0, -1],  # up
+            ]
+            # Mercator coordinates
             k = radians(360 / 2**rez)  # map units per tile index
             o = radians(180)  # origin offset
             verts_mrc = [(k * (x + tx) - o, o - k * (y + ty)) for tx, ty in verts_ttc]
+            in_mrc = [_norm([dx, -dy]) for dx, dy in in_ttc]
+            out_mrc = [_norm([dx, -dy]) for dx, dy in out_ttc]
+            # WGS84 coordinates
             verts_wgs = [(mx, 2 * atan(exp(my)) - radians(90)) for mx, my in verts_mrc]
-        self.boundary_vertices = gv.vertex_buffer.VertexBuffer(verts_wgs)
+            in_wgs = []
+            out_wgs = []
+            for i, p in enumerate(verts_mrc):
+                k = 1.0 / cosh(p[1])  # dlat/dy partial derivative
+                in_wgs.append(_norm([in_mrc[i][0], k * in_mrc[i][1]]))
+                out_wgs.append(_norm([out_mrc[i][0], k * out_mrc[i][1]]))
+            # ECF coordinates
+            verts_ecf = [(
+                cos(wx) * cos(wy),  # x thither
+                sin(wx) * cos(wy),  # y right
+                sin(wy),  # z up
+            ) for wx, wy in verts_wgs]
+            in_ecf = []
+            out_ecf = []
+            for i, p in enumerate(verts_ecf):
+                lon, lat = p[0], p[1]
+                dobq_J_dwgs = numpy.array([
+                    [-cos(lat) * sin(lon), -sin(lat) * cos(lon)],
+                    [cos(lat) * cos(lon), -sin(lat) * sin(lon)],
+                    [0, cos(lat)],
+                ], dtype=numpy.float64)
+                in_ecf.append(_norm(dobq_J_dwgs @ in_wgs[i]))
+                out_ecf.append(_norm(dobq_J_dwgs @ out_wgs[i]))
+        self.boundary_vertices = gv.vertex_buffer.VertexBuffer(verts_ecf, in_ecf, out_ecf)
         # TODO: include corner directions in vertex buffer
 
     def initialize_opengl(self):
@@ -152,7 +200,7 @@ class Basemap(object):
         ub_index = GL.glGetUniformBlockIndex(self.tile_shader, "TransformBlock")
         GL.glUniformBlockBinding(self.tile_shader, ub_index, 2)
         self.tile_boundary_shader = compileProgram(
-            shader.from_files(["projection.glsl", "boundary_wgs.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["red.frag"], GL.GL_FRAGMENT_SHADER),
         )
         ub_index = GL.glGetUniformBlockIndex(self.tile_boundary_shader, "TransformBlock")
