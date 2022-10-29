@@ -43,7 +43,7 @@ class WebMercatorTile(object):
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
-        img = self.tile.image
+        img = self.image
         GL.glTexImage2D(
             GL.GL_TEXTURE_2D,
             0,
@@ -53,7 +53,7 @@ class WebMercatorTile(object):
             0,
             GL.GL_RGBA,
             GL.GL_UNSIGNED_BYTE,
-            self.tile.pixels,
+            self.pixels,
         )
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)
@@ -99,65 +99,37 @@ class Basemap(object):
                 self.attribution = content["attribution"]
                 break
         assert self.raster_tile_url is not None
+        self.vao = None
+        self.root_tile_shader = None
+        self.tile_shader = None
 
     def fetch_tile(self, x, y, rez):
         # TODO: cache tiles
         return WebMercatorTile(x, y, rez, self)
 
+    def initialize_opengl(self):
+        self.vao = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(self.vao)
+        self.root_tile_shader = compileProgram(
+            shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
+        )
+        # TODO: is a separate shader needed?
+        self.tile_shader = compileProgram(
+            shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
+        )
+        GL.glBindVertexArray(0)
+
 
 class RootRasterTile(ILayer):
     def __init__(self, name: str):
         super().__init__(name=name)
-        self.vao = None
-        self.shader = None
-        self.texture = None
-        connection = Basemap()
-        self.tile = connection.fetch_tile(0, 0, 0)
+        basemap = Basemap()
+        self.tile = basemap.fetch_tile(0, 0, 0)
 
     def initialize_opengl(self):
-        self.vao = GL.glGenVertexArrays(1)
-        GL.glBindVertexArray(self.vao)
-        self.shader = compileProgram(
-            shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
-        )
-        ub_index = GL.glGetUniformBlockIndex(self.shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.shader, ub_index, 2)
-        self.texture = GL.glGenTextures(1)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-        GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
-        img = self.tile.image
-        GL.glTexImage2D(
-            GL.GL_TEXTURE_2D,
-            0,
-            GL.GL_RGBA,
-            img.width,
-            img.height,
-            0,
-            GL.GL_RGBA,
-            GL.GL_UNSIGNED_BYTE,
-            self.tile.pixels,
-        )
-        # TODO: catmull rom interpolation
-        GL.glTexParameteri(
-            GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR
-        )
-        GL.glTexParameteri(
-            GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR
-        )
-        GL.glTexParameteri(
-            GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT
-        )
-        GL.glTexParameteri(
-            GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE
-        )
-        GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
-        GL.glBindVertexArray(0)
+        self.tile.initialize_opengl()
 
     def paint_opengl(self, context):
-        if self.texture is None:
-            self.initialize_opengl()
-        GL.glBindVertexArray(self.vao)
-        GL.glUseProgram(self.shader)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-        context.projection.fill_boundary(context)
+        self.tile.paint_opengl(context)
