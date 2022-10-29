@@ -218,8 +218,8 @@ class Basemap(object):
         GL.glUniformBlockBinding(self.tile_shader, ub_index, 2)
         self.tile_boundary_shader = compileProgram(
             shader.from_files(["projection.glsl", "boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
-            shader.from_files(["tile_boundary.tese"], GL.GL_TESS_EVALUATION_SHADER),
+            shader.from_files(["projection.glsl", "tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
+            shader.from_files(["projection.glsl", "tile_boundary.tese"], GL.GL_TESS_EVALUATION_SHADER),
             shader.from_files(["red.frag"], GL.GL_FRAGMENT_SHADER),
         )
         ub_index = GL.glGetUniformBlockIndex(self.tile_boundary_shader, "TransformBlock")
