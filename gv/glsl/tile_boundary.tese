@@ -4,8 +4,6 @@ layout (isolines) in;
 in vec3 te_inDir[];
 in vec3 te_outDir[];
 
-out vec4 outColor;
-
 vec2 ndc_for_ecf_dir(in vec3 pos_ecf, in vec3 direction_ecf, out vec2 direction_ndc)
 {
     mat3 obq_X_ecf = mat3(ub.obq_X_ecf4);
@@ -23,8 +21,6 @@ vec2 ndc_for_ecf_dir(in vec3 pos_ecf, in vec3 direction_ecf, out vec2 direction_
 
 void main()
 {
-    outColor = vec4(1, 0, 0, 1);  // red
-
     // Transform positions and direction to obq units
     vec3 p0 = obq_for_ecf(gl_in[0].gl_Position.xyz);
     vec3 p1 = obq_for_ecf(gl_in[1].gl_Position.xyz);
@@ -42,5 +38,5 @@ void main()
         + (-2*t*t*t + 3*t*t) * p1
         + (t*t*t - t*t) * m1;
 
-    gl_Position = vec4(ndc_for_obq(obq), 0, 1);
+    gl_Position = vec4(obq, 1);
 }
