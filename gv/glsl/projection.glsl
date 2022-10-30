@@ -125,10 +125,9 @@ vec2 dnmc_for_dobq(in vec3 dobq, in vec3 obq)
     {
         float s = sqrt(2 / (1 + obq.x));
         float d = 2 * (1 + obq.x);
-        mat3x2 aea_J_obq = mat3x2(
-            vec3(-s * obq.y / d, s, 0),
-            vec3(-s * obq.z / d, 0, s));
-        return aea_J_obq * dobq;
+        return vec2(
+            dot(vec3(-s * obq.y / d, s, 0), dobq),
+            dot(vec3(-s * obq.z / d, 0, s), dobq));
     }
     return vec2(0);  // whatever...
 }
@@ -249,3 +248,32 @@ vec2 wgs_for_ecf(in vec3 ecf)
 {
     return vec2(atan(ecf.y, ecf.x), asin(ecf.z));
 }
+
+// combined functions below
+
+vec2 ndc_for_nmc(in vec3 pos_nmc)
+{
+    vec3 ndc = mat3(ub.ndc_X_nmc4) * pos_nmc;
+    return ndc.xy / ndc.z;
+}
+
+vec2 ndc_for_obq(in vec3 pos_obq)
+{
+    return ndc_for_nmc(nmc_for_obq(pos_obq));
+}
+
+vec3 obq_for_ecf(in vec3 ecf)
+{
+    return mat3(ub.obq_X_ecf4) * ecf;
+}
+
+vec2 nmc_for_ecf(in vec3 ecf)
+{
+    return nmc_for_obq(obq_for_ecf(ecf)).xy;
+}
+
+vec2 ndc_for_ecf(in vec3 pos_ecf)
+{
+    return ndc_for_obq(obq_for_ecf(pos_ecf));
+}
+

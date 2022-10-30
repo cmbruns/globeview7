@@ -44,21 +44,33 @@ class WebMercatorTile(object):
             # Corner locations
             verts_ttc = [  # in tile texture coordinates
                 [0, 0],  # upper left
+                [0.5, 0],  # upper middle
                 [1, 0],  # upper right
+                [1, 0.5],  # right middle
                 [1, 1],  # lower right
+                [0.5, 1],  # lower middle
                 [0, 1],  # lower left
+                [0, 0.5],  # left middle
             ]
             # Directions into and out of the corners
             in_ttc = [
                 [0, -1],  # up
                 [1, 0],  # right
+                [1, 0],  # right
+                [0, 1],  # down
                 [0, 1],  # down
                 [-1, 0],  # left
+                [-1, 0],  # left
+                [0, -1],  # up
             ]
             out_ttc = [
                 [1, 0],  # right
+                [1, 0],  # right
+                [0, 1],  # down
                 [0, 1],  # down
                 [-1, 0],  # left
+                [-1, 0],  # left
+                [0, -1],  # up
                 [0, -1],  # up
             ]
             # Mercator coordinates
@@ -83,7 +95,7 @@ class WebMercatorTile(object):
             ) for wx, wy in verts_wgs]
             in_ecf = []
             out_ecf = []
-            for i, p in enumerate(verts_ecf):
+            for i, p in enumerate(verts_wgs):
                 lon, lat = p[0], p[1]
                 dobq_J_dwgs = numpy.array([
                     [-cos(lat) * sin(lon), -sin(lat) * cos(lon)],
@@ -223,7 +235,7 @@ class Basemap(object):
             shader.from_files(["projection.glsl", "boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
             shader.from_files(["projection.glsl", "tile_boundary.tese"], GL.GL_TESS_EVALUATION_SHADER),
-            shader.from_files(["red.frag"], GL.GL_FRAGMENT_SHADER),
+            shader.from_files(["color.frag"], GL.GL_FRAGMENT_SHADER),
         )
         ub_index = GL.glGetUniformBlockIndex(self.tile_boundary_shader, "TransformBlock")
         GL.glUniformBlockBinding(self.tile_boundary_shader, ub_index, 2)
