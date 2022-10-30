@@ -77,7 +77,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.ubo = GL.glGenBuffers(1)
         GL.glBindBuffer(GL.GL_UNIFORM_BUFFER, self.ubo)
         GL.glBindBufferBase(GL.GL_UNIFORM_BUFFER, 2, self.ubo)  # Assign binding point "2" to TransformBlock
-        GL.glBufferData(GL.GL_UNIFORM_BUFFER, 16 + 4*64, None, GL.GL_DYNAMIC_DRAW)
+        GL.glBufferData(GL.GL_UNIFORM_BUFFER, 16 + 5*64, None, GL.GL_DYNAMIC_DRAW)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         # TODO: refactor dragging to use ViewState jacobian methods
@@ -187,6 +187,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 144, 64, m4)
         m4[:3, :3] = vs.nmc_X_ndc.T
         GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 208, 64, m4)
+        m4[:3, :3] = vs.win_X_ndc.T
+        GL.glBufferSubData(GL.GL_UNIFORM_BUFFER, 272, 64, m4)
 
         # Shared OpenGL state - in initialize?
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)

@@ -27,6 +27,7 @@ class ViewState(QtCore.QObject):
         self._ecf_X_obq = Transform()
         self._ndc_X_nmc = Transform()
         self._ndc_X_win = Transform()
+        self._win_X_ndc = Transform()
         self._nmc_X_ndc = Transform()
         self._nmc_J_win = Transform(2)
 
@@ -133,6 +134,18 @@ class ViewState(QtCore.QObject):
         return self._ndc_X_win.matrix
 
     @property
+    def win_X_ndc(self):
+        if self._win_X_ndc.dirty:
+            w, h = self._window_size
+            self._win_X_ndc.matrix[:] = (
+                (w / 2, 0, w / 2),
+                (0, -h / 2, h / 2),
+                (0, 0, 1),
+            )
+            self._win_X_ndc.dirty = False
+        return self._win_X_ndc.matrix
+
+    @property
     def nmc_J_win(self):
         if self._nmc_J_win.dirty:
             z = self._zoom
@@ -186,6 +199,7 @@ class ViewState(QtCore.QObject):
         if self._window_size[:] == size[:]:
             return  # No change
         self._window_size[:] = size[:]
+        self._win_X_ndc.dirty = True
         self._ndc_X_win.dirty = True
         self._ndc_X_nmc.dirty = True
         self._nmc_X_ndc.dirty = True

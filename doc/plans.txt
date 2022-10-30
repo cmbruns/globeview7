@@ -24,12 +24,12 @@ as opposed to:
 
 Basemap raster tiles:
   phase 1:  DONE
-    vertex buffer with corners and in/out directions in ecf 3D coordinates
-    display outline
+    vertex buffer with corners and in/out directions in ecf 3D coordinates  DONE
+    display outline DONE
 
   phase2:
-    tesselation shader to curve outline
-    use window coordinates and slopes to compute tessellation level
+    tesselation shader to curve outline DONE
+    * use window coordinates and slopes to compute tessellation level
 
   phase:
     fill shape with any color

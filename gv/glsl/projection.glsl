@@ -26,7 +26,8 @@ layout(std140) uniform TransformBlock
     // linear transforms: data toward display
     mat4 ecf_X_obq4;  // 144
     mat4 nmc_X_ndc4;  // 208
-    // 272
+    mat4 win_X_ndc4;  // 272
+    // 336
 } ub;
 
 struct Segment3
@@ -120,6 +121,7 @@ bool cull_obq(in vec3 obq)
 // Convert oblique geocentric directions to normalized map coordinates
 vec2 dnmc_for_dobq(in vec3 dobq, in vec3 obq)
 {
+    // TODO: actually verify empirically these are correct
     // TODO: more projections
     if (ub.projection == AZIMUTHAL_EQUAL_AREA)
     {
@@ -129,6 +131,54 @@ vec2 dnmc_for_dobq(in vec3 dobq, in vec3 obq)
             dot(vec3(-s * obq.y / d, s, 0), dobq),
             dot(vec3(-s * obq.z / d, 0, s), dobq));
     }
+    else if (ub.projection == AZIMUTHAL_EQUIDISTANT)
+    {
+        float ox = 1 - obq.x * obq.x;
+        float ac = acos(obq.x);
+        float xac = obq.x * ac;
+        float d = xac / pow(ox, 1.5);
+        float acs = ac / sqrt(ox);
+        return vec2(
+            dot(vec3(obq.y * d - obq.y / ox, acs, 0), dobq),
+            dot(vec3(obq.z * d - obq.z / ox, 0, acs), dobq));
+    }
+    else if (ub.projection == EQUIRECTANGULAR_PROJECTION)
+    {
+        float d = obq.x * obq.x + obq.y * obq.y;
+        return vec2(
+            dot(vec3(-obq.y / d, obq.x / d, 0), dobq),
+            dot(vec3(0, 0, 1 / sqrt(d)), dobq));
+    }
+    else if (ub.projection == GNOMONIC_PROJECTION)
+    {
+        float x2 = obq.x * obq.x;
+        return vec2(
+            dot(vec3(-obq.y / x2, 1 / obq.x, 0), dobq),
+            dot(vec3(-obq.z / x2, 0, 1 / obq.x), dobq));
+    }
+    else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
+    {
+        return vec2(
+            dot(vec3(-obq.y / obq.x, 1, 0), dobq),
+            dot(vec3(-obq.z / obq.x, 0, 1), dobq));
+    }
+    else if (ub.projection == PERSPECTIVE_PROJECTION)
+    {
+        float v = ub.view_height_radians;
+        float d = 2 * (v + 1 - obq.x);
+        return vec2(
+            dot(vec3(v * obq.y / (d*d), v/d, 0), dobq),
+            dot(vec3(v * obq.z / (d*d), 0, v/d), dobq));
+    }
+    else if (ub.projection == STEREOGRAPHIC_PROJECTION)
+    {
+        float xp = obq.x + 1;
+        float d = 2 / xp;
+        return vec2(
+            dot(vec3(-obq.y * d / xp, d, 0), dobq),
+            dot(vec3(-obq.z * d / xp, 0, d), dobq));
+    }
+
     return vec2(0);  // whatever...
 }
 
@@ -251,15 +301,20 @@ vec2 wgs_for_ecf(in vec3 ecf)
 
 // combined functions below
 
-vec2 ndc_for_nmc(in vec3 pos_nmc)
+vec3 ndc_for_nmc(in vec3 pos_nmc)
 {
     vec3 ndc = mat3(ub.ndc_X_nmc4) * pos_nmc;
-    return ndc.xy / ndc.z;
+    return ndc.xyz;
 }
 
-vec2 ndc_for_obq(in vec3 pos_obq)
+vec3 ndc_for_obq(in vec3 pos_obq)
 {
     return ndc_for_nmc(nmc_for_obq(pos_obq));
+}
+
+vec3 ecf_for_obq(in vec3 ecf)
+{
+    return mat3(ub.ecf_X_obq4) * ecf;
 }
 
 vec3 obq_for_ecf(in vec3 ecf)
@@ -272,8 +327,27 @@ vec2 nmc_for_ecf(in vec3 ecf)
     return nmc_for_obq(obq_for_ecf(ecf)).xy;
 }
 
-vec2 ndc_for_ecf(in vec3 pos_ecf)
+vec3 ndc_for_ecf(in vec3 pos_ecf)
 {
     return ndc_for_obq(obq_for_ecf(pos_ecf));
 }
 
+vec3 win_for_ndc(in vec3 ndc)
+{
+    return mat3(ub.win_X_ndc4) * ndc;
+}
+
+vec3 win_for_ecf(in vec3 ecf)
+{
+    return win_for_ndc(ndc_for_ecf(ecf));
+}
+
+vec2 dwin_for_decf(in vec3 decf, in vec3 ecf)
+{
+    vec3 obq = ecf_for_obq(ecf);
+    vec3 dobq = obq_for_ecf(decf);
+    vec2 dnmc = dnmc_for_dobq(dobq, obq);
+    vec2 dndc = mat2(ub.ndc_X_nmc4) * dnmc;
+    vec2 dwin = mat2(ub.win_X_ndc4) * dndc;
+    return dwin;
+}
