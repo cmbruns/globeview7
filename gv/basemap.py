@@ -92,7 +92,10 @@ class WebMercatorTile(object):
                 ], dtype=numpy.float64)
                 in_ecf.append(_norm(dobq_J_dwgs @ in_wgs[i]))
                 out_ecf.append(_norm(dobq_J_dwgs @ out_wgs[i]))
-        self.boundary_vertices = gv.vertex_buffer.VertexBuffer(verts_ecf, in_ecf, out_ecf)
+        if len(verts_ecf) == 0:
+            self.boundary_vertices = gv.vertex_buffer.VertexBuffer(verts_ecf)
+        else:
+            self.boundary_vertices = gv.vertex_buffer.VertexBuffer(verts_ecf, in_ecf, out_ecf)
         indexes = []
         nv = len(verts_ecf)
         for i in range(nv - 1):

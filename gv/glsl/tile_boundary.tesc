@@ -4,8 +4,8 @@ layout (vertices = 2) out;
 in vec3 tc_inDir[];
 in vec3 tc_outDir[];
 
-out vec3 te_inDir[];
-out vec3 te_outDir[];
+flat out vec3 te_inDir[];
+flat out vec3 te_outDir[];
 
 void main() {
     if (gl_InvocationID == 0)
@@ -15,6 +15,9 @@ void main() {
     }
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
+    // te_inDir[gl_InvocationID] = vec3(0, 1, 0);  // OK
+    // vec3 foo = tc_inDir[gl_InvocationID];  // OK
+    // te_inDir = foo;  // validation failure (0): <no message>
     // te_inDir[gl_InvocationID] = tc_inDir[gl_InvocationID];  // validation failure!?
     // outDir_te[gl_InvocationID] = outDir_ecf[gl_InvocationID];
     // outDir_tese[gl_InvocationID] = vec3(0, 1, 0);

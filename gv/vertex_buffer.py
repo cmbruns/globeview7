@@ -39,11 +39,11 @@ class VertexBuffer(object):
             self.vbo = GL.glGenBuffers(1)
             GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
             GL.glBufferData(GL.GL_ARRAY_BUFFER, self.vertices, GL.GL_STATIC_DRAW)
-            stride = 4 * sum(self.element_counts)
             offset = 0
+            stride = 4 * sum(self.element_counts)
             for i, ec in enumerate(self.element_counts):
-                GL.glEnableVertexAttribArray(i)
                 if ec > 0:
                     GL.glVertexAttribPointer(i, ec, GL.GL_FLOAT, False, stride, cast(offset, c_void_p))
                 offset += 4 * ec
+                GL.glEnableVertexAttribArray(i)
             GL.glBindVertexArray(0)
