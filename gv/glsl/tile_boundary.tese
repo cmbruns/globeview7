@@ -1,7 +1,8 @@
+#line 2
 layout (isolines) in;
 
-in vec3 inDir_ecf[];
-in vec3 outDir_ecf[];
+in vec3 te_inDir[];
+in vec3 te_outDir[];
 
 vec2 ndc_for_ecf(in vec3 pos_ecf, in vec3 direction_ecf, out vec2 direction_ndc)
 {
@@ -23,8 +24,10 @@ void main()
     // Transform positions and direction to ndc units
     vec2 dndc0;
     vec2 dndc1;
-    vec2 p0 = ndc_for_ecf(gl_in[0].gl_Position.xyz, outDir_ecf[0], dndc0);
-    vec2 p1 = ndc_for_ecf(gl_in[1].gl_Position.xyz, inDir_ecf[1], dndc1);
+    vec2 p0 = ndc_for_ecf(gl_in[0].gl_Position.xyz, te_outDir[0], dndc0);
+    vec2 p1 = ndc_for_ecf(gl_in[1].gl_Position.xyz, te_inDir[1], dndc1);
+
+    // dndc0 = vec2(0, 1);  // just testing
 
     vec2 edge_dir = normalize(p1 - p0);
     vec2 m0 = length(p1 - p0) * (dndc0 - dot(dndc0, edge_dir) * edge_dir);
