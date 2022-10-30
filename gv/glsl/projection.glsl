@@ -117,6 +117,22 @@ bool cull_obq(in vec3 obq)
     return result;
 }
 
+// Convert oblique geocentric directions to normalized map coordinates
+vec2 dnmc_for_dobq(in vec3 dobq, in vec3 obq)
+{
+    // TODO: more projections
+    if (ub.projection == AZIMUTHAL_EQUAL_AREA)
+    {
+        float s = sqrt(2 / (1 + obq.x));
+        float d = 2 * (1 + obq.x);
+        mat3x2 aea_J_obq = mat3x2(
+            vec3(-s * obq.y / d, s, 0),
+            vec3(-s * obq.z / d, 0, s));
+        return aea_J_obq * dobq;
+    }
+    return vec2(0);  // whatever...
+}
+
 // Convert WGS84 coordinates to non-oblique geocentric coordinates
 vec3 ecf_for_wgs(vec2 wgs /* lon, lat radians */)
 {
