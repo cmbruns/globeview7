@@ -9,7 +9,7 @@ def main():
     # Set OpenGL version *before* constructing QApplication()
     gl_format = QSurfaceFormat()
     gl_format.setMajorVersion(4)
-    gl_format.setMinorVersion(2)
+    gl_format.setMinorVersion(6)
     gl_format.setProfile(QSurfaceFormat.CoreProfile)
     QSurfaceFormat.setDefaultFormat(gl_format)
     app = QtWidgets.QApplication(sys.argv)
