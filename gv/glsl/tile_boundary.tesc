@@ -28,7 +28,7 @@ void main()
         vec2 dw = (win1 - win0).xy;
         float lw = length(dw);
         float nsegs = 1;  // minimum number of interpolated segments
-        nsegs += lw / 50;  // more segments for longer lines
+        nsegs += lw / 15;  // more segments for longer lines
         if (lw > 0) {
             vec2 lineDir = dw / lw;
             vec2 m0 = normalize(dwin_for_decf(tc_outDir[0], ecf0));
@@ -37,7 +37,6 @@ void main()
             float c1 = 1 - dot(m1, lineDir);
             float cmax = max(c0, c1);  // range 0 to 2
             nsegs += 100 * cmax;  // more segments for more dramatic curves
-            // TODO:
         }
 
         gl_TessLevelOuter[1] = nsegs;  // Number of segments per line
