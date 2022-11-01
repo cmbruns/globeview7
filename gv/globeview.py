@@ -1,5 +1,5 @@
 import sys
-from PySide6 import QtGui, QtOpenGL, QtWidgets
+from PySide6 import QtWidgets
 from PySide6.QtGui import QSurfaceFormat
 
 from main_window import GlobeViewMainWindow

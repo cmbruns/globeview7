@@ -33,6 +33,7 @@ class WebMercatorTile(object):
             buffer=self.image.convert("RGBA").tobytes(), dtype=numpy.ubyte
         )
         self.fill_shader = None
+        self.fill_color_shader = None
         self.boundary_shader = None
         self.basemap = basemap
         self.texture = None
@@ -128,8 +129,12 @@ class WebMercatorTile(object):
         if self.rez == 0:
             self.fill_shader = self.basemap.root_tile_shader
         else:
-            self.fill_shader = self.basemap.tile_shader
+            self.fill_shader = self.basemap.tile_fill_shader
             self.boundary_shader = self.basemap.tile_boundary_shader
+        self.fill_color_shader = compileProgram(
+            shader.from_files(["screen_quad.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["color.frag"], GL.GL_FRAGMENT_SHADER),
+        )
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
@@ -165,6 +170,33 @@ class WebMercatorTile(object):
             context.projection.fill_boundary(context)
         else:
             raise NotImplementedError
+
+    def fill_boundary(self, context):
+        if self.rez == 0:
+            context.projection.paint_boundary(context)
+            return
+        if self.boundary_shader is None:
+            self.initialize_opengl()
+        self.boundary_vertices.bind()
+        GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
+        GL.glUseProgram(self.fill_shader)
+        GL.glUniform3f(8, *self.boundary_vertices.vertices[0:3])
+        GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
+        # First pass: fill the stencil buffer
+        GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
+        GL.glEnable(GL.GL_STENCIL_TEST)
+        GL.glColorMask(False, False, False, False)
+        GL.glStencilFunc(GL.GL_ALWAYS, 0, 1)
+        GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_INVERT)
+        GL.glStencilMask(1)
+        GL.glDrawElements(GL.GL_PATCHES, len(self.boundary_indexes), GL.GL_UNSIGNED_BYTE, None)
+        # Second pass: Paint by stencil
+        GL.glColorMask(True, True, True, True)
+        GL.glStencilFunc(GL.GL_EQUAL, 1, 1)
+        GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP)
+        GL.glUseProgram(self.fill_color_shader)
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
+        GL.glDisable(GL.GL_STENCIL_TEST)
 
     def paint_boundary(self, context):
         if self.rez == 0:
@@ -206,7 +238,7 @@ class Basemap(object):
         assert self.raster_tile_url is not None
         self.vao = None
         self.root_tile_shader = None
-        self.tile_shader = None
+        self.tile_fill_shader = None
         self.tile_boundary_shader = None
 
     def fetch_tile(self, x, y, rez):
@@ -223,9 +255,12 @@ class Basemap(object):
         # TODO: is a separate shader needed?
         # Well, separate shaders for outline vs fill are needed...
         # ...and it might be an optimization to avoid gradient texture fetch for non-root tiles
-        self.tile_shader = compileProgram(
-            shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
+        self.tile_fill_shader = compileProgram(
+            shader.from_files(["projection.glsl", "boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["projection.glsl", "tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
+            shader.from_files(["projection.glsl", "tile_fill.tese"], GL.GL_TESS_EVALUATION_SHADER),
+            shader.from_files(["projection.glsl", "tile_fill.geom"], GL.GL_GEOMETRY_SHADER),
+            shader.from_files(["color.frag"], GL.GL_FRAGMENT_SHADER),
         )
         self.tile_boundary_shader = compileProgram(
             shader.from_files(["projection.glsl", "boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
@@ -260,4 +295,5 @@ class TestRasterTile(ILayer):
         self.tile.initialize_opengl()
 
     def paint_opengl(self, context):
+        self.tile.fill_boundary(context)
         self.tile.paint_boundary(context)
