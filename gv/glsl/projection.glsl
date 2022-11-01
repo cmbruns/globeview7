@@ -12,7 +12,7 @@ const int GNOMONIC_PROJECTION = 6;
 const float pi = 3.14159265359;
 const float two_pi = 2.0 * pi;
 
-layout(std140) uniform TransformBlock
+layout(std140, binding = 2) uniform TransformBlock
 {
     int projection;  // 0 TODO: use a uniform block like this...
     int instanceID;  // 4 for (future) tiling equirectangular projection

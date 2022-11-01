@@ -37,8 +37,6 @@ class H3Cell(ILayer):
             shader.from_files(["projection.glsl", "h3cell.geom"], GL.GL_GEOMETRY_SHADER),
             shader.from_files(["green.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.program, "TransformBlock")
-        GL.glUniformBlockBinding(self.program, ub_index, 2)
         line_width_range = GL.glGetIntegerv(GL.GL_SMOOTH_LINE_WIDTH_RANGE)
         self.line_width = min(3, line_width_range[1])
         GL.glBindVertexArray(0)

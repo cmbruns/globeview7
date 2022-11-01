@@ -220,8 +220,6 @@ class Basemap(object):
             shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.root_tile_shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.root_tile_shader, ub_index, 2)
         # TODO: is a separate shader needed?
         # Well, separate shaders for outline vs fill are needed...
         # ...and it might be an optimization to avoid gradient texture fetch for non-root tiles
@@ -229,8 +227,6 @@ class Basemap(object):
             shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.tile_shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.tile_shader, ub_index, 2)
         self.tile_boundary_shader = compileProgram(
             shader.from_files(["projection.glsl", "boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
@@ -238,8 +234,6 @@ class Basemap(object):
             shader.from_files(["projection.glsl", "h3cell.geom"], GL.GL_GEOMETRY_SHADER),
             shader.from_files(["green.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.tile_boundary_shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.tile_boundary_shader, ub_index, 2)
         GL.glBindVertexArray(0)
 
 

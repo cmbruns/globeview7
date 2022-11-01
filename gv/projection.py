@@ -74,8 +74,6 @@ class AzimuthalEqualAreaProjection(DisplayProjection):
             shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.boundary_shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.boundary_shader, ub_index, 2)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -144,8 +142,6 @@ class AzimuthalEquidistantProjection(DisplayProjection):
             shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.boundary_shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.boundary_shader, ub_index, 2)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -231,8 +227,6 @@ class EquirectangularProjection(DisplayProjection):
             shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.boundary_shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.boundary_shader, ub_index, 2)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -349,8 +343,6 @@ class OrthographicProjection(DisplayProjection):
             shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.boundary_shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.boundary_shader, ub_index, 2)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -421,8 +413,6 @@ class PerspectiveProjection(DisplayProjection):
             shader.from_files(["projection.glsl", "boundary_psp.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.boundary_shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.boundary_shader, ub_index, 2)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):

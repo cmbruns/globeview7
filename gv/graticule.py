@@ -73,8 +73,6 @@ class Graticule(ILayer):
             shader.from_files(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
             shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
         )
-        ub_index = GL.glGetUniformBlockIndex(self.shader, "TransformBlock")
-        GL.glUniformBlockBinding(self.shader, ub_index, 2)
         GL.glBindVertexArray(0)
 
     def paint_opengl(self, context):

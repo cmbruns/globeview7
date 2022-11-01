@@ -154,12 +154,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.previous_mouse = None
 
     def paintGL(self) -> None:
-        if self.painter is None:
-            self.painter = QtGui.QPainter()
-            self.painter.begin(self)
-            self.font = self.painter.font()
-        else:
-            self.painter.begin(self)
+        self.painter.begin(self)
         self.painter.beginNativePainting()
         self.paint_opengl()
         self.painter.endNativePainting()
