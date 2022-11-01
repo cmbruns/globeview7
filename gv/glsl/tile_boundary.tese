@@ -38,5 +38,5 @@ void main()
         + (-2*t*t*t + 3*t*t) * p1
         + (t*t*t - t*t) * m1;
 
-    gl_Position = vec4(obq, 1);
+    gl_Position = vec4(normalize(obq), 1);
 }
