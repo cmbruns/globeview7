@@ -256,8 +256,8 @@ class Basemap(object):
         # Well, separate shaders for outline vs fill are needed...
         # ...and it might be an optimization to avoid gradient texture fetch for non-root tiles
         self.tile_fill_shader = compileProgram(
-            shader.from_files(["projection.glsl", "boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["projection.glsl", "tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
+            shader.from_files(["boundary_ecf.vert"], GL.GL_VERTEX_SHADER),
+            shader.from_files(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
             shader.from_files(["projection.glsl", "tile_fill.tese"], GL.GL_TESS_EVALUATION_SHADER),
             shader.from_files(["projection.glsl", "tile_fill.geom"], GL.GL_GEOMETRY_SHADER),
             shader.from_files(["color.frag"], GL.GL_FRAGMENT_SHADER),

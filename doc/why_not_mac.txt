@@ -1,0 +1,16 @@
+Mac issues:
+
+The maximum OpenGL version is 4.1
+  * My tessellation shaders fail to validate when passing vec3s between stages
+    while using OpenGL 4.3 or earlier.
+
+Tessellation shaders fail to validate on Mac, even when not passing vec3s.
+
+The outline of the equirectangular projection does not show up on Mac.
+  This might have to do with the infinite points involved.
+
+Coastline rendering is very slow. Maybe too many vertices at once.
+
+Display projection combo box does not take keyboard focus.
+
+Mac full screen is not interacting well with the full screen toggle.

@@ -1,4 +1,6 @@
 #line 2
+#pragma include "projection.glsl"
+
 layout (vertices = 2) out;
 
 in vec3 tc_inDir[];
