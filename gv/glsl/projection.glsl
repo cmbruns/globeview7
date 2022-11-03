@@ -199,37 +199,52 @@ vec2 mercator_for_lonlat(in vec2 lonlat)
 // Convert oblique geocentric coordinates to normalized map coordinates
 vec3 nmc_for_obq(in vec3 obq)
 {
-    if (ub.projection == EQUIRECTANGULAR_PROJECTION)
+    switch(ub.projection) {
+    case EQUIRECTANGULAR_PROJECTION:
         return vec3(atan(obq.y, obq.x), asin(obq.z), 1);
-    else if (ub.projection == AZIMUTHAL_EQUAL_AREA)
+    case AZIMUTHAL_EQUAL_AREA:
     {
         float d = sqrt(2 / (1 + obq.x));
         return vec3(d * obq.y, d * obq.z, 1);
     }
-    else if (ub.projection == AZIMUTHAL_EQUIDISTANT)
+    case AZIMUTHAL_EQUIDISTANT:
     {
         float d = acos(obq.x) / sqrt(1.0 - obq.x * obq.x);
         return vec3(d * obq.y, d * obq.z, 1);
     }
-    else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
+    case ORTHOGRAPHIC_PROJECTION:
+        if (obq.x < 0) {
+            // pull points past horizon back to horizon
+            float s = 1.0 / length(obq.yz);
+            return vec3(s * obq.y, s * obq.z, 1);
+        }
         return vec3(obq.y, obq.z, 1);
-    else if (ub.projection == PERSPECTIVE_PROJECTION)
+    case PERSPECTIVE_PROJECTION:
     {
         float v = ub.view_height_radians;
+        float max_radius = sqrt(v / (2 + v));  // nmc boundary
+        float min_x = max_radius / v;
         float d = v / (v - obq.x + 1.0);
-        return vec3(obq.y * d, obq.z * d, 1);
+        vec2 nmc = obq.yz * d;
+        if (obq.x < min_x) {
+            // pull points past horizon back to horizon
+            float s = max_radius / length(nmc);
+            return vec3(s * nmc, 1);
+        }
+        return vec3(nmc, 1);
     }
-    else if (ub.projection == STEREOGRAPHIC_PROJECTION) {
+    case STEREOGRAPHIC_PROJECTION: {
         float d = 1 + obq.x;
         if (d <= 0)
             return vec3(0, 0, 1);
         else
             return vec3(2 * obq.y / d, 2 * obq.z / d, 1);
     }
-    else if (ub.projection == GNOMONIC_PROJECTION)
+    case GNOMONIC_PROJECTION:
         return vec3(obq.y / obq.x, obq.z / obq.x, 1);
-    else
+    default:
         return vec3(0);  // whatever...
+    }
 }
 
 // Convert normalized map coordinates to oblique geocentric coorinates

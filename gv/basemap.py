@@ -1,6 +1,6 @@
 import io
 import json
-from math import atan, cos, cosh, exp, radians, sin
+from math import atan, cos, cosh, degrees, exp, radians, sin
 import pathlib
 
 import arcgis
@@ -18,6 +18,11 @@ import gv.vertex_buffer
 def _norm(v):
     s = numpy.linalg.norm(v)
     return [x / s for x in v]
+
+
+# Stencil buffer mask bits
+tile_arity_mask = 0b010  # for the current tile, the arity of number of polygons overlapping this pixel
+projection_region_mask = 0b100  # all valid pixels on screen for this projection
 
 
 class WebMercatorTile(object):
@@ -41,6 +46,8 @@ class WebMercatorTile(object):
         verts_ecf = []
         in_ecf = []
         out_ecf = []
+        self.lon_range = [-180, 180]
+        self.lat_range = [-90, 90]
         if rez > 0:
             # Corner locations
             verts_ttc = [  # in tile texture coordinates
@@ -88,6 +95,16 @@ class WebMercatorTile(object):
                 k = 1.0 / cosh(p[1])  # dlat/dy partial derivative
                 in_wgs.append(_norm([in_mrc[i][0], k * in_mrc[i][1]]))
                 out_wgs.append(_norm([out_mrc[i][0], k * out_mrc[i][1]]))
+            # Compute wgs ranges for latitude testing
+            lon1 = degrees(verts_wgs[0][0])
+            lat1 = degrees(verts_wgs[0][1])
+            self.lon_range[:] = (lon1, lon1)
+            self.lat_range[:] = (lat1, lat1)
+            for w in verts_wgs:
+                self.lon_range[0] = min(self.lon_range[0], degrees(w[0]))  # min
+                self.lon_range[1] = max(self.lon_range[1], degrees(w[0]))  # max
+                self.lat_range[0] = min(self.lat_range[0], degrees(w[1]))  # min
+                self.lat_range[1] = max(self.lat_range[1], degrees(w[1]))  # max
             # ECF coordinates
             verts_ecf = [(
                 cos(wx) * cos(wy),  # x thither
@@ -119,6 +136,18 @@ class WebMercatorTile(object):
         self.ibo = None
 
         # TODO: include corner directions in vertex buffer
+
+    def contains_antipode(self, context) -> bool:
+        lon, lat = context.center_location  # screen center in WGS84
+        assert lon <= 180
+        assert lon >= -180
+        # rotate to antipode
+        lon = lon + 180
+        if lon > 180:
+            lon = lon - 360
+        lat = -lat
+        return (self.lon_range[0] <= lon <= self.lon_range[1]
+                and self.lat_range[0] <= lat <= self.lat_range[1])
 
     def initialize_opengl(self):
         self.basemap.initialize_opengl()
@@ -180,23 +209,27 @@ class WebMercatorTile(object):
         self.boundary_vertices.bind()
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
         GL.glUseProgram(self.fill_shader)
-        GL.glUniform3f(8, *self.boundary_vertices.vertices[0:3])
+        GL.glUniform3f(8, *self.boundary_vertices.vertices[0:3])  # first point
         GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
         # First pass: fill the stencil buffer
+        GL.glStencilMask(tile_arity_mask)
         GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
-        GL.glEnable(GL.GL_STENCIL_TEST)
         GL.glColorMask(False, False, False, False)
-        GL.glStencilFunc(GL.GL_ALWAYS, 0, 1)
+        GL.glStencilFunc(GL.GL_ALWAYS, 0, tile_arity_mask)
         GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_INVERT)
-        GL.glStencilMask(1)
         GL.glDrawElements(GL.GL_PATCHES, len(self.boundary_indexes), GL.GL_UNSIGNED_BYTE, None)
         # Second pass: Paint by stencil
         GL.glColorMask(True, True, True, True)
-        GL.glStencilFunc(GL.GL_EQUAL, 1, 1)
+        if self.contains_antipode(context):
+            ref = projection_region_mask  # Invert polygon area
+            msk = tile_arity_mask | projection_region_mask
+        else:
+            ref = tile_arity_mask | projection_region_mask
+            msk = tile_arity_mask | projection_region_mask
+        GL.glStencilFunc(GL.GL_EQUAL, ref, msk)
         GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP)
         GL.glUseProgram(self.fill_color_shader)
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
-        GL.glDisable(GL.GL_STENCIL_TEST)
 
     def paint_boundary(self, context):
         if self.rez == 0:
@@ -295,5 +328,16 @@ class TestRasterTile(ILayer):
         self.tile.initialize_opengl()
 
     def paint_opengl(self, context):
+        GL.glEnable(GL.GL_STENCIL_TEST)
+        # Populate valid area stencil mask
+        GL.glStencilMask(projection_region_mask)
+        GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
+        GL.glStencilFunc(GL.GL_ALWAYS, 0, projection_region_mask)
+        GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_INVERT)
+        GL.glColorMask(False, False, False, False)
+        context.projection.fill_boundary(context)
+        # Draw "all" the tiles
         self.tile.fill_boundary(context)
+        GL.glDisable(GL.GL_STENCIL_TEST)
+        #
         self.tile.paint_boundary(context)
