@@ -31,17 +31,10 @@ void main()
         gl_TessLevelOuter[3] = 1.0;  // Unused, but needed for validation
 
         // dynamically determine tessellation level
-        vec3 ecf0 = gl_in[0].gl_Position.xyz;
-        vec3 ecf1 = gl_in[1].gl_Position.xyz;
-
-        // TODO: why is tc_waypoint_ecf[n].p not the same as gl_in[n].gl_Position.xyz?
-        // vec3 ecf0 = tc_waypoint_ecf[0].p;  // not correct
-        // vec3 ecf1 = tc_waypoint_ecf[1].p;
-
+        vec3 ecf0 = tc_waypoint_ecf[0].p;
+        vec3 ecf1 = tc_waypoint_ecf[1].p;
         vec3 win0 = win_for_ecf(ecf0);
         vec3 win1 = win_for_ecf(ecf1);
-        // vec3 win0 = win_for_ecf(tc_waypoint_ecf[0].p);  // not correct...
-        // vec3 win1 = win_for_ecf(tc_waypoint_ecf[1].p);
         vec2 dw = (win1 - win0).xy;
         float lw = length(dw);
         float nsegs = 1;  // minimum number of interpolated segments

@@ -6,20 +6,18 @@ layout (location = 0) in vec3 pos_ecf_in;  // vertex position
 layout (location = 1) in vec3 v_inDir;  // vertex incoming direction
 layout (location = 2) in vec3 v_outDir;  // vertex outgoing direction
 
-uniform vec4 uColor = vec4(0, 1, 0, 1);
+uniform vec4 uColor = vec4(1, 0, 1, 1);  // magenta means someone needs to set that color...
 out vec4 fColor;
 
 out vec3 tc_inDir;
 out vec3 tc_outDir;
-out Waypoint3 waypoint_ecf;
+out Waypoint3 tc_waypoint_ecf;
 
 void main()
 {
     gl_Position = vec4(pos_ecf_in, 1);
     fColor = uColor;
-
-    // TODO: why is tc_waypoint_ecf.p not the same as gl_Position.xyz?
-    waypoint_ecf = Waypoint3(
+    tc_waypoint_ecf = Waypoint3(
         pos_ecf_in,
         v_inDir,
         v_outDir);
