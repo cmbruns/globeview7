@@ -3,8 +3,13 @@
 layout (lines) in;
 layout (line_strip, max_vertices = 4) out;  // up to two line segments
 
+in vec4 gColor[];
+out vec4 fColor;
+
 void main()
 {
+    fColor = gColor[0];
+
     Segment3 obq = Segment3(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz);
 
     // some projections e.g. orthographic like to clip in obq space

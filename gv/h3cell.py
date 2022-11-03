@@ -36,6 +36,7 @@ class H3Cell(ILayer):
             shader.from_files(["projection.glsl", "h3cell.vert"], GL.GL_VERTEX_SHADER),
             shader.from_files(["projection.glsl", "h3cell.geom"], GL.GL_GEOMETRY_SHADER),
             shader.from_files(["green.frag"], GL.GL_FRAGMENT_SHADER),
+            # validate=False,
         )
         line_width_range = GL.glGetIntegerv(GL.GL_SMOOTH_LINE_WIDTH_RANGE)
         self.line_width = min(3, line_width_range[1])

@@ -352,17 +352,27 @@ vec3 win_for_ndc(in vec3 ndc)
     return mat3(ub.win_X_ndc4) * ndc;
 }
 
+vec3 win_for_obq(in vec3 obq)
+{
+    return win_for_ndc(ndc_for_obq(obq));
+}
+
 vec3 win_for_ecf(in vec3 ecf)
 {
     return win_for_ndc(ndc_for_ecf(ecf));
+}
+
+vec2 dwin_for_dobq(in vec3 dobq, in vec3 obq)
+{
+    vec2 dnmc = dnmc_for_dobq(dobq, obq);
+    vec2 dndc = mat2(ub.ndc_X_nmc4) * dnmc;
+    vec2 dwin = mat2(ub.win_X_ndc4) * dndc;
+    return dwin;
 }
 
 vec2 dwin_for_decf(in vec3 decf, in vec3 ecf)
 {
     vec3 obq = ecf_for_obq(ecf);
     vec3 dobq = obq_for_ecf(decf);
-    vec2 dnmc = dnmc_for_dobq(dobq, obq);
-    vec2 dndc = mat2(ub.ndc_X_nmc4) * dnmc;
-    vec2 dwin = mat2(ub.win_X_ndc4) * dndc;
-    return dwin;
+    return dwin_for_dobq(dobq, obq);
 }

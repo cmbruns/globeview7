@@ -4,11 +4,12 @@ layout (lines) in;
 layout (location = 8) uniform vec3 uFirstPoint_ecf;
 layout (triangle_strip, max_vertices = 3) out;  // one triangle
 
-out vec4 outColor;
+in vec4 gColor[];
+out vec4 fColor;
 
 void main()
 {
-    outColor = vec4(1, 1, 0, 0.3);
+    fColor = gColor[0];
 
     vec3 ndcFirst = ndc_for_ecf(uFirstPoint_ecf);
     vec3 ndc0 = ndc_for_obq(gl_in[0].gl_Position.xyz);

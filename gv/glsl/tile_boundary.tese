@@ -1,8 +1,15 @@
 #line 2
+#pragma include "waypoint.glsl"
+#pragma include "projection.glsl"
+
 layout (isolines) in;
 
 in vec3 te_inDir[];
 in vec3 te_outDir[];
+in Waypoint3 te_waypoint_obq[];
+in vec4 teColor[];
+
+out vec4 gColor;
 
 vec2 ndc_for_ecf_dir(in vec3 pos_ecf, in vec3 direction_ecf, out vec2 direction_ndc)
 {
@@ -21,6 +28,8 @@ vec2 ndc_for_ecf_dir(in vec3 pos_ecf, in vec3 direction_ecf, out vec2 direction_
 
 void main()
 {
+    gColor = teColor[0];
+
     // Transform positions and direction to obq units
     vec3 p0 = obq_for_ecf(gl_in[0].gl_Position.xyz);
     vec3 p1 = obq_for_ecf(gl_in[1].gl_Position.xyz);

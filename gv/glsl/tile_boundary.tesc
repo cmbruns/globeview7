@@ -1,13 +1,18 @@
 #line 2
+#pragma include "waypoint.glsl"
 #pragma include "projection.glsl"
 
 layout (vertices = 2) out;
 
 in vec3 tc_inDir[];
 in vec3 tc_outDir[];
+in Waypoint3 tc_waypoint_ecf[];
+in vec4 fColor[];
 
 out vec3 te_inDir[];
 out vec3 te_outDir[];
+out Waypoint3 te_waypoint_ecf[];
+out vec4 teColor[];
 
 
 float sine2DAngle(vec2 v1, vec2 v2)
@@ -21,12 +26,22 @@ void main()
     if (gl_InvocationID == 0)
     {
         gl_TessLevelOuter[0] = 1.0;  // Number of lines
+        gl_TessLevelOuter[1] = 1.0;  // Number of segments per line
+        gl_TessLevelOuter[2] = 1.0;  // Unused, but needed for validation
+        gl_TessLevelOuter[3] = 1.0;  // Unused, but needed for validation
 
         // dynamically determine tessellation level
         vec3 ecf0 = gl_in[0].gl_Position.xyz;
         vec3 ecf1 = gl_in[1].gl_Position.xyz;
+
+        // TODO: why is tc_waypoint_ecf[n].p not the same as gl_in[n].gl_Position.xyz?
+        // vec3 ecf0 = tc_waypoint_ecf[0].p;  // not correct
+        // vec3 ecf1 = tc_waypoint_ecf[1].p;
+
         vec3 win0 = win_for_ecf(ecf0);
         vec3 win1 = win_for_ecf(ecf1);
+        // vec3 win0 = win_for_ecf(tc_waypoint_ecf[0].p);  // not correct...
+        // vec3 win1 = win_for_ecf(tc_waypoint_ecf[1].p);
         vec2 dw = (win1 - win0).xy;
         float lw = length(dw);
         float nsegs = 1;  // minimum number of interpolated segments
@@ -43,7 +58,11 @@ void main()
 
         gl_TessLevelOuter[1] = nsegs;  // Number of segments per line
     }
-    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;  // not needed?
+    te_waypoint_ecf[gl_InvocationID] = tc_waypoint_ecf[gl_InvocationID];
+    teColor[gl_InvocationID] = fColor[gl_InvocationID];
+
     te_inDir[gl_InvocationID] = tc_inDir[gl_InvocationID];  // validation failure w/ version <= 4.3
     te_outDir[gl_InvocationID] = tc_outDir[gl_InvocationID];
 }
