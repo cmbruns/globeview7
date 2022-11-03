@@ -28,6 +28,9 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             row = LayerWidget(layer)
             item.setSizeHint(row.minimumSizeHint())
             ll.setItemWidget(item, row)
+        # Set initial state
+        self.openGLWidget.set_projection(Projection.ORTHOGRAPHIC)
+        self.projectionComboBox.setCurrentIndex(self.openGLWidget.view_state.projection.index)
 
     @QtCore.Slot(bool)
     def on_actionFull_Screen_toggled(self, is_checked: bool):

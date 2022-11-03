@@ -228,7 +228,13 @@ class WebMercatorTile(object):
             msk = tile_arity_mask | projection_region_mask
         GL.glStencilFunc(GL.GL_EQUAL, ref, msk)
         GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP)
-        GL.glUseProgram(self.fill_color_shader)
+        draw_image = False
+        if draw_image:
+            # TODO: not working yet
+            GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+            GL.glUseProgram(self.fill_shader)
+        else:
+            GL.glUseProgram(self.fill_color_shader)  # Just a transparent color
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
 
     def paint_boundary(self, context):
@@ -328,8 +334,8 @@ class TestRasterTile(ILayer):
         self.tile.initialize_opengl()
 
     def paint_opengl(self, context):
-        GL.glEnable(GL.GL_STENCIL_TEST)
         # Populate valid area stencil mask
+        GL.glEnable(GL.GL_STENCIL_TEST)
         GL.glStencilMask(projection_region_mask)
         GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
         GL.glStencilFunc(GL.GL_ALWAYS, 0, projection_region_mask)
@@ -339,5 +345,5 @@ class TestRasterTile(ILayer):
         # Draw "all" the tiles
         self.tile.fill_boundary(context)
         GL.glDisable(GL.GL_STENCIL_TEST)
-        #
+        # Draw the outline of the tile(s)
         self.tile.paint_boundary(context)
