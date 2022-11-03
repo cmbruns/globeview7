@@ -1,3 +1,5 @@
+#pragma include "projection.glsl"
+
 // Clip line segments that go around the WGS84 seam
 // TODO: interpolate curves
 

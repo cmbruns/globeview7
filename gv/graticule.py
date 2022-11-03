@@ -68,11 +68,11 @@ class Graticule(ILayer):
         self.vertex_counts = numpy.array(vertex_counts, dtype=numpy.int32)
         self.vertices = VertexBuffer(polygons)
         self.vertices.bind()
-        self.shader = compileProgram(
-            shader.from_files(["coastline.vert", ], GL.GL_VERTEX_SHADER),
-            shader.from_files(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
-            shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
-        )
+        self.shader = shader.Program(
+            shader.Stage(["coastline.vert", ], GL.GL_VERTEX_SHADER),
+            shader.Stage(["coastline.geom", ], GL.GL_GEOMETRY_SHADER),
+            shader.Stage(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
+        ).compile()
         GL.glBindVertexArray(0)
 
     def paint_opengl(self, context):

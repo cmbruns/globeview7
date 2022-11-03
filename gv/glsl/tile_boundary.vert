@@ -11,17 +11,18 @@ out vec4 fColor;
 
 out vec3 tc_inDir;
 out vec3 tc_outDir;
-out Waypoint3 tc_waypoint_ecf;
+out Waypoint3 tc_waypoint_obq;
 
 void main()
 {
-    gl_Position = vec4(pos_ecf_in, 1);
+    vec3 obq = obq_for_ecf(pos_ecf_in);
+    gl_Position = vec4(obq, 1);
     fColor = uColor;
-    tc_waypoint_ecf = Waypoint3(
-        pos_ecf_in,
-        v_inDir,
-        v_outDir);
+    tc_waypoint_obq = Waypoint3(
+        obq,
+        obq_for_ecf(v_inDir),
+        obq_for_ecf(v_outDir));
 
-    tc_inDir = v_inDir;
-    tc_outDir = v_outDir;
+    tc_inDir = obq_for_ecf(v_inDir);
+    tc_outDir = obq_for_ecf(v_outDir);
 }

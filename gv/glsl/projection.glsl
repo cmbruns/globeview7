@@ -213,11 +213,6 @@ vec3 nmc_for_obq(in vec3 obq)
         return vec3(d * obq.y, d * obq.z, 1);
     }
     case ORTHOGRAPHIC_PROJECTION:
-        if (obq.x < 0) {
-            // pull points past horizon back to horizon
-            float s = 1.0 / length(obq.yz);
-            return vec3(s * obq.y, s * obq.z, 1);
-        }
         return vec3(obq.y, obq.z, 1);
     case PERSPECTIVE_PROJECTION:
     {

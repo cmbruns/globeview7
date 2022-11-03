@@ -70,10 +70,10 @@ class AzimuthalEqualAreaProjection(DisplayProjection):
         if self.boundary_shader is not None:
             return
         self.boundary_vertices.bind()
-        self.boundary_shader = compileProgram(
-            shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
-        )
+        self.boundary_shader = shader.Program(
+            shader.Stage(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -138,10 +138,10 @@ class AzimuthalEquidistantProjection(DisplayProjection):
         if self.boundary_shader is not None:
             return
         self.boundary_vertices.bind()
-        self.boundary_shader = compileProgram(
-            shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
-        )
+        self.boundary_shader = shader.Program(
+            shader.Stage(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -223,10 +223,10 @@ class EquirectangularProjection(DisplayProjection):
 
     def initialize_gl(self):
         self.boundary_vertices.bind()
-        self.boundary_shader = compileProgram(
-            shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
-        )
+        self.boundary_shader = shader.Program(
+            shader.Stage(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -339,10 +339,10 @@ class OrthographicProjection(DisplayProjection):
         if self.boundary_shader is not None:
             return
         self.boundary_vertices.bind()
-        self.boundary_shader = compileProgram(
-            shader.from_files(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
-        )
+        self.boundary_shader = shader.Program(
+            shader.Stage(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -409,10 +409,10 @@ class PerspectiveProjection(DisplayProjection):
         if self.boundary_shader is not None:
             return
         self.boundary_vertices.bind()
-        self.boundary_shader = compileProgram(
-            shader.from_files(["projection.glsl", "boundary_psp.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
-        )
+        self.boundary_shader = shader.Program(
+            shader.Stage(["projection.glsl", "boundary_psp.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):

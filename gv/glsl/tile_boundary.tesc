@@ -6,12 +6,12 @@ layout (vertices = 2) out;
 
 in vec3 tc_inDir[];
 in vec3 tc_outDir[];
-in Waypoint3 tc_waypoint_ecf[];
+in Waypoint3 tc_waypoint_obq[];
 in vec4 fColor[];
 
 out vec3 te_inDir[];
 out vec3 te_outDir[];
-out Waypoint3 te_waypoint_ecf[];
+out Waypoint3 te_waypoint_obq[];
 out vec4 teColor[];
 
 
@@ -31,18 +31,18 @@ void main()
         gl_TessLevelOuter[3] = 1.0;  // Unused, but needed for validation
 
         // dynamically determine tessellation level
-        vec3 ecf0 = tc_waypoint_ecf[0].p;
-        vec3 ecf1 = tc_waypoint_ecf[1].p;
-        vec3 win0 = win_for_ecf(ecf0);
-        vec3 win1 = win_for_ecf(ecf1);
+        vec3 obq0 = tc_waypoint_obq[0].p;
+        vec3 obq1 = tc_waypoint_obq[1].p;
+        vec3 win0 = win_for_obq(obq0);
+        vec3 win1 = win_for_obq(obq1);
         vec2 dw = (win1 - win0).xy;
         float lw = length(dw);
         float nsegs = 1;  // minimum number of interpolated segments
         nsegs += lw / 15;  // more segments for longer lines
         if (lw > 0) {
             vec2 lineDir = dw / lw;
-            vec2 m0 = normalize(dwin_for_decf(tc_outDir[0], ecf0));
-            vec2 m1 = normalize(dwin_for_decf(tc_inDir[1], ecf1));
+            vec2 m0 = normalize(dwin_for_dobq(tc_outDir[0], obq0));
+            vec2 m1 = normalize(dwin_for_dobq(tc_inDir[1], obq1));
             float c0 = 1 - dot(m0, lineDir);  // 1 minus cosine of slope angle wrt line
             float c1 = 1 - dot(m1, lineDir);
             float cmax = max(c0, c1);  // range 0 to 2
@@ -53,7 +53,7 @@ void main()
     }
 
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;  // not needed?
-    te_waypoint_ecf[gl_InvocationID] = tc_waypoint_ecf[gl_InvocationID];
+    te_waypoint_obq[gl_InvocationID] = tc_waypoint_obq[gl_InvocationID];
     teColor[gl_InvocationID] = fColor[gl_InvocationID];
 
     te_inDir[gl_InvocationID] = tc_inDir[gl_InvocationID];  // validation failure w/ version <= 4.3

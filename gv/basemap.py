@@ -160,10 +160,10 @@ class WebMercatorTile(object):
         else:
             self.fill_shader = self.basemap.tile_fill_shader
             self.boundary_shader = self.basemap.tile_boundary_shader
-        self.fill_color_shader = compileProgram(
-            shader.from_files(["screen_quad.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["color.frag"], GL.GL_FRAGMENT_SHADER),
-        )
+        self.fill_color_shader = shader.Program(
+            shader.Stage(["screen_quad.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
@@ -287,28 +287,28 @@ class Basemap(object):
     def initialize_opengl(self):
         self.vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(self.vao)
-        self.root_tile_shader = compileProgram(
-            shader.from_files(["projection.glsl", "basemap.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["projection.glsl", "sampler.frag", "basemap.frag"], GL.GL_FRAGMENT_SHADER),
-        )
+        self.root_tile_shader = shader.Program(
+            shader.Stage(["basemap.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["basemap.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
         # TODO: is a separate shader needed?
         # Well, separate shaders for outline vs fill are needed...
         # ...and it might be an optimization to avoid gradient texture fetch for non-root tiles
-        self.tile_fill_shader = compileProgram(
-            shader.from_files(["tile_boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
-            shader.from_files(["projection.glsl", "tile_fill.tese"], GL.GL_TESS_EVALUATION_SHADER),
-            shader.from_files(["projection.glsl", "tile_fill.geom"], GL.GL_GEOMETRY_SHADER),
-            shader.from_files(["color.frag"], GL.GL_FRAGMENT_SHADER),
+        self.tile_fill_shader = shader.Program(
+            shader.Stage(["tile_boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
+            shader.Stage(["tile_fill.tese"], GL.GL_TESS_EVALUATION_SHADER),
+            shader.Stage(["tile_fill.geom"], GL.GL_GEOMETRY_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
             # validate=False,
-        )
-        self.tile_boundary_shader = compileProgram(
-            shader.from_files(["tile_boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.from_files(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
-            shader.from_files(["projection.glsl", "tile_boundary.tese"], GL.GL_TESS_EVALUATION_SHADER),
-            shader.from_files(["projection.glsl", "h3cell.geom"], GL.GL_GEOMETRY_SHADER),
-            shader.from_files(["color.frag"], GL.GL_FRAGMENT_SHADER),
-        )
+        ).compile(validate=True)
+        self.tile_boundary_shader = shader.Program(
+            shader.Stage(["tile_boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
+            shader.Stage(["tile_boundary.tese"], GL.GL_TESS_EVALUATION_SHADER),
+            shader.Stage(["h3cell.geom"], GL.GL_GEOMETRY_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
         GL.glBindVertexArray(0)
 
 

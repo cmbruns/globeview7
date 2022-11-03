@@ -32,11 +32,11 @@ class Coastline(ILayer):
             polygons.extend(read_shape_file(f"{pathlib.Path.home()}/Downloads/gshhg-shp-2.3.7/GSHHS_shp/c/GSHHS_c_L{gshhs}.shp"))
         self.populate_data(polygons)
         self.vertices.bind()
-        self.shader = compileProgram(
-            shader.from_files(["coastline.vert", ], GL.GL_VERTEX_SHADER),
-            shader.from_files(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
-            shader.from_files(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
-        )
+        self.shader = shader.Program(
+            shader.Stage(["coastline.vert", ], GL.GL_VERTEX_SHADER),
+            shader.Stage(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
+            shader.Stage(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
+        ).compile()
         line_width_range = GL.glGetIntegerv(GL.GL_SMOOTH_LINE_WIDTH_RANGE)
         self.line_width = min(2, line_width_range[1])
         GL.glBindVertexArray(0)
