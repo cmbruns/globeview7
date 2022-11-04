@@ -1,3 +1,5 @@
+#pragma include "projection.glsl"
+
 in vec3 nmc;
 
 void main()

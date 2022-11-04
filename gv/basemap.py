@@ -332,11 +332,22 @@ class TestRasterTile(ILayer):
         super().__init__(name=name)
         basemap = Basemap()
         self.tile = basemap.fetch_tile(x, y, rez)
+        self.vao = None
+        self.boundary_shader = None
 
     def initialize_opengl(self):
         self.tile.initialize_opengl()
+        self.vao = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(self.vao)
+        self.boundary_shader = shader.Program(
+            shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["green.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
+        GL.glBindVertexArray(0)
 
     def paint_opengl(self, context):
+        if self.vao is None:
+            self.initialize_opengl()
         # Populate valid area stencil mask
         GL.glEnable(GL.GL_STENCIL_TEST)
         GL.glStencilMask(projection_region_mask)
@@ -344,8 +355,10 @@ class TestRasterTile(ILayer):
         GL.glStencilFunc(GL.GL_ALWAYS, 0, projection_region_mask)
         GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_INVERT)
         GL.glColorMask(False, False, False, False)
+        GL.glBindVertexArray(self.vao)
+        GL.glUseProgram(self.boundary_shader)
         context.projection.fill_boundary(context)
-        # Draw "all" the tiles
+        # Draw "all" the tiles  TODO: loop
         self.tile.fill_boundary(context)
         GL.glDisable(GL.GL_STENCIL_TEST)
         # Draw the outline of the tile(s)
