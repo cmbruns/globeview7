@@ -4,6 +4,7 @@ import sys
 import traceback
 import types
 
+from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram, ShaderCompilationError
 
 
@@ -73,4 +74,8 @@ class Program(object):
 
     def compile(self, validate=True):
         self.value = compileProgram(*[s.compile().value for s in self.stages], validate=validate)
+        # Uniform buffer binding needed for OpenGL 4.1
+        ub_index = GL.glGetUniformBlockIndex(self.value, "TransformBlock")
+        if ub_index != GL.GL_INVALID_INDEX:
+            GL.glUniformBlockBinding(self.value, ub_index, 2)
         return self
