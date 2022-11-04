@@ -1,7 +1,7 @@
 #pragma include "projection.glsl"
 
 layout (lines) in;
-layout (location = 8) uniform vec3 uFirstPoint_ecf;
+uniform vec3 uFirstPoint_ecf;
 layout (triangle_strip, max_vertices = 3) out;  // one triangle
 
 in vec4 gColor[];

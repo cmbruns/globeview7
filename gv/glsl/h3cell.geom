@@ -3,8 +3,6 @@
 layout (lines) in;
 layout (line_strip, max_vertices = 4) out;  // up to two line segments
 
-layout (location = 8) uniform vec3 uFirstPoint_ecf = vec3(1, 0, 0);
-
 in vec4 gColor[];
 out vec4 fColor;
 
