@@ -7,9 +7,6 @@ layout (location = 2) in vec3 v_outDir;  // vertex outgoing direction
 
 uniform vec4 uColor = vec4(1, 0, 1, 1);  // magenta means someone needs to set that color...
 out vec4 fColor;
-
-out vec3 tc_inDir;
-out vec3 tc_outDir;
 out Waypoint3 tc_waypoint_obq;
 
 void main()
@@ -21,7 +18,4 @@ void main()
         obq,
         obq_for_ecf(v_inDir),
         obq_for_ecf(v_outDir));
-
-    tc_inDir = obq_for_ecf(v_inDir);
-    tc_outDir = obq_for_ecf(v_outDir);
 }

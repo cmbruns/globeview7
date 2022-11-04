@@ -1,18 +1,19 @@
+#pragma include "waypoint.glsl"
 #pragma include "projection.glsl"
 layout (isolines) in;
 
-in vec3 te_inDir[];
-in vec3 te_outDir[];
+in Waypoint3 te_waypoint_obq[];
 
 void main()
 {
-    // Transform positions and direction to obq units
-    vec3 p0 = gl_in[0].gl_Position.xyz;
-    vec3 p1 = gl_in[1].gl_Position.xyz;
+    Waypoint3 wp0 = te_waypoint_obq[0];
+    Waypoint3 wp1 = te_waypoint_obq[1];
+    vec3 p0 = wp0.p;
+    vec3 p1 = wp1.p;
 
     float s = length(p1 - p0);
-    vec3 m0 = s * te_outDir[0];
-    vec3 m1 = s * te_inDir[1];
+    vec3 m0 = s * wp0.outDir;
+    vec3 m1 = s * wp1.inDir;
 
     // Interpolate coordinates
     float t = gl_TessCoord.x;

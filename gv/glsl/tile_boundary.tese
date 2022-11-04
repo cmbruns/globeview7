@@ -3,8 +3,6 @@
 
 layout (isolines) in;
 
-in vec3 te_inDir[];
-in vec3 te_outDir[];
 in Waypoint3 te_waypoint_obq[];
 in vec4 teColor[];
 
