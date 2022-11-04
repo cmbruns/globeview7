@@ -1,4 +1,3 @@
-#line 2
 #pragma include "projection.glsl"
 layout (isolines) in;
 

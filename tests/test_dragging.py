@@ -11,8 +11,9 @@ class TestDragLatitude(unittest.TestCase):
         self.view_state.window_size = 100, 100
         self.view_state._projection = EquirectangularProjection()
 
+    # noinspection PyPep8Naming
     def test_drag_lat_past_pole(self):
-        # Tilt earth forward so we can see past the north pole
+        # Tilt earth forward, so we can see past the North Pole
         v = self.view_state
         v.center_location = radians(0), radians(45)
         dwin = (0, 10)  # Drag earth downward, so center latitude should increase
@@ -21,10 +22,8 @@ class TestDragLatitude(unittest.TestCase):
         dnmc = v.nmc_J_win @ dwin
         self.assertLess(dnmc[1], 0)  # Negative shift is downward in nmc frame
         self.assertEqual(dnmc[0], 0)
-        pnmcA = (0, 0.90, 1)  # drag point "A" is above the north pole
+        pnmcA = (0, 0.90, 1)  # drag point "A" is above the North Pole
         dobqA = v._projection.dobq_for_dnmc(dnmc, pnmcA)
         self.assertEqual(dobqA[1], 0)  # right
         self.assertGreater(dobqA[0], 0)  # thither
         self.assertLess(dobqA[2], 0)  # up
-        decfA = v.ecf_J_obq @ dobqA
-        x = 3

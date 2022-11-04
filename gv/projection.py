@@ -4,7 +4,6 @@ from math import cos, pi, radians, sin
 
 import numpy
 from OpenGL import GL
-from OpenGL.GL.shaders import compileProgram
 
 from gv.frame import NMCPoint, OBQPoint
 from gv.vertex_buffer import VertexBuffer
@@ -35,8 +34,9 @@ class DisplayProjection(abc.ABC):
         pass
 
     # TODO: @property + @classmethod might not work in python 3.11
-    @property
+    # noinspection PyPropertyDefinition
     @classmethod
+    @property
     @abc.abstractmethod
     def index(cls):
         pass
@@ -62,8 +62,8 @@ class AzimuthalEqualAreaProjection(DisplayProjection):
         super().__init__()
         self.boundary_shader = None
         r = 2
-        cverts = 100
-        verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
+        c_verts = 100
+        verts = [[r * sin(2 * i * pi / c_verts), r * cos(2 * i * pi / c_verts), 1] for i in range(c_verts)]
         self.boundary_vertices = VertexBuffer(verts)
 
     def initialize_gl(self):
@@ -96,6 +96,7 @@ class AzimuthalEqualAreaProjection(DisplayProjection):
         x, y = p_nmc[:2]
         d = (1 - (x**2 - y**2) / 4)**0.5
         d4 = d * 4
+        # noinspection PyPep8Naming
         obq_J_prj = numpy.array([
             [-x, -y],
             [d - x**2 / d4, -x * y / d4],
@@ -130,8 +131,8 @@ class AzimuthalEquidistantProjection(DisplayProjection):
         super().__init__()
         self.boundary_shader = None
         r = radians(180)
-        cverts = 100
-        verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
+        c_verts = 100
+        verts = [[r * sin(2 * i * pi / c_verts), r * cos(2 * i * pi / c_verts), 1] for i in range(c_verts)]
         self.boundary_vertices = VertexBuffer(verts)
 
     def initialize_gl(self):
@@ -164,9 +165,10 @@ class AzimuthalEquidistantProjection(DisplayProjection):
         x, y = p_nmc[0] / p_nmc[2], p_nmc[1] / p_nmc[2]
         d2 = x**2 + y**2
         d = d2**0.5
-        d32  = d2 * d
+        d32 = d2 * d
         sd = sin(d)
         cd = cos(d)
+        # noinspection PyPep8Naming
         obq_J_prj = numpy.array([
             [-x * sd / d, -y * sd / d],
             [x**2 * cd / d2 - x**2 * sd / d32 + sd / d, x * y * cd / d2 - x * y * sd / d32],
@@ -197,7 +199,7 @@ class AzimuthalEquidistantProjection(DisplayProjection):
 # TODO: maybe use instanced geometry for tiled copies of the world
 class EquirectangularProjection(DisplayProjection):
     """
-    Plate caree / Equirectangular / Geographic coordinates projection
+    Plate Carrée / Equirectangular / Geographic coordinates projection
     """
 
     @staticmethod
@@ -262,6 +264,7 @@ class EquirectangularProjection(DisplayProjection):
         s0 = sin(p_prj[0])
         c1 = cos(p_prj[1])
         s1 = sin(p_prj[1])
+        # noinspection PyPep8Naming
         obq_J_wgs84prj = numpy.array([
             [-s0 * c1, -c0 * s1],
             [c0 * c1, -s0 * s1],
@@ -301,6 +304,7 @@ class GnomonicProjection(DisplayProjection):
         x, y = p_nmc[:2]
         d = (x**2 + y**2 + 1.0) ** 0.5
         d3 = d**3
+        # noinspection PyPep8Naming
         obq_J_prj = numpy.array([
             [-x / d3, -y / d3],
             [-x**2 / d3 + 1 / d, -x * y / d3],
@@ -331,8 +335,8 @@ class OrthographicProjection(DisplayProjection):
         super().__init__()
         self.boundary_shader = None
         r = 1.0
-        cverts = 100
-        verts = [[r * sin(2 * i * pi / cverts), r * cos(2 * i * pi / cverts), 1] for i in range(cverts)]
+        c_verts = 100
+        verts = [[r * sin(2 * i * pi / c_verts), r * cos(2 * i * pi / c_verts), 1] for i in range(c_verts)]
         self.boundary_vertices = VertexBuffer(verts)
 
     def initialize_gl(self):
@@ -367,6 +371,7 @@ class OrthographicProjection(DisplayProjection):
         if x**2 + y**2 > 1:
             raise RuntimeError("invalid location")
         denom = (1 - x**2 - y**2)**0.5
+        # noinspection PyPep8Naming
         obq_J_prj = numpy.array([
             [-x / denom, -y / denom],
             [1, 0],
@@ -400,9 +405,9 @@ class PerspectiveProjection(DisplayProjection):
         super().__init__()
         self.view_state = view_state
         self.boundary_shader = None
-        cverts = 100
+        c_verts = 100
         # Use unit radius, then scale the boundary in the shader
-        verts = [[sin(2 * i * pi / cverts), cos(2 * i * pi / cverts), 1] for i in range(cverts)]
+        verts = [[sin(2 * i * pi / c_verts), cos(2 * i * pi / c_verts), 1] for i in range(c_verts)]
         self.boundary_vertices = VertexBuffer(verts)
 
     def initialize_gl(self):
@@ -435,9 +440,9 @@ class PerspectiveProjection(DisplayProjection):
         x, y = p_prj[:2]
 
         v = self.view_state.altitude
-        maxr2 = v / (2 + v)
+        max_r2 = v / (2 + v)
         r2 = x**2 + y**2  # screen space radius squared
-        if r2 > maxr2:
+        if r2 > max_r2:
             raise RuntimeError("invalid location")
 
         # This Jacobian is very complex, so we are assigning variables to repeated terms here,
@@ -454,6 +459,7 @@ class PerspectiveProjection(DisplayProjection):
         d10 = (x**2 * yzc1 + yzc2) / dn2
         d21 = (y**2 * yzc1 + yzc2) / dn2
 
+        # noinspection PyPep8Naming
         obq_J_prj = numpy.array([
             [x * xc, y * xc],
             [d10, d20],
@@ -511,6 +517,7 @@ class StereographicProjection(DisplayProjection):
     def dobq_for_dnmc(dnmc, p_nmc: NMCPoint):
         x, y = p_nmc[:2]
         d = x**2 + y**2 + 4
+        # noinspection PyPep8Naming
         obq_J_prj = numpy.array([
             [-2 * x / d - 2 * x * (8 - d) / (d**2), -2 * y / d - 2 * y * (8 - d) / (d**2)],
             [4 / d - 8 * x**2 / (d**2), -8 * x * y / d**2],

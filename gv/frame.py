@@ -14,8 +14,8 @@ class Frame(enum.Enum):
     NDC = 2  # OpenGL normalized device coordinate
     NMC = 3  # Normalized map coordinate (applies aspect, zoom, azimuth)
     PRJ = 4  # Display projection, varies with choice of display projection
-    OBQ = 5  # Rotated (oblique) auxilliary geocentric coordinates centered on lon0, lat0
-    ECF = 6  # Un-rotated ECEF auxilliary geocentric coordinates
+    OBQ = 5  # Rotated (oblique) auxiliary geocentric coordinates centered on lon0, lat0
+    ECF = 6  # Un-rotated ECEF auxiliary geocentric coordinates
     WGS = 7  # WGS84 geographic coordinates
     DAT = 8  # Native spatial reference of a particular layer data source
 

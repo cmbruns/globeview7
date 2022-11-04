@@ -1,14 +1,14 @@
 import numpy
 from OpenGL import GL
-from OpenGL.GL.shaders import compileProgram
 
+import gv.layer
 from gv.layer import ILayer
 from gv import shader
 from gv.vertex_buffer import VertexBuffer
 
 
-class Graticule(ILayer):
-    def __init__(self, name:str):
+class Graticule(gv.layer.ILayerGL):
+    def __init__(self, name: str):
         super().__init__(name=name)
         self.shader = None
         self.vertices = None
@@ -23,14 +23,14 @@ class Graticule(ILayer):
         vertex_counts = []
         current_start_index = 0
         # Parallels
-        nsegs = 100
+        n_segs = 100
         interval = 10  # Draw a grid line every X degrees
         assert 90 % interval == 0
         for lat in range(-90 + interval, 90, interval):  # TODO: more parallels
             start_indices.append(current_start_index)
             polygon = []
-            for segment in range(nsegs):
-                polygon.append([360 * segment / (nsegs - 1), lat])
+            for segment in range(n_segs):
+                polygon.append([360 * segment / (n_segs - 1), lat])
             current_start_index += len(polygon)
             vertex_counts.append(len(polygon))
             polygons.extend(polygon)
@@ -38,12 +38,12 @@ class Graticule(ILayer):
         for lon in range(0, 360, interval):
             start_indices.append(current_start_index)
             polygon = []
-            for segment in range(nsegs):
-                polygon.append([lon, -90 + interval + (180 - 2 * interval) * segment / (nsegs - 1)])
+            for segment in range(n_segs):
+                polygon.append([lon, -90 + interval + (180 - 2 * interval) * segment / (n_segs - 1)])
             current_start_index += len(polygon)
             vertex_counts.append(len(polygon))
             polygons.extend(polygon)
-        # Draw a cross at the North pole
+        # Draw a cross at the North Pole
         dn = interval / 6  # Size of cross / 2
         n0 = 90 - dn  # starting latitude
         for lon in [0, 90, 180, 270]:  # four spokes of polar cross
@@ -54,7 +54,7 @@ class Graticule(ILayer):
             current_start_index += len(polygon)
             vertex_counts.append(len(polygon))
             polygons.extend(polygon)
-        # South pole
+        # South Pole
         n0 = -90 + dn
         for lon in [0, 90, 180, 270]:
             start_indices.append(current_start_index)

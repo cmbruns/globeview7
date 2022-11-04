@@ -3,7 +3,7 @@
 
 # workaround for python 3.10 and nose
 import collections.abc
-collections.Callable = collections.abc.Callable
 import nose
+collections.Callable = collections.abc.Callable
 
 nose.main()

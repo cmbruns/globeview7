@@ -1,5 +1,3 @@
-#line 2
-
 vec4 catrom_weights(float t) {
     return 0.5 * vec4(
         -1*t*t*t + 2*t*t - 1*t,  // P0 weight

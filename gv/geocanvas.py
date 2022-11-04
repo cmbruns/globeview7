@@ -88,7 +88,6 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         if not self.view_state.projection.is_valid_nmc(NMCPoint(p_nmc)):
             self.previous_mouse = None
             return
-        p_prj = p_nmc
 
         p_obq = self.view_state.projection.obq_for_nmc(p_nmc)
         p_ecf = self.view_state.ecf_X_obq @ p_obq  # Adjust for center longitude
@@ -103,22 +102,18 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
                 dwin = xyw_win[:2] - self.previous_mouse[:2]
                 dnmc = self.view_state.nmc_J_win @ dwin
                 try:
-                    dobq = self.view_state._projection.dobq_for_dnmc(dnmc, p_nmc)
+                    dobq = self.view_state.projection.dobq_for_dnmc(dnmc, p_nmc)
                 except RuntimeError:
                     self.previous_mouse = None
                     return  # TODO: handle outside cases in projection
                 # Compute center latitude shift from obq shift
                 # TODO: this might not be the perfect solution.
-                px, py, pz = p_obq
-                xy2 = px**2 + py**2
-                sxy2 = xy2 ** 0.5
-                dlat = numpy.dot(dobq, [-px * pz / sxy2, -py * pz / sxy2, sxy2])
-                #
                 decf = self.view_state.ecf_J_obq @ dobq
                 px, py, pz = p_ecf
                 xy2 = px**2 + py**2
                 sxy2 = xy2 ** 0.5
                 # https://en.wikipedia.org/wiki/List_of_common_coordinate_transformations#From_Cartesian_coordinates
+                # noinspection PyPep8Naming
                 wgs_J_ecf = numpy.array([
                     [-py / xy2, px / xy2, 0],
                     [-px * pz / sxy2, -py * pz / sxy2, sxy2],

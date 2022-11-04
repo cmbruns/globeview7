@@ -5,6 +5,7 @@ from gv.projection import Projection
 from gv.layer import LayerWidget
 
 
+# noinspection PyCallingNonCallable,PyPep8Naming
 class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

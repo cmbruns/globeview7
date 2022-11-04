@@ -1,5 +1,3 @@
-#line 2
-
 out vec4 fragColor;
 
 void main() {

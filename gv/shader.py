@@ -1,7 +1,10 @@
 import pkg_resources
 import re
+import sys
+import traceback
+import types
 
-from OpenGL.GL.shaders import compileShader, compileProgram
+from OpenGL.GL.shaders import compileShader, compileProgram, ShaderCompilationError
 
 
 class Stage(object):
@@ -9,6 +12,7 @@ class Stage(object):
         self.initial_file_names = ["version.glsl", *file_names]
         self.stage = stage
         self.all_file_names = self._process_includes()
+        self.full_file_names = [pkg_resources.resource_filename('gv.glsl', f) for f in self.all_file_names]
         self.strings = [Stage.string_from_file(f, i) for i, f in enumerate(self.all_file_names)]
         self.value = -1
 
@@ -16,7 +20,25 @@ class Stage(object):
         return int(self.value)
 
     def compile(self):
-        self.value = compileShader("\n".join(self.strings), self.stage)
+        try:
+            self.value = compileShader("\n".join(self.strings), self.stage)
+        except ShaderCompilationError as e:
+            try:
+                # Try to append the glsl shader source line to the stack trace
+                # ('Shader compile failure (0): b\'0(3) : error C0000: syntax error, unexpected \\\';\\\', expecting...
+                msg = str(e)
+                match = re.search(r"Shader compile failure \((\d+)\): b\\'(\d+)\((\d+)\)", msg)
+                if match:
+                    lineno = int(match.group(3))
+                    filename = self.full_file_names[int(match.group(2))]
+                    te = traceback.TracebackException.from_exception(e)
+                    fs = traceback.FrameSummary(filename=filename, lineno=lineno, name="shader")
+                    te.stack.append(fs)
+                    # TODO: get this frame into the actual exception traceback
+                    print(f'Traceback (most recent call last)\n{"".join(te.stack.format())}', file=sys.stderr)
+            except Exception as e2:
+                print(e2)
+            raise e
         return self
 
     def _process_includes(self) -> list:

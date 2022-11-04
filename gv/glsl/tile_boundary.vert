@@ -1,4 +1,3 @@
-#line 2
 #pragma include "waypoint.glsl"
 #pragma include "projection.glsl"
 

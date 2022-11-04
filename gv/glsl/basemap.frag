@@ -1,4 +1,3 @@
-#line 2
 #pragma include "sampler.frag"
 #pragma include "projection.glsl"
 

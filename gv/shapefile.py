@@ -60,5 +60,5 @@ def read_shape_file(file_name: str) -> list:
 
 if __name__ == "__main__":
     f_name = "C:/Users/cmbruns/Downloads/gshhg-shp-2.3.7/GSHHS_shp/c/GSHHS_c_L6.shp"
-    polygons = read_shape_file(f_name)
-    print(polygons)
+    test_polygons = read_shape_file(f_name)
+    print(test_polygons)

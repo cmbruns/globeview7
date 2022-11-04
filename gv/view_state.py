@@ -14,6 +14,7 @@ class Transform(object):
         self.dirty = True
 
 
+# noinspection PyPep8Naming
 class ViewState(QtCore.QObject):
     def __init__(self):
         super().__init__()

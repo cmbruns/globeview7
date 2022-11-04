@@ -1,4 +1,0 @@
-
-
-class EsriAttribution(object):
-    pass

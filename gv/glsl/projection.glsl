@@ -1,5 +1,3 @@
-#line 2
-
 // Keep these values in sync with projection.py
 const int PERSPECTIVE_PROJECTION = 0;
 const int ORTHOGRAPHIC_PROJECTION = 1;

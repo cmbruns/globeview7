@@ -18,7 +18,7 @@ class CircularListView(QtWidgets.QListView):
         selected = self.selectedIndexes()
         if len(selected) != 1:
             return super().moveCursor(cursor_action, modifiers)
-        index: QtCore.QModelIndex = selected[0]
+        index = selected[0]
         top = 0
         bottom = self.model().rowCount() - 1
         ca = QtWidgets.QAbstractItemView.CursorAction

@@ -2,7 +2,6 @@ import pathlib
 
 import numpy
 from OpenGL import GL
-from OpenGL.GL.shaders import compileProgram
 
 from gv.vertex_buffer import VertexBuffer
 from gv import shader
@@ -58,7 +57,7 @@ class Coastline(ILayer):
                         vertex_counts.append(nv)
                         current_start_index += nv
                         nv = 0
-                        continue  # Discard all points exactly at the south pole
+                        continue  # Discard all points exactly at the South Pole
                     vertices.append(vertex)
                     nv += 1
                 current_start_index += nv
@@ -75,4 +74,4 @@ class Coastline(ILayer):
         GL.glLineWidth(self.line_width)  # Limited to 1.0 on Mac OS X
         GL.glMultiDrawArrays(GL.GL_LINE_STRIP, self.start_indices, self.vertex_counts, len(self.start_indices))
         # TODO: drive multiple equirect instances from CPU side
-        # GL.glMultiDrawArraysIndirect(GL.GL_LINE_LOOP, indirect, drawcount, stride)
+        # GL.glMultiDrawArraysIndirect(GL.GL_LINE_LOOP, indirect, draw_count, stride)

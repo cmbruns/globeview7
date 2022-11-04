@@ -6,7 +6,6 @@ from math import radians
 
 import h3
 from OpenGL import GL
-from OpenGL.GL.shaders import compileShader, compileProgram
 
 from gv.layer import ILayer
 from gv.vertex_buffer import VertexBuffer
@@ -41,7 +40,7 @@ class H3Cell(ILayer):
         self.line_width = min(3, line_width_range[1])
         GL.glBindVertexArray(0)
 
-    def draw_boundary(self, context):
+    def draw_boundary(self, _context):
         if self.program is None:
             self.initialize_opengl()
         GL.glUseProgram(self.program)

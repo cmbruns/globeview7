@@ -1,7 +1,13 @@
+import abc
 from PySide6 import QtCore, QtGui, QtWidgets
 
 
-class ILayer(QtCore.QObject):
+# https://stackoverflow.com/questions/54635205/how-do-i-use-generic-typing-with-pyqt-subclass-without-metaclass-conflicts
+class QABCMeta(type(QtCore.QObject), abc.ABCMeta):
+    pass
+
+
+class ILayer(QtCore.QObject, metaclass=QABCMeta):
     def __init__(self, name: str):
         super().__init__()
         self._is_visible = True
@@ -16,6 +22,7 @@ class ILayer(QtCore.QObject):
     def is_visible(self):
         return self._is_visible
 
+    # noinspection PyCallingNonCallable
     @QtCore.Slot(bool)
     def set_visible(self, is_visible: bool) -> None:
         if self._is_visible == is_visible:
@@ -24,6 +31,12 @@ class ILayer(QtCore.QObject):
         self.visibility_changed.emit(self._is_visible)
 
     visibility_changed = QtCore.Signal(bool)
+
+
+class ILayerGL(ILayer, abc.ABC):
+    @abc.abstractmethod
+    def paint_opengl(self, context):
+        pass
 
 
 class LayerListWidget(QtWidgets.QListWidget):

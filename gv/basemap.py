@@ -6,7 +6,6 @@ import pathlib
 import arcgis
 import numpy
 from OpenGL import GL
-from OpenGL.GL.shaders import compileProgram
 from PIL import Image
 import requests
 
@@ -115,6 +114,7 @@ class WebMercatorTile(object):
             out_ecf = []
             for i, p in enumerate(verts_wgs):
                 lon, lat = p[0], p[1]
+                # noinspection PyPep8Naming
                 dobq_J_dwgs = numpy.array([
                     [-cos(lat) * sin(lon), -sin(lat) * cos(lon)],
                     [cos(lat) * cos(lon), -sin(lat) * sin(lon)],
