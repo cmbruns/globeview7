@@ -25,7 +25,8 @@ layout(std140) uniform TransformBlock
     mat4 ecf_X_obq4;  // 144
     mat4 nmc_X_ndc4;  // 208
     mat4 win_X_ndc4;  // 272
-    // 336
+    mat4 ndc_X_win4;  // 336
+    // 400
 } ub;
 
 struct Segment3
@@ -343,6 +344,11 @@ vec3 ndc_for_ecf(in vec3 pos_ecf)
 vec3 win_for_ndc(in vec3 ndc)
 {
     return mat3(ub.win_X_ndc4) * ndc;
+}
+
+vec3 ndc_for_win(in vec3 win)
+{
+    return mat3(ub.ndc_X_win4) * win;
 }
 
 vec3 win_for_obq(in vec3 obq)

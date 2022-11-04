@@ -40,6 +40,9 @@ class WebMercatorTile(object):
         self.fill_color_shader = None
         self.boundary_shader = None
         self.first_point_location = None
+        self.fill_color_location = None
+        self.edge_color_location = None
+        self.line_width_location = None
         self.basemap = basemap
         self.texture = None
         # compute tile corner locations
@@ -161,7 +164,10 @@ class WebMercatorTile(object):
         else:
             self.fill_shader = self.basemap.tile_fill_shader
             self.first_point_location = GL.glGetUniformLocation(self.fill_shader, "uFirstPoint_ecf")
+            self.fill_color_location = GL.glGetUniformLocation(self.fill_shader, "uColor")
             self.boundary_shader = self.basemap.tile_boundary_shader
+            self.edge_color_location = GL.glGetUniformLocation(self.boundary_shader, "uColor")
+            self.line_width_location = GL.glGetUniformLocation(self.boundary_shader, "uLineWidth")
         self.fill_color_shader = shader.Program(
             shader.Stage(["screen_quad.vert"], GL.GL_VERTEX_SHADER),
             shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
@@ -236,7 +242,8 @@ class WebMercatorTile(object):
             GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
             GL.glUseProgram(self.fill_shader)
         else:
-            GL.glUseProgram(self.fill_color_shader)  # Just a transparent color
+            GL.glUseProgram(self.fill_color_shader)
+            GL.glUniform4f(self.fill_color_location, 0, 0, 1, 0.3)  # Transparent blue
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
 
     def paint_boundary(self, context):
@@ -248,6 +255,8 @@ class WebMercatorTile(object):
         self.boundary_vertices.bind()
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
         GL.glUseProgram(self.boundary_shader)
+        GL.glUniform4f(self.edge_color_location, 0, 1, 0, 1)  # green
+        GL.glUniform1f(self.line_width_location, 2)
         GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
         # GL.glDrawArrays(GL.GL_PATCHES, 0, len(self.boundary_vertices))
         # GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
@@ -308,7 +317,8 @@ class Basemap(object):
             shader.Stage(["tile_boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.Stage(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
             shader.Stage(["tile_boundary.tese"], GL.GL_TESS_EVALUATION_SHADER),
-            shader.Stage(["h3cell.geom"], GL.GL_GEOMETRY_SHADER),
+            # shader.Stage(["h3cell.geom"], GL.GL_GEOMETRY_SHADER),
+            shader.Stage(["tile_boundary.geom"], GL.GL_GEOMETRY_SHADER),  # TODO: use clipping shader for outline after debugging fill
             shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         GL.glBindVertexArray(0)
