@@ -11,7 +11,9 @@ void main()
 {
     fColor = gColor[0];
 
-    vec3 ndcFirst = ndc_for_ecf(uFirstPoint_ecf);
+    vec3 obqFirst = obq_for_ecf(uFirstPoint_ecf);
+    clip_obq_point(obqFirst);  // push to horizon
+    vec3 ndcFirst = ndc_for_obq(obqFirst);
     vec3 ndc0 = ndc_for_obq(gl_in[0].gl_Position.xyz);
     vec3 ndc1 = ndc_for_obq(gl_in[1].gl_Position.xyz);
 

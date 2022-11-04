@@ -89,6 +89,16 @@ int clip_obq_segment(in Segment3 obq, out Segment3 result)
     return 1;  // number of output segments
 }
 
+void clip_obq_point(inout vec3 obq)
+{
+    // TODO: other projections
+    switch(ub.projection) {
+        case ORTHOGRAPHIC_PROJECTION:
+            if (obq.x < 0)
+                obq = normalize(vec3(0, obq.yz));  // push to horizon
+    }
+}
+
 bool cull_obq(in vec3 obq)
 {
     bool result = false;

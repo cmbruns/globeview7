@@ -41,6 +41,8 @@ class WebMercatorTile(object):
         self.boundary_shader = None
         self.first_point_location = None
         self.fill_color_location = None
+        self.contains_antipode_fill_location = None
+        self.contains_antipode_edge_location = None
         self.edge_color_location = None
         self.line_width_location = None
         self.basemap = basemap
@@ -168,10 +170,12 @@ class WebMercatorTile(object):
             self.boundary_shader = self.basemap.tile_boundary_shader
             self.edge_color_location = GL.glGetUniformLocation(self.boundary_shader, "uColor")
             self.line_width_location = GL.glGetUniformLocation(self.boundary_shader, "uLineWidth")
+            self.contains_antipode_edge_location = GL.glGetUniformLocation(self.boundary_shader, "uContainsAntipode")
         self.fill_color_shader = shader.Program(
             shader.Stage(["screen_quad.vert"], GL.GL_VERTEX_SHADER),
             shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
+        self.contains_antipode_fill_location = GL.glGetUniformLocation(self.fill_color_shader, "uContainsAntipode")
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
@@ -244,6 +248,7 @@ class WebMercatorTile(object):
         else:
             GL.glUseProgram(self.fill_color_shader)
             GL.glUniform4f(self.fill_color_location, 0, 0, 1, 0.3)  # Transparent blue
+            GL.glUniform1i(self.contains_antipode_fill_location, int(self.contains_antipode(context)))
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
 
     def paint_boundary(self, context):
@@ -257,6 +262,7 @@ class WebMercatorTile(object):
         GL.glUseProgram(self.boundary_shader)
         GL.glUniform4f(self.edge_color_location, 0, 1, 0, 1)  # green
         GL.glUniform1f(self.line_width_location, 2)
+        GL.glUniform1i(self.contains_antipode_edge_location, int(self.contains_antipode(context)))
         GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
         # GL.glDrawArrays(GL.GL_PATCHES, 0, len(self.boundary_vertices))
         # GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))

@@ -28,7 +28,7 @@ class Stage(object):
                 # Try to append the glsl shader source line to the stack trace
                 # ('Shader compile failure (0): b\'0(3) : error C0000: syntax error, unexpected \\\';\\\', expecting...
                 msg = str(e)
-                match = re.search(r"Shader compile failure \((\d+)\): b\\'(\d+)\((\d+)\)", msg)
+                match = re.search(r"Shader compile failure \((\d+)\): b\\?'(\d+)\((\d+)\)", msg)
                 if match:
                     lineno = int(match.group(3))
                     filename = self.full_file_names[int(match.group(2))]
