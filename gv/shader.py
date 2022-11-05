@@ -46,7 +46,7 @@ class Stage(object):
         result = []
         for f in self.initial_file_names:
             s = Stage.string_from_file(f, 0)  # zero index because string not used for code here
-            m = re.findall(r'^\s*#(?:pragma )?include\s+["]?([^"\s]+)', s, re.MULTILINE)
+            m = re.findall(r'^\s*#(?:pragma )?include\s+"([^"\s]+)"', s, re.MULTILINE)
             if m:
                 for inc in m:
                     if inc not in result:

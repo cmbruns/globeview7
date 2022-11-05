@@ -4,7 +4,7 @@
 #include "projection.glsl"
 #endif
 
-layout (vertices = 2) out;
+layout (vertices = 3) out;
 
 in Waypoint3 tc_waypoint_obq[];
 in vec4 fColor[];
@@ -12,7 +12,7 @@ in vec4 fColor[];
 uniform bool uContainsAntipode = false;
 
 out Waypoint3 te_waypoint_obq[];
-out vec4 teColor[];
+patch out vec4 teColor;
 
 
 float sine2DAngle(vec2 v1, vec2 v2)
@@ -64,36 +64,39 @@ float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1) {
 
 void main()
 {
-    // Color by horizon for testing and debugging
-    vec4 testColor = vec4(0, 1, 0, 1);  // green for segment above horizon
+    Waypoint3 wp0 = tc_waypoint_obq[0];
+    Waypoint3 wp1 = tc_waypoint_obq[1];
+    clipWaypoint(wp0, uContainsAntipode);
+    clipWaypoint(wp1, uContainsAntipode);
     bool down0 = tc_waypoint_obq[0].p.x < 0;
     bool down1 = tc_waypoint_obq[1].p.x < 0;
-    if (down0 && down1)
-        testColor = vec4(1, 0, 0, 1);  // red for segment below horizon
-    else if (down0 || down1)
-        testColor = vec4(1, 1, 0, 1);  // yellow for segment crossing horizon
 
-
-    if (gl_InvocationID == 0)
+    if (gl_InvocationID == 0)  // begin point of input segment
     {
         // dynamically determine tessellation level
-        Waypoint3 wp0 = tc_waypoint_obq[0];
-        Waypoint3 wp1 = tc_waypoint_obq[1];
-        clipWaypoint(wp0, uContainsAntipode);
-        clipWaypoint(wp1, uContainsAntipode);
-
         gl_TessLevelOuter[0] = 1.0;  // Number of lines
         gl_TessLevelOuter[1] = segmentTessLevel(wp0, wp1);  // Number of segments per line
         gl_TessLevelOuter[2] = 1.0;  // Unused, but needed for validation
         gl_TessLevelOuter[3] = 1.0;  // Unused, but needed for validation
+
+        te_waypoint_obq[gl_InvocationID] = wp0;
+
+        // Color by horizon relationship for testing and debugging
+        teColor = vec4(0, 1, 0, 1);  // green for segment above horizon
+        if (down0 && down1)
+            teColor = vec4(1, 0, 0, 1);  // red for segment below horizon
+        else if (down0 || down1)
+            teColor = vec4(1, 1, 0, 1);  // yellow for segment crossing horizon
     }
-
-    // TODO: for segments that cross the horizon in orthographic,
-    // put a sharp corner at the horizon boundary
-
-    Waypoint3 wp = tc_waypoint_obq[gl_InvocationID];
-    clipWaypoint(wp, uContainsAntipode);
-    te_waypoint_obq[gl_InvocationID] = wp;
-    gl_out[gl_InvocationID].gl_Position = vec4(wp.p, 1);  // not needed?
-    teColor[gl_InvocationID] = testColor; // fColor[gl_InvocationID];
+    else if (gl_InvocationID == 1)  // mid point of input segment
+    {
+        // TODO: handle horizon crossing segments
+        // TODO: for segments that cross the horizon in orthographic,
+        // put a sharp corner at the horizon boundary
+        te_waypoint_obq[gl_InvocationID] = wp1;
+    }
+    else if (gl_InvocationID == 2)  // end point of input segment
+    {
+        te_waypoint_obq[gl_InvocationID] = wp1;
+    }
 }
