@@ -9,7 +9,7 @@ out vec4 fColor;
 
 void main()
 {
-    fColor = gColor[0];
+    fColor = gColor[0];  // 0: use color of first point in the line segment
 
     vec3 obqFirst = obq_for_ecf(uFirstPoint_ecf);
     clip_obq_point(obqFirst);  // push to horizon

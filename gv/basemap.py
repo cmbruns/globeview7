@@ -350,6 +350,7 @@ class TestRasterTile(ILayer):
         self.tile = basemap.fetch_tile(x, y, rez)
         self.vao = None
         self.boundary_shader = None
+        self.color_location = None
 
     def initialize_opengl(self):
         self.tile.initialize_opengl()
@@ -357,8 +358,9 @@ class TestRasterTile(ILayer):
         GL.glBindVertexArray(self.vao)
         self.boundary_shader = shader.Program(
             shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.Stage(["green.frag"], GL.GL_FRAGMENT_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
+        self.color_location = GL.glGetUniformLocation(self.boundary_shader, "uColor")
         GL.glBindVertexArray(0)
 
     def paint_opengl(self, context):
@@ -373,6 +375,7 @@ class TestRasterTile(ILayer):
         GL.glColorMask(False, False, False, False)
         GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.boundary_shader)
+        # GL.glUniform4f(self.color_location, 1, 0.2, 0, 0.3)
         context.projection.fill_boundary(context)
         # Draw "all" the tiles  TODO: loop
         self.tile.fill_boundary(context)

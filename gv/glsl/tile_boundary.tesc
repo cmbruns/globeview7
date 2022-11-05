@@ -32,6 +32,7 @@ void clipWaypoint(inout Waypoint3 wp_obq, in bool bContainsAntipode) {
     // TODO: this is orthographic specific
     if (wp_obq.p.x > 0) return;  // no clipping needed
     clip_obq_point(wp_obq.p);
+    // TODO: clipping should be done on segments, so we better know how to choose horizon direction...
     wp_obq.outDir = vec3(0, wp_obq.p.z, -wp_obq.p.y);  // clockwise around horizon
     if (bContainsAntipode)
         wp_obq.outDir = -wp_obq.outDir;  // counterclockwise
@@ -67,6 +68,8 @@ float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1)
 
 void main()
 {
+    teColor = fColor[0];
+
     Waypoint3 wp0 = tc_waypoint_obq[0];
     Waypoint3 wp1 = tc_waypoint_obq[1];
     clipWaypoint(wp0, uContainsAntipode);
@@ -84,12 +87,14 @@ void main()
 
         te_waypoint_obq[gl_InvocationID] = wp0;
 
-        // Color by horizon relationship for testing and debugging
-        teColor = vec4(0, 1, 0, 1);  // green for segment above horizon
-        if (down0 && down1)
-            teColor = vec4(1, 0, 0, 1);  // red for segment below horizon
-        else if (down0 || down1)
-            teColor = vec4(1, 1, 0, 1);  // yellow for segment crossing horizon
+        if (false) {
+            // Color by horizon relationship for testing and debugging
+            teColor = vec4(0, 1, 0, 1);  // green for segment above horizon
+            if (down0 && down1)
+                teColor = vec4(1, 0, 0, 1);  // red for segment below horizon
+            else if (down0 || down1)
+                teColor = vec4(1, 1, 0, 1);  // yellow for segment crossing horizon
+        }
     }
     else if (gl_InvocationID == 1)  // mid point of input segment
     {
@@ -116,10 +121,33 @@ void main()
             // Segment definitely crosses the horizon.
             // Create a sharp corner at the horizon.
             // TODO: solve exact horizon crossing using cubic formula
-            // for now use linear approximation
-            // float horizonT =
-            midT = 0.5;
-            te_waypoint_obq[gl_InvocationID] = interpolateWaypoint(wp0, wp1, midT);
+            // for now use linear approximation to find t where x==0
+            float horizonT = tc_waypoint_obq[0].p.x / (tc_waypoint_obq[0].p.x - tc_waypoint_obq[1].p.x);
+            // teColor = vec4(horizonT, 1 - horizonT, horizonT, 1);
+            Waypoint3 horizonWp = interpolateWaypoint(tc_waypoint_obq[0], tc_waypoint_obq[1], horizonT);
+            horizonWp.p = vec3(0, normalize(horizonWp.p.yz));  // Clamp to exact x==0
+            vec3 horizonSlope = vec3(0, horizonWp.p.z, -horizonWp.p.y);  // clockwise around horizon
+            if (down0) {
+                // first endpoint is below the horizon, so set the INPUT direction to the horizon direction
+                if (dot(horizonWp.inDir, horizonSlope) < 0)
+                    horizonSlope = -horizonSlope;
+                horizonWp.inDir = horizonSlope;
+            }
+            else {
+                // second endpoint is below the horizon, so set the OUTPUT direction to the horizon direction
+                if (dot(horizonWp.outDir, horizonSlope) < 0)
+                    horizonSlope = -horizonSlope;
+                horizonWp.outDir = horizonSlope;
+                float tess0 = segmentTessLevel(wp0, horizonWp);
+                float tess1 = segmentTessLevel(horizonWp, wp1);
+                midT = tess0 / (tess0 + tess1);
+                // teColor = vec4(midT, 1, 0, 1);
+            }
+            te_waypoint_obq[gl_InvocationID] = horizonWp;
+            // The two subsegments might have different tesselation requirements
+            float tess0 = segmentTessLevel(wp0, horizonWp);
+            float tess1 = segmentTessLevel(horizonWp, wp1);
+            midT = tess0 / (tess0 + tess1);
         }
     }
     else if (gl_InvocationID == 2)  // end point of input segment
