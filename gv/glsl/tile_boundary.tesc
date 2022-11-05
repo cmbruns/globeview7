@@ -1,5 +1,8 @@
-#pragma include "waypoint.glsl"
-#pragma include "projection.glsl"
+#ifndef CUSTOM_PROCESS_INCLUDES
+#extension GL_GOOGLE_include_directive : enable
+#include "waypoint.glsl"
+#include "projection.glsl"
+#endif
 
 layout (vertices = 2) out;
 
@@ -35,6 +38,30 @@ void clipWaypoint(inout Waypoint3 wp_obq, in bool bContainsAntipode) {
 }
 
 
+float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1) {
+    // dynamically determine tessellation level
+    vec3 obq0 = wp0.p;
+    vec3 obq1 = wp1.p;
+    vec3 win0 = win_for_obq(obq0);
+    vec3 win1 = win_for_obq(obq1);
+    vec2 dw = (win1 - win0).xy;
+    float lw = length(dw);
+    float nsegs = 1;  // minimum number of interpolated segments
+    // nsegs += lw / 20;  // more segments for longer lines
+    if (lw > 0) {
+        vec2 lineDir = dw / lw;
+        vec2 m0 = normalize(dwin_for_dobq(wp0.outDir, obq0));
+        vec2 m1 = normalize(dwin_for_dobq(wp1.inDir, obq1));
+        float c0 = 1 - dot(m0, lineDir);  // 1 minus cosine of slope angle wrt line
+        float c1 = 1 - dot(m1, lineDir);
+        float cmax = max(c0, c1);  // range 0 to 2
+        // TODO: no red lines when I uncomment line below...
+        // nsegs += 10 * cmax;  // more segments for more dramatic curves
+    }
+    return nsegs;
+}
+
+
 void main()
 {
     // Color by horizon for testing and debugging
@@ -49,36 +76,16 @@ void main()
 
     if (gl_InvocationID == 0)
     {
-        gl_TessLevelOuter[0] = 1.0;  // Number of lines
-        gl_TessLevelOuter[1] = 1.0;  // Number of segments per line
-        gl_TessLevelOuter[2] = 1.0;  // Unused, but needed for validation
-        gl_TessLevelOuter[3] = 1.0;  // Unused, but needed for validation
-
         // dynamically determine tessellation level
         Waypoint3 wp0 = tc_waypoint_obq[0];
         Waypoint3 wp1 = tc_waypoint_obq[1];
         clipWaypoint(wp0, uContainsAntipode);
         clipWaypoint(wp1, uContainsAntipode);
-        vec3 obq0 = wp0.p;
-        vec3 obq1 = wp1.p;
-        vec3 win0 = win_for_obq(obq0);
-        vec3 win1 = win_for_obq(obq1);
-        vec2 dw = (win1 - win0).xy;
-        float lw = length(dw);
-        float nsegs = 1;  // minimum number of interpolated segments
-        // nsegs += lw / 20;  // more segments for longer lines
-        if (lw > 0) {
-            vec2 lineDir = dw / lw;
-            vec2 m0 = normalize(dwin_for_dobq(wp0.outDir, obq0));
-            vec2 m1 = normalize(dwin_for_dobq(wp1.inDir, obq1));
-            float c0 = 1 - dot(m0, lineDir);  // 1 minus cosine of slope angle wrt line
-            float c1 = 1 - dot(m1, lineDir);
-            float cmax = max(c0, c1);  // range 0 to 2
-            // TODO: no red lines when I uncomment line below...
-            // nsegs += 10 * cmax;  // more segments for more dramatic curves
-        }
 
-        gl_TessLevelOuter[1] = nsegs;  // Number of segments per line
+        gl_TessLevelOuter[0] = 1.0;  // Number of lines
+        gl_TessLevelOuter[1] = segmentTessLevel(wp0, wp1);  // Number of segments per line
+        gl_TessLevelOuter[2] = 1.0;  // Unused, but needed for validation
+        gl_TessLevelOuter[3] = 1.0;  // Unused, but needed for validation
     }
 
     // TODO: for segments that cross the horizon in orthographic,
