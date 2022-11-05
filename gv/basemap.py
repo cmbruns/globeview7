@@ -3,7 +3,7 @@ import json
 from math import atan, cos, cosh, degrees, exp, radians, sin
 import pathlib
 
-import arcgis
+# import arcgis  # not working for python 3.11 yet Nov 5, 2022
 import numpy
 from OpenGL import GL
 from PIL import Image

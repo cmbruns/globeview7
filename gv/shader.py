@@ -78,4 +78,4 @@ class Program(object):
         ub_index = GL.glGetUniformBlockIndex(self.value, "TransformBlock")
         if ub_index != GL.GL_INVALID_INDEX:
             GL.glUniformBlockBinding(self.value, ub_index, 2)
-        return self
+        return self.value
