@@ -2,7 +2,6 @@ import pkg_resources
 import re
 import sys
 import traceback
-import types
 
 from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram, ShaderCompilationError
@@ -47,7 +46,7 @@ class Stage(object):
         result = []
         for f in self.initial_file_names:
             s = Stage.string_from_file(f, 0)  # zero index because string not used for code here
-            m = re.findall(r'^\s*#pragma include\s+"?([^"\s]+)', s, re.MULTILINE)
+            m = re.findall(r'^\s*#(?:pragma )?include\s+["]?([^"\s]+)', s, re.MULTILINE)
             if m:
                 for inc in m:
                     if inc not in result:
@@ -60,7 +59,7 @@ class Stage(object):
     def string_from_file(file_name: str, file_index: int) -> str:
         string = pkg_resources.resource_string("gv.glsl", file_name).decode()
         if not string.startswith("#version"):
-            string = f"#line 1 {file_index}\n{string}"
+            string = f"#define CUSTOM_PROCESS_INCLUDES\n#line 1 {file_index}\n{string}"
         return string
 
 

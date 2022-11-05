@@ -1,4 +1,7 @@
-#pragma include "projection.glsl"
+#ifndef CUSTOM_PROCESS_INCLUDES
+#extension GL_GOOGLE_include_directive : enable
+#include "projection.glsl"
+#endif
 
 // Clip line segments that go around the WGS84 seam
 // TODO: interpolate curves

@@ -1,5 +1,8 @@
-#pragma include "sampler.frag"
-#pragma include "projection.glsl"
+#ifndef CUSTOM_PROCESS_INCLUDES
+#extension GL_GOOGLE_include_directive : enable
+#include "sampler.frag"
+#include "projection.glsl"
+#endif
 
 in vec3 nmc;
 

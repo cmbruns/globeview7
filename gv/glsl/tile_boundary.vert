@@ -1,5 +1,8 @@
-#pragma include "waypoint.glsl"
-#pragma include "projection.glsl"
+#ifndef CUSTOM_PROCESS_INCLUDES
+#extension GL_GOOGLE_include_directive : enable
+#include "waypoint.glsl"
+#include "projection.glsl"
+#endif
 
 layout (location = 0) in vec3 pos_ecf_in;  // vertex position
 layout (location = 1) in vec3 v_inDir;  // vertex incoming direction
