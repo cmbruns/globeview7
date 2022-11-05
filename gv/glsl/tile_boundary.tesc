@@ -13,6 +13,7 @@ uniform bool uContainsAntipode = false;
 
 out Waypoint3 te_waypoint_obq[];
 patch out vec4 teColor;
+patch out float midT;
 
 
 float sine2DAngle(vec2 v1, vec2 v2)
@@ -38,7 +39,9 @@ void clipWaypoint(inout Waypoint3 wp_obq, in bool bContainsAntipode) {
 }
 
 
-float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1) {
+float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1)
+{
+    return 11;
     // dynamically determine tessellation level
     vec3 obq0 = wp0.p;
     vec3 obq1 = wp1.p;
@@ -92,8 +95,32 @@ void main()
     {
         // TODO: handle horizon crossing segments
         // TODO: for segments that cross the horizon in orthographic,
-        // put a sharp corner at the horizon boundary
-        te_waypoint_obq[gl_InvocationID] = wp1;
+        //   put a sharp corner at the horizon boundary
+        // TODO: this is orthographic specific
+        if (!down0 && !down1) {
+            // Both segment endpoints are above the horizon
+            // Simply interpolate in the main play area
+            // TODO: what if some part in the middle goes below the horizon?
+            midT = 0.5;
+            te_waypoint_obq[gl_InvocationID] = interpolateWaypoint(
+                tc_waypoint_obq[0], tc_waypoint_obq[1], midT);
+        }
+        else if (down0 && down1) {
+            // Segment is entirely below the horizon
+            // Simply interpolate along the horizon
+            // TODO: what if some part in the middle goes above the horizon?
+            midT = 0.5;
+            te_waypoint_obq[gl_InvocationID] = interpolateWaypoint(wp0, wp1, midT);
+        }
+        else {
+            // Segment definitely crosses the horizon.
+            // Create a sharp corner at the horizon.
+            // TODO: solve exact horizon crossing using cubic formula
+            // for now use linear approximation
+            // float horizonT =
+            midT = 0.5;
+            te_waypoint_obq[gl_InvocationID] = interpolateWaypoint(wp0, wp1, midT);
+        }
     }
     else if (gl_InvocationID == 2)  // end point of input segment
     {
