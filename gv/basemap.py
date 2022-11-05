@@ -261,7 +261,7 @@ class WebMercatorTile(object):
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
         GL.glUseProgram(self.boundary_shader)
         GL.glUniform4f(self.edge_color_location, 0, 1, 0, 1)  # green
-        GL.glUniform1f(self.line_width_location, 2)
+        GL.glUniform1f(self.line_width_location, 4)
         GL.glUniform1i(self.contains_antipode_edge_location, int(self.contains_antipode(context)))
         GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
         # GL.glDrawArrays(GL.GL_PATCHES, 0, len(self.boundary_vertices))

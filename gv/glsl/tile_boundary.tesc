@@ -18,6 +18,9 @@ float sine2DAngle(vec2 v1, vec2 v2)
 }
 
 
+// TODO: antipode might not be the right way to choose the horizon direction.
+// maybe better to follow the trend of either the horizon point, or the
+// past horizon point.
 void clipWaypoint(inout Waypoint3 wp_obq, in bool bContainsAntipode) {
     // hard code orthographic case for now
     // TODO: move to projection.glsl
@@ -63,7 +66,7 @@ void main()
         vec2 dw = (win1 - win0).xy;
         float lw = length(dw);
         float nsegs = 1;  // minimum number of interpolated segments
-        nsegs += lw / 100;  // more segments for longer lines
+        // nsegs += lw / 20;  // more segments for longer lines
         if (lw > 0) {
             vec2 lineDir = dw / lw;
             vec2 m0 = normalize(dwin_for_dobq(wp0.outDir, obq0));
@@ -77,6 +80,9 @@ void main()
 
         gl_TessLevelOuter[1] = nsegs;  // Number of segments per line
     }
+
+    // TODO: for segments that cross the horizon in orthographic,
+    // put a sharp corner at the horizon boundary
 
     Waypoint3 wp = tc_waypoint_obq[gl_InvocationID];
     clipWaypoint(wp, uContainsAntipode);
