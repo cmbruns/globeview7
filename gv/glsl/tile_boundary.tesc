@@ -4,7 +4,7 @@
 #include "projection.glsl"
 #endif
 
-layout (vertices = 3) out;
+layout (vertices = 2) out;
 
 in Waypoint3 tc_waypoint_obq[];
 in vec4 fColor[];
@@ -13,6 +13,7 @@ uniform bool uContainsAntipode = false;
 
 out Waypoint3 te_waypoint_obq[];
 patch out vec4 teColor;
+patch out Waypoint3 midPoint;
 patch out float midT;
 
 
@@ -95,9 +96,7 @@ void main()
             else if (down0 || down1)
                 teColor = vec4(1, 1, 0, 1);  // yellow for segment crossing horizon
         }
-    }
-    else if (gl_InvocationID == 1)  // mid point of input segment
-    {
+
         // TODO: handle horizon crossing segments
         // TODO: for segments that cross the horizon in orthographic,
         //   put a sharp corner at the horizon boundary
@@ -107,7 +106,7 @@ void main()
             // Simply interpolate in the main play area
             // TODO: what if some part in the middle goes below the horizon?
             midT = 0.5;
-            te_waypoint_obq[gl_InvocationID] = interpolateWaypoint(
+            midPoint = interpolateWaypoint(
                 tc_waypoint_obq[0], tc_waypoint_obq[1], midT);
         }
         else if (down0 && down1) {
@@ -115,7 +114,7 @@ void main()
             // Simply interpolate along the horizon
             // TODO: what if some part in the middle goes above the horizon?
             midT = 0.5;
-            te_waypoint_obq[gl_InvocationID] = interpolateWaypoint(wp0, wp1, midT);
+            midPoint = interpolateWaypoint(wp0, wp1, midT);
         }
         else {
             // Segment definitely crosses the horizon.
@@ -143,14 +142,14 @@ void main()
                 midT = tess0 / (tess0 + tess1);
                 // teColor = vec4(midT, 1, 0, 1);
             }
-            te_waypoint_obq[gl_InvocationID] = horizonWp;
+            midPoint = horizonWp;
             // The two subsegments might have different tesselation requirements
             float tess0 = segmentTessLevel(wp0, horizonWp);
             float tess1 = segmentTessLevel(horizonWp, wp1);
             midT = tess0 / (tess0 + tess1);
         }
     }
-    else if (gl_InvocationID == 2)  // end point of input segment
+    else if (gl_InvocationID == 1)  // end point of input segment
     {
         te_waypoint_obq[gl_InvocationID] = wp1;
     }

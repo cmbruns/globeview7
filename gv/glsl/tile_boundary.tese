@@ -8,6 +8,7 @@ layout (isolines) in;
 
 in Waypoint3 te_waypoint_obq[];
 patch in vec4 teColor;
+patch in Waypoint3 midPoint;
 patch in float midT;
 
 out vec4 gColor;
@@ -19,8 +20,8 @@ void main()
     // Interpolate curved segment
     // TODO: handle specially bisected segments
     Waypoint3 wp0 = te_waypoint_obq[0];
-    Waypoint3 mid = te_waypoint_obq[1];
-    Waypoint3 wp1 = te_waypoint_obq[2];
+    Waypoint3 mid = midPoint;
+    Waypoint3 wp1 = te_waypoint_obq[1];
     float t = gl_TessCoord.x;
     Waypoint3 wp;
     if (t <= midT) {
