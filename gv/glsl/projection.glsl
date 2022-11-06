@@ -95,16 +95,17 @@ void clip_obq_point(inout vec3 obq)
     switch(ub.projection) {
         case ORTHOGRAPHIC_PROJECTION: {
             if (obq.x < 0)
-                obq = normalize(vec3(0, obq.yz));// push to horizon
+                obq = normalize(vec3(0, obq.yz));  // push to horizon
             break;
         }
         case PERSPECTIVE_PROJECTION: {
             float v = ub.view_height_radians;
-            float max_radius = sqrt(v / (2 + v));  // nmc boundary
-            float min_x = max_radius / v;
-            float r = max_radius * (v + 1 - min_x) / v;
-            if (obq.x < min_x)
+            float min_x = 1 / (v + 1);
+            if (obq.x < min_x) {
+                float max_radius = sqrt(v / (2 + v));  // nmc boundary
+                float r = max_radius * (v + 1 - min_x) / v;
                 obq = vec3(min_x, r * normalize(obq.yz));  // push to horizon
+            }
             break;
         }
     }

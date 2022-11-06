@@ -145,8 +145,6 @@ void main()
         }
 
         // TODO: handle horizon crossing segments
-        // TODO: for segments that cross the horizon in orthographic,
-        //   put a sharp corner at the horizon boundary
         // TODO: this is orthographic specific
         if (!down0 && !down1) {
             // Both segment endpoints are above the horizon
@@ -167,12 +165,13 @@ void main()
             // Segment definitely crosses the horizon.
             // Create a sharp corner at the horizon.
             // TODO: solve exact horizon crossing using cubic formula
-            // for now use linear approximation to find t where x==0
-            float horizonT = tc_waypoint_obq[0].p.x / (tc_waypoint_obq[0].p.x - tc_waypoint_obq[1].p.x);
+            // for now use linear approximation to find t where x==min_x
+            float horizonT = (tc_waypoint_obq[0].p.x - min_x_obq) / (tc_waypoint_obq[0].p.x - tc_waypoint_obq[1].p.x);
             // tesc_output.color = vec4(horizonT, 1 - horizonT, horizonT, 1);
             Waypoint3 horizonWp = interpolateWaypoint(tc_waypoint_obq[0], tc_waypoint_obq[1], horizonT);
-            horizonWp.p = vec3(0, normalize(horizonWp.p.yz));  // Clamp to exact x==0
-            vec3 horizonSlope = vec3(0, horizonWp.p.z, -horizonWp.p.y);  // clockwise around horizon
+            float r = sqrt(1 - min_x_obq*min_x_obq);
+            horizonWp.p = vec3(min_x_obq, r * normalize(horizonWp.p.yz));  // Clamp to exact x==min_x
+            vec3 horizonSlope = normalize(vec3(0, horizonWp.p.z, -horizonWp.p.y));  // clockwise around horizon
             if (down0) {
                 // first endpoint is below the horizon, so set the INPUT direction to the horizon direction
                 if (dot(horizonWp.inDir, horizonSlope) < 0)
