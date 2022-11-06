@@ -1,3 +1,8 @@
+#ifndef CUSTOM_PROCESS_INCLUDES
+#extension GL_GOOGLE_include_directive : enable
+#include "projection.glsl"
+#endif
+
 in vec3 nmc;
 
 void main()

@@ -25,8 +25,22 @@ void clipWaypoint(inout Waypoint3 wp_obq, bool useInDirection) {
     // hard code orthographic case for now
     // TODO: move to projection.glsl
 
-    // TODO: this is orthographic specific
-    if (wp_obq.p.x > 0) return;  // no clipping needed
+    // TODO: this is orthographic/projection specific
+    float min_x = 0;  // azimuthal projections only
+    switch(ub.projection) {
+        case ORTHOGRAPHIC_PROJECTION: {
+            float min_x = 0;
+            if (wp_obq.p.x > min_x) return;  // no clipping needed
+            break;
+        }
+        case PERSPECTIVE_PROJECTION: {
+            float v = ub.view_height_radians;
+            float min_x = v / (v - wp_obq.p.x + 1.0);
+            if (wp_obq.p.x > min_x) return;  // no clipping needed
+            break;
+        }
+        // TODO: more projections
+    }
 
     vec3 dir;
     if (useInDirection)
@@ -35,9 +49,11 @@ void clipWaypoint(inout Waypoint3 wp_obq, bool useInDirection) {
         dir = wp_obq.outDir;
     clip_obq_point(wp_obq.p);
 
-    vec3 horizonSlope = vec3(0, wp_obq.p.z, -wp_obq.p.y);  // clockwise around horizon
+    // TODO: this is for azimuthal only
+    vec3 horizonSlope = normalize(vec3(0, wp_obq.p.z, -wp_obq.p.y));  // clockwise around horizon
     if (dot(dir, horizonSlope) < 0)
         horizonSlope = -horizonSlope;
+
     wp_obq.inDir = horizonSlope;
     wp_obq.outDir = horizonSlope;
 }

@@ -1,20 +1,22 @@
-#ifndef CUSTOM_PROCESS_INCLUDES
-#extension GL_GOOGLE_include_directive : enable
-#include "projection.glsl"
-#endif
+#pragma include "projection.glsl"
 
 layout (lines) in;
 layout (triangle_strip, max_vertices = 3) out;  // one triangle
 
-in vec4 gColor[];
-out vec4 fColor;
+in Data {
+    vec4 color;
+} geom_input[];
+
+out Data {
+    vec4 color;
+} geom_output;
 
 void main()
 {
-    fColor = gColor[0];  // 0: use color of first point in the line segment
+    geom_output.color = geom_input[0].color;  // 0: use color of first point in the line segment
 
-    vec2 ndc0 = ndc_for_obq(gl_in[0].gl_Position.xyz).xy;
-    vec2 ndc1 = ndc_for_obq(gl_in[1].gl_Position.xyz).xy;
+    vec2 ndc0 = gl_in[0].gl_Position.xy;
+    vec2 ndc1 = gl_in[1].gl_Position.xy;
 
     vec2 ndcZero = vec2(0, 0);
 

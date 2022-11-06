@@ -39,7 +39,6 @@ class WebMercatorTile(object):
         self.fill_shader = None
         self.fill_color_shader = None
         self.boundary_shader = None
-        self.first_point_location = None
         self.fill_color_location = None
         self.contains_antipode_fill_location = None
         self.contains_antipode_edge_location = None
@@ -165,7 +164,6 @@ class WebMercatorTile(object):
             self.fill_shader = self.basemap.root_tile_shader
         else:
             self.fill_shader = self.basemap.tile_fill_shader
-            self.first_point_location = GL.glGetUniformLocation(self.fill_shader, "uFirstPoint_ecf")
             self.fill_color_location = GL.glGetUniformLocation(self.fill_shader, "uColor")
             self.boundary_shader = self.basemap.tile_boundary_shader
             self.edge_color_location = GL.glGetUniformLocation(self.boundary_shader, "uColor")
@@ -221,7 +219,6 @@ class WebMercatorTile(object):
         self.boundary_vertices.bind()
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
         GL.glUseProgram(self.fill_shader)
-        GL.glUniform3f(self.first_point_location, *self.boundary_vertices.vertices[0:3])  # first point
         GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
         # First pass: fill the stencil buffer
         GL.glStencilMask(tile_arity_mask)

@@ -93,9 +93,11 @@ void clip_obq_point(inout vec3 obq)
 {
     // TODO: other projections
     switch(ub.projection) {
-        case ORTHOGRAPHIC_PROJECTION:
+        case ORTHOGRAPHIC_PROJECTION: {
             if (obq.x < 0)
-                obq = normalize(vec3(0, obq.yz));  // push to horizon
+                obq = normalize(vec3(0, obq.yz));// push to horizon
+            break;
+        }
     }
 }
 

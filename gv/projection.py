@@ -344,7 +344,7 @@ class OrthographicProjection(DisplayProjection):
             return
         self.boundary_vertices.bind()
         self.boundary_shader = shader.Program(
-            shader.Stage(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         GL.glBindVertexArray(0)
@@ -405,6 +405,9 @@ class PerspectiveProjection(DisplayProjection):
         super().__init__()
         self.view_state = view_state
         self.boundary_shader = None
+        self.fill_shader = None
+        self.scale_fill_location = None
+        self.scale_edge_location = None
         c_verts = 100
         # Use unit radius, then scale the boundary in the shader
         verts = [[sin(2 * i * pi / c_verts), cos(2 * i * pi / c_verts), 1] for i in range(c_verts)]
@@ -415,9 +418,17 @@ class PerspectiveProjection(DisplayProjection):
             return
         self.boundary_vertices.bind()
         self.boundary_shader = shader.Program(
-            shader.Stage(["projection.glsl", "boundary_psp.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
+        self.fill_shader = shader.Program(
+            shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["projection_fill.geom"], GL.GL_GEOMETRY_SHADER),
+            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
+        # TODO: change "boundary" to "edge" everywhere
+        self.scale_fill_location = GL.glGetUniformLocation(self.fill_shader, "uScale")
+        self.scale_edge_location = GL.glGetUniformLocation(self.boundary_shader, "uScale")
         GL.glBindVertexArray(0)
 
     def draw_boundary(self, context):
@@ -426,13 +437,21 @@ class PerspectiveProjection(DisplayProjection):
         self.boundary_vertices.bind()
         GL.glLineWidth(1)
         GL.glUseProgram(self.boundary_shader)
+        v = context.altitude  # radians
+        scale = (v / (2 + v))**0.5
+        GL.glUniform1f(self.scale_edge_location, scale)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
     def fill_boundary(self, context):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
-        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
+        GL.glUseProgram(self.fill_shader)
+        v = context.altitude  # view distance in radians
+        scale = (v / (2 + v))**0.5
+        GL.glUniform1f(self.scale_fill_location, scale)
+        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        # GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
 
     def dobq_for_dnmc(self, dnmc, p_nmc: NMCPoint):
         # TODO: this is wrong, it's copied from orthographic
