@@ -45,7 +45,6 @@ void clipWaypoint(inout Waypoint3 wp_obq, bool useInDirection) {
 
 float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1)
 {
-    return 6;
     // dynamically determine tessellation level
     vec3 obq0 = wp0.p;
     vec3 obq1 = wp1.p;
@@ -53,17 +52,27 @@ float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1)
     vec3 win1 = win_for_obq(obq1);
     vec2 dw = (win1 - win0).xy;
     float lw = length(dw);
+    if (lw == 0)
+        return 1;
     float nsegs = 1;  // minimum number of interpolated segments
-    // nsegs += lw / 20;  // more segments for longer lines
+    nsegs += lw / 100;  // more segments for longer lines
     if (lw > 0) {
         vec2 lineDir = dw / lw;
-        vec2 m0 = normalize(dwin_for_dobq(wp0.outDir, obq0));
-        vec2 m1 = normalize(dwin_for_dobq(wp1.inDir, obq1));
-        float c0 = 1 - dot(m0, lineDir);  // 1 minus cosine of slope angle wrt line
-        float c1 = 1 - dot(m1, lineDir);
-        float cmax = max(c0, c1);  // range 0 to 2
-        // TODO: no red lines when I uncomment line below...
-        // nsegs += 10 * cmax;  // more segments for more dramatic curves
+        vec2 dwin0 = dwin_for_dobq(wp0.outDir, obq0);
+        vec2 dwin1 = dwin_for_dobq(wp1.inDir, obq1);
+        if (length(dwin0) > 0 && length(dwin1) > 0) {
+            vec2 m0 = normalize(dwin0);
+            vec2 m1 = normalize(dwin1);
+            float c0 = 1 - dot(m0, lineDir);// 1 minus cosine of slope angle wrt line
+            float c1 = 1 - dot(m1, lineDir);
+            float cmax = max(c0, c1);// range 0 to 2
+            nsegs += 100 * cmax;  // more segments for more dramatic curves
+        }
+        vec2 dnmc0 = dnmc_for_dobq(wp0.outDir, obq0);
+        vec2 dnmc1 = dnmc_for_dobq(wp1.inDir, obq1);
+        if (false && isnan(length(dwin0)) || isnan(length(dwin1))) {
+            teColor = vec4(1, 0.5, 0.5, 1);  // pink for debugging
+        }
     }
     return nsegs;
 }

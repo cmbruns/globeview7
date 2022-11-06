@@ -168,8 +168,8 @@ vec2 dnmc_for_dobq(in vec3 dobq, in vec3 obq)
     else if (ub.projection == ORTHOGRAPHIC_PROJECTION)
     {
         return vec2(
-            dot(vec3(-obq.y / obq.x, 1, 0), dobq),
-            dot(vec3(-obq.z / obq.x, 0, 1), dobq));
+            dot(vec3(0, 1, 0), dobq),
+            dot(vec3(0, 0, 1), dobq));
     }
     else if (ub.projection == PERSPECTIVE_PROJECTION)
     {
