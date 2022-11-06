@@ -9,8 +9,6 @@ layout (vertices = 2) out;
 in Waypoint3 tc_waypoint_obq[];
 in vec4 fColor[];
 
-uniform bool uContainsAntipode = false;
-
 out Waypoint3 te_waypoint_obq[];
 patch out vec4 teColor;
 patch out Waypoint3 midPoint;
@@ -23,27 +21,31 @@ float sine2DAngle(vec2 v1, vec2 v2)
 }
 
 
-// TODO: antipode might not be the right way to choose the horizon direction.
-// maybe better to follow the trend of either the horizon point, or the
-// past horizon point.
-void clipWaypoint(inout Waypoint3 wp_obq, in bool bContainsAntipode) {
+void clipWaypoint(inout Waypoint3 wp_obq, bool useInDirection) {
     // hard code orthographic case for now
     // TODO: move to projection.glsl
 
     // TODO: this is orthographic specific
     if (wp_obq.p.x > 0) return;  // no clipping needed
+
+    vec3 dir;
+    if (useInDirection)
+        dir = wp_obq.inDir;
+    else
+        dir = wp_obq.outDir;
     clip_obq_point(wp_obq.p);
-    // TODO: clipping should be done on segments, so we better know how to choose horizon direction...
-    wp_obq.outDir = vec3(0, wp_obq.p.z, -wp_obq.p.y);  // clockwise around horizon
-    if (bContainsAntipode)
-        wp_obq.outDir = -wp_obq.outDir;  // counterclockwise
-    wp_obq.inDir = wp_obq.outDir;  // clockwise around horizon
+
+    vec3 horizonSlope = vec3(0, wp_obq.p.z, -wp_obq.p.y);  // clockwise around horizon
+    if (dot(dir, horizonSlope) < 0)
+        horizonSlope = -horizonSlope;
+    wp_obq.inDir = horizonSlope;
+    wp_obq.outDir = horizonSlope;
 }
 
 
 float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1)
 {
-    return 11;
+    return 6;
     // dynamically determine tessellation level
     vec3 obq0 = wp0.p;
     vec3 obq1 = wp1.p;
@@ -73,8 +75,8 @@ void main()
 
     Waypoint3 wp0 = tc_waypoint_obq[0];
     Waypoint3 wp1 = tc_waypoint_obq[1];
-    clipWaypoint(wp0, uContainsAntipode);
-    clipWaypoint(wp1, uContainsAntipode);
+    clipWaypoint(wp0, true);
+    clipWaypoint(wp1, false);
     bool down0 = tc_waypoint_obq[0].p.x < 0;
     bool down1 = tc_waypoint_obq[1].p.x < 0;
 

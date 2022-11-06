@@ -152,8 +152,8 @@ class WebMercatorTile(object):
         if lon > 180:
             lon = lon - 360
         lat = -lat
-        return (self.lon_range[0] <= lon <= self.lon_range[1]
-                and self.lat_range[0] <= lat <= self.lat_range[1])
+        return (self.lon_range[0] < lon < self.lon_range[1]
+                and self.lat_range[0] < lat < self.lat_range[1])
 
     def initialize_opengl(self):
         self.basemap.initialize_opengl()
