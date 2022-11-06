@@ -98,6 +98,15 @@ void clip_obq_point(inout vec3 obq)
                 obq = normalize(vec3(0, obq.yz));// push to horizon
             break;
         }
+        case PERSPECTIVE_PROJECTION: {
+            float v = ub.view_height_radians;
+            float max_radius = sqrt(v / (2 + v));  // nmc boundary
+            float min_x = max_radius / v;
+            float r = max_radius * (v + 1 - min_x) / v;
+            if (obq.x < min_x)
+                obq = vec3(min_x, r * normalize(obq.yz));  // push to horizon
+            break;
+        }
     }
 }
 
@@ -176,7 +185,7 @@ vec2 dnmc_for_dobq(in vec3 dobq, in vec3 obq)
     else if (ub.projection == PERSPECTIVE_PROJECTION)
     {
         float v = ub.view_height_radians;
-        float d = 2 * (v + 1 - obq.x);
+        float d = v + 1 - obq.x;
         return vec2(
             dot(vec3(v * obq.y / (d*d), v/d, 0), dobq),
             dot(vec3(v * obq.z / (d*d), 0, v/d), dobq));

@@ -32,8 +32,8 @@ class H3Cell(ILayer):
     def initialize_opengl(self):
         self.boundary.bind()
         self.program = shader.Program(
-            shader.Stage(["projection.glsl", "h3cell.vert"], GL.GL_VERTEX_SHADER),
-            shader.Stage(["projection.glsl", "h3cell.geom"], GL.GL_GEOMETRY_SHADER),
+            shader.Stage(["h3cell.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["h3cell.geom"], GL.GL_GEOMETRY_SHADER),
             shader.Stage(["green.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         line_width_range = GL.glGetIntegerv(GL.GL_SMOOTH_LINE_WIDTH_RANGE)

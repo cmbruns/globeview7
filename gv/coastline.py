@@ -33,7 +33,7 @@ class Coastline(ILayer):
         self.vertices.bind()
         self.shader = shader.Program(
             shader.Stage(["coastline.vert", ], GL.GL_VERTEX_SHADER),
-            shader.Stage(["projection.glsl", "coastline.geom", ], GL.GL_GEOMETRY_SHADER),
+            shader.Stage(["coastline.geom", ], GL.GL_GEOMETRY_SHADER),
             shader.Stage(["coastline.frag", ], GL.GL_FRAGMENT_SHADER),
         ).compile()
         line_width_range = GL.glGetIntegerv(GL.GL_SMOOTH_LINE_WIDTH_RANGE)

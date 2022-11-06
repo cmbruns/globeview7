@@ -7,15 +7,15 @@
 layout (isolines) in;
 
 in Waypoint3 te_waypoint_obq[];
-patch in vec4 teColor;
 patch in Waypoint3 midPoint;
 patch in float midT;
 
-out vec4 gColor;
+patch in Data { vec4 color; } tese_input;
+out Data { vec4 color; } tese_output;
 
 void main()
 {
-    gColor = teColor;
+    tese_output.color = tese_input.color;
 
     // Interpolate curved segment
     // TODO: handle specially bisected segments
@@ -26,11 +26,11 @@ void main()
     Waypoint3 wp;
     if (t <= midT) {
         wp = interpolateWaypoint(wp0, mid, t / midT);
-        // gColor = vec4(1, 0, 0, 1);
+        // tese_output.color = vec4(1, 0, 0, 1);
     }
     else {
         wp = interpolateWaypoint(mid, wp1, (t - midT) / (1 - midT));
-        // gColor = vec4(0, 0, 1, 1);
+        // tese_output.color = vec4(0, 0, 1, 1);
     }
 
     gl_Position = vec4(normalize(wp.p), 1);

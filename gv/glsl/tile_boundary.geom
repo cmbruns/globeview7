@@ -5,12 +5,12 @@ layout (triangle_strip, max_vertices = 6) out;  // polygon representing a line s
 
 uniform float uLineWidth = 2.0;
 
-in vec4 gColor[];
-out vec4 fColor;
+in Data { vec4 color; } geom_input[];
+out Data { vec4 color; } geom_output;
 
 void main()
 {
-    fColor = gColor[0];
+    geom_output.color = geom_input[0].color;
 
     vec2 ndc0 = ndc_for_obq(gl_in[0].gl_Position.xyz).xy;
     vec2 ndc1 = ndc_for_obq(gl_in[1].gl_Position.xyz).xy;

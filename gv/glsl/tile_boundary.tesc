@@ -7,13 +7,13 @@
 layout (vertices = 2) out;
 
 in Waypoint3 tc_waypoint_obq[];
-in vec4 fColor[];
 
 out Waypoint3 te_waypoint_obq[];
-patch out vec4 teColor;
 patch out Waypoint3 midPoint;
 patch out float midT;
 
+in Data { vec4 color; } tesc_input[];
+patch out Data { vec4 color; } tesc_output;
 
 float sine2DAngle(vec2 v1, vec2 v2)
 {
@@ -87,7 +87,7 @@ float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1)
         vec2 dnmc0 = dnmc_for_dobq(wp0.outDir, obq0);
         vec2 dnmc1 = dnmc_for_dobq(wp1.inDir, obq1);
         if (false && isnan(length(dwin0)) || isnan(length(dwin1))) {
-            teColor = vec4(1, 0.5, 0.5, 1);  // pink for debugging
+            tesc_output.color = vec4(1, 0.5, 0.5, 1);  // pink for debugging
         }
     }
     return nsegs;
@@ -96,7 +96,7 @@ float segmentTessLevel(in Waypoint3 wp0, in Waypoint3 wp1)
 
 void main()
 {
-    teColor = fColor[0];
+    tesc_output.color = tesc_input[0].color;
 
     Waypoint3 wp0 = tc_waypoint_obq[0];
     Waypoint3 wp1 = tc_waypoint_obq[1];
@@ -117,11 +117,11 @@ void main()
 
         if (false) {
             // Color by horizon relationship for testing and debugging
-            teColor = vec4(0, 1, 0, 1);  // green for segment above horizon
+            tesc_output.color = vec4(0, 1, 0, 1);  // green for segment above horizon
             if (down0 && down1)
-                teColor = vec4(1, 0, 0, 1);  // red for segment below horizon
+                tesc_output.color = vec4(1, 0, 0, 1);  // red for segment below horizon
             else if (down0 || down1)
-                teColor = vec4(1, 1, 0, 1);  // yellow for segment crossing horizon
+                tesc_output.color = vec4(1, 1, 0, 1);  // yellow for segment crossing horizon
         }
 
         // TODO: handle horizon crossing segments
@@ -149,7 +149,7 @@ void main()
             // TODO: solve exact horizon crossing using cubic formula
             // for now use linear approximation to find t where x==0
             float horizonT = tc_waypoint_obq[0].p.x / (tc_waypoint_obq[0].p.x - tc_waypoint_obq[1].p.x);
-            // teColor = vec4(horizonT, 1 - horizonT, horizonT, 1);
+            // tesc_output.color = vec4(horizonT, 1 - horizonT, horizonT, 1);
             Waypoint3 horizonWp = interpolateWaypoint(tc_waypoint_obq[0], tc_waypoint_obq[1], horizonT);
             horizonWp.p = vec3(0, normalize(horizonWp.p.yz));  // Clamp to exact x==0
             vec3 horizonSlope = vec3(0, horizonWp.p.z, -horizonWp.p.y);  // clockwise around horizon
@@ -167,7 +167,7 @@ void main()
                 float tess0 = segmentTessLevel(wp0, horizonWp);
                 float tess1 = segmentTessLevel(horizonWp, wp1);
                 midT = tess0 / (tess0 + tess1);
-                // teColor = vec4(midT, 1, 0, 1);
+                // tesc_output.color = vec4(midT, 1, 0, 1);
             }
             midPoint = horizonWp;
             // The two subsegments might have different tesselation requirements

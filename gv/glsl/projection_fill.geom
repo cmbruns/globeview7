@@ -3,13 +3,8 @@
 layout (lines) in;
 layout (triangle_strip, max_vertices = 3) out;  // one triangle
 
-in Data {
-    vec4 color;
-} geom_input[];
-
-out Data {
-    vec4 color;
-} geom_output;
+in Data { vec4 color; } geom_input[];
+out Data { vec4 color; } geom_output;
 
 void main()
 {

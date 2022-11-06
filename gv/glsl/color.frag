@@ -1,6 +1,7 @@
-in vec4 fColor;
+in Data { vec4 color; };
+
 out vec4 fragColor;
 
 void main() {
-    fragColor = fColor;
+    fragColor = color;
 }

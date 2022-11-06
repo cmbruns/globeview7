@@ -8,10 +8,7 @@ uniform float uScale = 1.0;
 
 in vec3 nmc;
 
-out Data
-{
-    vec4 color;
-};
+out Data { vec4 color; };
 
 void main()
 {

@@ -206,7 +206,7 @@ class WebMercatorTile(object):
         GL.glUseProgram(self.fill_shader)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         if self.rez == 0:
-            context.projection.fill_boundary(context)
+            context.projection.fill_boundary(context, self.fill_shader)
         else:
             raise NotImplementedError
 
@@ -244,7 +244,7 @@ class WebMercatorTile(object):
             GL.glUseProgram(self.fill_shader)
         else:
             GL.glUseProgram(self.fill_color_shader)
-            GL.glUniform4f(self.fill_color_location, 0, 0, 1, 0.3)  # Transparent blue
+            # GL.glUniform4f(self.fill_color_location, 0, 0, 1, 0.3)  # Transparent blue
             GL.glUniform1i(self.contains_antipode_fill_location, int(self.contains_antipode(context)))
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
 
@@ -348,6 +348,9 @@ class TestRasterTile(ILayer):
         self.vao = None
         self.boundary_shader = None
         self.color_location = None
+        # Testing resources
+        self.screen_shader = None
+        self.color_screen_location = None
 
     def initialize_opengl(self):
         self.tile.initialize_opengl()
@@ -358,22 +361,42 @@ class TestRasterTile(ILayer):
             shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         self.color_location = GL.glGetUniformLocation(self.boundary_shader, "uColor")
+
+        # Testing resources
+        self.screen_shader = shader.Program(
+            shader.Stage(["screen_quad.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
+        self.color_screen_location = GL.glGetUniformLocation(self.screen_shader, "uColor")
+
         GL.glBindVertexArray(0)
 
     def paint_opengl(self, context):
         if self.vao is None:
             self.initialize_opengl()
-        # Populate valid area stencil mask
+        show_test_render = False
+        if show_test_render:
+            # TODO: remove this block of render tests
+            # 1) color full screen pale red
+            GL.glBindVertexArray(self.vao)
+            GL.glUseProgram(self.screen_shader)
+            GL.glUniform4f(self.color_screen_location, 1, 0, 0, 0.2)  # red full screen
+            GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
+            # 2) color valid projection area pale green
+            context.projection.fill_boundary(context, self.boundary_shader)  # TODO:
+        # 1) Clear stencil mask
         GL.glEnable(GL.GL_STENCIL_TEST)
-        GL.glStencilMask(projection_region_mask)
+        GL.glStencilMask(projection_region_mask | tile_arity_mask)
         GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
+        # 2) Mask valid projection region
+        GL.glStencilMask(projection_region_mask)
         GL.glStencilFunc(GL.GL_ALWAYS, 0, projection_region_mask)
         GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_INVERT)
         GL.glColorMask(False, False, False, False)
         GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.boundary_shader)
         # GL.glUniform4f(self.color_location, 1, 0.2, 0, 0.3)
-        context.projection.fill_boundary(context)
+        context.projection.fill_boundary(context, self.boundary_shader)
         # Draw "all" the tiles  TODO: loop
         self.tile.fill_boundary(context)
         GL.glDisable(GL.GL_STENCIL_TEST)

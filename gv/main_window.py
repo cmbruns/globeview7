@@ -30,7 +30,7 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             item.setSizeHint(row.minimumSizeHint())
             ll.setItemWidget(item, row)
         # Set initial state
-        self.openGLWidget.set_projection(Projection.PERSPECTIVE)
+        self.openGLWidget.set_projection(Projection.ORTHOGRAPHIC)
         self.projectionComboBox.setCurrentIndex(self.openGLWidget.view_state.projection.index)
 
     @QtCore.Slot(bool)

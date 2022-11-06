@@ -30,7 +30,7 @@ class DisplayProjection(abc.ABC):
     def draw_boundary(self, context):
         pass
 
-    def fill_boundary(self, context):
+    def fill_boundary(self, context, _shader):
         pass
 
     # TODO: @property + @classmethod might not work in python 3.11
@@ -71,8 +71,8 @@ class AzimuthalEqualAreaProjection(DisplayProjection):
             return
         self.boundary_vertices.bind()
         self.boundary_shader = shader.Program(
-            shader.Stage(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+            shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         GL.glBindVertexArray(0)
 
@@ -85,7 +85,7 @@ class AzimuthalEqualAreaProjection(DisplayProjection):
         # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
-    def fill_boundary(self, context):
+    def fill_boundary(self, context, _shader):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
@@ -140,8 +140,8 @@ class AzimuthalEquidistantProjection(DisplayProjection):
             return
         self.boundary_vertices.bind()
         self.boundary_shader = shader.Program(
-            shader.Stage(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+            shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         GL.glBindVertexArray(0)
 
@@ -154,7 +154,7 @@ class AzimuthalEquidistantProjection(DisplayProjection):
         # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
-    def fill_boundary(self, context):
+    def fill_boundary(self, context, _shader):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
@@ -226,8 +226,8 @@ class EquirectangularProjection(DisplayProjection):
     def initialize_gl(self):
         self.boundary_vertices.bind()
         self.boundary_shader = shader.Program(
-            shader.Stage(["projection.glsl", "boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+            shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         GL.glBindVertexArray(0)
 
@@ -239,7 +239,7 @@ class EquirectangularProjection(DisplayProjection):
         GL.glUseProgram(self.boundary_shader)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
-    def fill_boundary(self, context):
+    def fill_boundary(self, context, _shader):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
@@ -295,7 +295,7 @@ class GnomonicProjection(DisplayProjection):
     def draw_boundary(self, context):
         pass
 
-    def fill_boundary(self, context):
+    def fill_boundary(self, context, _shader):
         self.boundary_vertices.bind()
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
 
@@ -345,7 +345,7 @@ class OrthographicProjection(DisplayProjection):
         self.boundary_vertices.bind()
         self.boundary_shader = shader.Program(
             shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         GL.glBindVertexArray(0)
 
@@ -358,7 +358,7 @@ class OrthographicProjection(DisplayProjection):
         # GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)  # TODO: more tessellation
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
-    def fill_boundary(self, context):
+    def fill_boundary(self, context, _shader):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
@@ -419,12 +419,12 @@ class PerspectiveProjection(DisplayProjection):
         self.boundary_vertices.bind()
         self.boundary_shader = shader.Program(
             shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
-            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         self.fill_shader = shader.Program(
             shader.Stage(["boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.Stage(["projection_fill.geom"], GL.GL_GEOMETRY_SHADER),
-            shader.Stage(["boundary.frag"], GL.GL_FRAGMENT_SHADER),
+            shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
         # TODO: change "boundary" to "edge" everywhere
         self.scale_fill_location = GL.glGetUniformLocation(self.fill_shader, "uScale")
@@ -442,15 +442,17 @@ class PerspectiveProjection(DisplayProjection):
         GL.glUniform1f(self.scale_edge_location, scale)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
 
-    def fill_boundary(self, context):
+    def fill_boundary(self, context, shader):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
-        GL.glUseProgram(self.fill_shader)
+        GL.glUseProgram(shader)
         v = context.altitude  # view distance in radians
         scale = (v / (2 + v))**0.5
-        GL.glUniform1f(self.scale_fill_location, scale)
+        scale_location = GL.glGetUniformLocation(shader, "uScale")
+        GL.glUniform1f(scale_location, scale)
         GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        GL.glUniform1f(scale_location, 1.0)  # Restore default in case others use the cached shader
         # GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
 
     def dobq_for_dnmc(self, dnmc, p_nmc: NMCPoint):
