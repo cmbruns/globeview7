@@ -7,6 +7,7 @@
 in vec3 nmc;
 
 uniform sampler2D image;
+uniform vec3 uTileCoord = vec3(0, 0, 0);
 
 out vec4 frag_color;
 
@@ -16,10 +17,14 @@ void main()
     mat3 ecf_X_obq = mat3(ub.ecf_X_obq4);
     vec3 ecf = ecf_X_obq * obq;
     vec2 wgs = wgs_for_ecf(ecf);
-    vec2 mercator = mercator_for_lonlat(wgs);
+    vec3 mercator = vec3(mercator_for_lonlat(wgs), 1);
     // TODO library function for tile coordinates
-    vec2 tile = mercator;
-    tile.y *= -1;
-    tile = tile / radians(360) + vec2(0.5);
-    frag_color = catrom(image, tile);
+    float k = pow(2, uTileCoord.z);
+    float s = k / radians(360);
+    mat3 tile_X_merc = mat3(
+        s,  0, 0,
+        0, -s, 0,
+        k * 0.5 - uTileCoord.x,  k * 0.5 - uTileCoord.y, 1);
+    vec3 tile = tile_X_merc * mercator;
+    frag_color = catrom(image, tile.xy / tile.z);
 }

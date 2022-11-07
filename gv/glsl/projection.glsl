@@ -227,6 +227,11 @@ float min_x_obq()
     return -1;  // other projections have unlimited range
 }
 
+vec3 nmc_for_ndc(in vec3 ndc)
+{
+    return mat3(ub.nmc_X_ndc4) * ndc;
+}
+
 // Convert oblique geocentric coordinates to normalized map coordinates
 vec3 nmc_for_obq(in vec3 obq)
 {

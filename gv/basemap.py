@@ -39,7 +39,9 @@ class WebMercatorTile(object):
         self.fill_shader = None
         self.fill_color_shader = None
         self.boundary_shader = None
+        self.texture_shader = None  # TODO: hoist shaders into Basemap
         self.fill_color_location = None
+        self.tile_coord_location = None
         self.contains_antipode_fill_location = None
         self.contains_antipode_edge_location = None
         self.edge_color_location = None
@@ -173,7 +175,11 @@ class WebMercatorTile(object):
             shader.Stage(["screen_quad.vert"], GL.GL_VERTEX_SHADER),
             shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
         ).compile(validate=True)
-        self.contains_antipode_fill_location = GL.glGetUniformLocation(self.fill_color_shader, "uContainsAntipode")
+        self.texture_shader = shader.Program(
+            shader.Stage(["screen_quad.vert"], GL.GL_VERTEX_SHADER),
+            shader.Stage(["basemap.frag"], GL.GL_FRAGMENT_SHADER),
+        ).compile(validate=True)
+        self.tile_coord_location = GL.glGetUniformLocation(self.texture_shader, "uTileCoord")
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 4)  # 1 interferes with later Qt text rendering
@@ -216,19 +222,20 @@ class WebMercatorTile(object):
             return
         if self.boundary_shader is None:
             self.initialize_opengl()
+        # ...3) Populate tile polygon arity stencil mask
         self.boundary_vertices.bind()
         GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
         GL.glUseProgram(self.fill_shader)
         GL.glPatchParameteri(GL.GL_PATCH_VERTICES, 2)
-        # First pass: fill the stencil buffer
         GL.glStencilMask(tile_arity_mask)
         GL.glClear(GL.GL_STENCIL_BUFFER_BIT)
         GL.glColorMask(False, False, False, False)
         GL.glStencilFunc(GL.GL_ALWAYS, 0, tile_arity_mask)
         GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_INVERT)
         GL.glDrawElements(GL.GL_PATCHES, len(self.boundary_indexes), GL.GL_UNSIGNED_BYTE, None)
-        # Second pass: Paint by stencil
+        # 4) Use a cheap vertex shader to fill in the color
         GL.glColorMask(True, True, True, True)
+        # TODO: more nuanced antipode signed distance from tile edge test
         if self.contains_antipode(context):
             ref = projection_region_mask  # Invert polygon area
             msk = tile_arity_mask | projection_region_mask
@@ -237,15 +244,14 @@ class WebMercatorTile(object):
             msk = tile_arity_mask | projection_region_mask
         GL.glStencilFunc(GL.GL_EQUAL, ref, msk)
         GL.glStencilOp(GL.GL_KEEP, GL.GL_KEEP, GL.GL_KEEP)
-        draw_image = False
+        draw_image = True
         if draw_image:
-            # TODO: not working yet
             GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-            GL.glUseProgram(self.fill_shader)
+            GL.glUseProgram(self.texture_shader)
+            GL.glUniform3f(self.tile_coord_location, self.x, self.y, self.rez)
         else:
             GL.glUseProgram(self.fill_color_shader)
-            # GL.glUniform4f(self.fill_color_location, 0, 0, 1, 0.3)  # Transparent blue
-            GL.glUniform1i(self.contains_antipode_fill_location, int(self.contains_antipode(context)))
+            GL.glUniform4f(self.fill_color_location, 0, 1, 0, 0.2)  # Transparent green
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
 
     def paint_boundary(self, context):
@@ -397,10 +403,10 @@ class TestRasterTile(ILayer):
         GL.glColorMask(False, False, False, False)
         GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.boundary_shader)
-        # GL.glUniform4f(self.color_location, 1, 0.2, 0, 0.3)
         context.projection.fill_boundary(context, self.boundary_shader)
-        # Draw "all" the tiles  TODO: loop
+        # 3) Render the tile(s)
+        # TODO: loop over multiple tiles
         self.tile.fill_boundary(context)
+        # 4) Draw the outline of the tile(s)
         GL.glDisable(GL.GL_STENCIL_TEST)
-        # Draw the outline of the tile(s)
-        self.tile.paint_boundary(context)
+        # self.tile.paint_boundary(context)
