@@ -217,6 +217,16 @@ vec2 mercator_for_lonlat(in vec2 lonlat)
     return vec2(lonlat.x, log(tan(radians(45) + lonlat.y/2.0)));
 }
 
+float min_x_obq()
+{
+    switch (ub.projection) {
+        case GNOMONIC_PROJECTION: return 0;
+        case ORTHOGRAPHIC_PROJECTION: return 0;
+        case PERSPECTIVE_PROJECTION: return 1 / (ub.view_height_radians + 1);
+    }
+    return -1;  // other projections have unlimited range
+}
+
 // Convert oblique geocentric coordinates to normalized map coordinates
 vec3 nmc_for_obq(in vec3 obq)
 {

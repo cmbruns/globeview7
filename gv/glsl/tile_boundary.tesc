@@ -22,25 +22,8 @@ float sine2DAngle(vec2 v1, vec2 v2)
 
 
 void clipWaypoint(inout Waypoint3 wp_obq, bool useInDirection) {
-    // hard code orthographic case for now
-    // TODO: move to projection.glsl
-
-    // TODO: this is orthographic/projection specific
-    float min_x = 0;  // azimuthal projections only
-    switch(ub.projection) {
-        case ORTHOGRAPHIC_PROJECTION: {
-            min_x = 0;
-            if (wp_obq.p.x > min_x) return;  // no clipping needed
-            break;
-        }
-        case PERSPECTIVE_PROJECTION: {
-            float v = ub.view_height_radians;
-            min_x = 1 / (v + 1);
-            if (wp_obq.p.x > min_x) return;  // no clipping needed
-            break;
-        }
-        // TODO: more projections
-    }
+    float min_x = min_x_obq();
+    if (wp_obq.p.x > min_x) return;  // no clipping needed
 
     vec3 dir;
     if (useInDirection)
@@ -104,25 +87,10 @@ void main()
     clipWaypoint(wp1, false);
 
     // TODO: move to projection.glsl
-    float min_x_obq = -1;  // Universal minimum obq x value
-    switch(ub.projection) {
-        case GNOMONIC_PROJECTION: {
-            min_x_obq = 0;
-            break;
-        }
-        case ORTHOGRAPHIC_PROJECTION: {
-            min_x_obq = 0;
-            break;
-        }
-        case PERSPECTIVE_PROJECTION: {
-            float v = ub.view_height_radians;
-            min_x_obq = 1 / (v + 1);
-            break;
-        }
-    }
+    float min_x = min_x_obq();
 
-    bool down0 = tc_waypoint_obq[0].p.x < min_x_obq;
-    bool down1 = tc_waypoint_obq[1].p.x < min_x_obq;
+    bool down0 = tc_waypoint_obq[0].p.x < min_x;
+    bool down1 = tc_waypoint_obq[1].p.x < min_x;
 
     if (gl_InvocationID == 0)  // begin point of input segment
     {
@@ -166,11 +134,11 @@ void main()
             // Create a sharp corner at the horizon.
             // TODO: solve exact horizon crossing using cubic formula
             // for now use linear approximation to find t where x==min_x
-            float horizonT = (tc_waypoint_obq[0].p.x - min_x_obq) / (tc_waypoint_obq[0].p.x - tc_waypoint_obq[1].p.x);
+            float horizonT = (tc_waypoint_obq[0].p.x - min_x) / (tc_waypoint_obq[0].p.x - tc_waypoint_obq[1].p.x);
             // tesc_output.color = vec4(horizonT, 1 - horizonT, horizonT, 1);
             Waypoint3 horizonWp = interpolateWaypoint(tc_waypoint_obq[0], tc_waypoint_obq[1], horizonT);
-            float r = sqrt(1 - min_x_obq*min_x_obq);
-            horizonWp.p = vec3(min_x_obq, r * normalize(horizonWp.p.yz));  // Clamp to exact x==min_x
+            float r = sqrt(1 - min_x*min_x);
+            horizonWp.p = vec3(min_x, r * normalize(horizonWp.p.yz));  // Clamp to exact x==min_x
             vec3 horizonSlope = normalize(vec3(0, horizonWp.p.z, -horizonWp.p.y));  // clockwise around horizon
             if (down0) {
                 // first endpoint is below the horizon, so set the INPUT direction to the horizon direction
