@@ -383,6 +383,8 @@ class TestRasterTile(ILayer):
             GL.glUniform4f(self.color_screen_location, 1, 0, 0, 0.2)  # red full screen
             GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 4)
             # 2) color valid projection area pale green
+            GL.glUseProgram(self.boundary_shader)
+            GL.glUniform4f(self.color_screen_location, 0, 1, 0, 0.2)  # green valid area
             context.projection.fill_boundary(context, self.boundary_shader)  # TODO:
         # 1) Clear stencil mask
         GL.glEnable(GL.GL_STENCIL_TEST)

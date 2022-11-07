@@ -446,14 +446,13 @@ class PerspectiveProjection(DisplayProjection):
         if self.boundary_shader is None:
             self.initialize_gl()
         self.boundary_vertices.bind()
-        GL.glUseProgram(shader)
+        # GL.glUseProgram(shader)
         v = context.altitude  # view distance in radians
         scale = (v / (2 + v))**0.5
         scale_location = GL.glGetUniformLocation(shader, "uScale")
         GL.glUniform1f(scale_location, scale)
-        GL.glDrawArrays(GL.GL_LINE_LOOP, 0, len(self.boundary_vertices))
+        GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
         GL.glUniform1f(scale_location, 1.0)  # Restore default in case others use the cached shader
-        # GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
 
     def dobq_for_dnmc(self, dnmc, p_nmc: NMCPoint):
         # TODO: this is wrong, it's copied from orthographic
