@@ -39,6 +39,8 @@ class Ui_MainWindow(object):
         self.actionFull_Screen.setCheckable(True)
         self.actionNormal_View = QAction(MainWindow)
         self.actionNormal_View.setObjectName(u"actionNormal_View")
+        self.actionBookmark_This_View = QAction(MainWindow)
+        self.actionBookmark_This_View.setObjectName(u"actionBookmark_This_View")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_4 = QHBoxLayout(self.centralwidget)
@@ -356,6 +358,8 @@ class Ui_MainWindow(object):
         self.menuFile.setObjectName(u"menuFile")
         self.menuView = QMenu(self.menubar)
         self.menuView.setObjectName(u"menuView")
+        self.menuBookmarks = QMenu(self.menuView)
+        self.menuBookmarks.setObjectName(u"menuBookmarks")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -373,6 +377,9 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionQuit)
         self.menuView.addAction(self.actionReset_View)
         self.menuView.addAction(self.actionFull_Screen)
+        self.menuView.addAction(self.menuBookmarks.menuAction())
+        self.menuBookmarks.addAction(self.actionBookmark_This_View)
+        self.menuBookmarks.addSeparator()
 
         self.retranslateUi(MainWindow)
 
@@ -395,6 +402,7 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(shortcut)
         self.actionNormal_View.setShortcut(QCoreApplication.translate("MainWindow", u"Esc", None))
 #endif // QT_CONFIG(shortcut)
+        self.actionBookmark_This_View.setText(QCoreApplication.translate("MainWindow", u"Bookmark This View...", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Layers", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"Center Location", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Longitude", None))
@@ -431,5 +439,6 @@ class Ui_MainWindow(object):
         self.altitudeSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" km", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
+        self.menuBookmarks.setTitle(QCoreApplication.translate("MainWindow", u"Bookmarks", None))
     # retranslateUi
 

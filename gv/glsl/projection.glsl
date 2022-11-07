@@ -220,9 +220,13 @@ vec2 mercator_for_lonlat(in vec2 lonlat)
 float min_x_obq()
 {
     switch (ub.projection) {
-        case GNOMONIC_PROJECTION: return 0;
+        // gnomonic and stereographic are infinite
+        // so choose a min_x where nmc radius is about 10, which should
+        // be off screen for reasonable zoom levels.
+        case GNOMONIC_PROJECTION: return 0.1;  // 0.1: where nmc radius is about 10
         case ORTHOGRAPHIC_PROJECTION: return 0;
         case PERSPECTIVE_PROJECTION: return 1 / (ub.view_height_radians + 1);
+        case STEREOGRAPHIC_PROJECTION: return -0.923;  // -0.923 where nmc radius is about 10
     }
     return -1;  // other projections have unlimited range
 }

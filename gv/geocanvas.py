@@ -35,6 +35,7 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.layers.append(h3cell.H3Cell())
         self.layers.append(coastline.Coastline("Coast Lines"))
         self.layers.append(graticule.Graticule("Graticule"))
+        self.layers.append(basemap.TestRasterTile("California", 0, 1, 2))
         self.layers.append(basemap.TestRasterTile("Australia", 3, 2, 2))
         self.layers.append(basemap.RootRasterTile("Satellite"))
         self.layers[-1].set_visible(False)  # Turn off satellite for now.

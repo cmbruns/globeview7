@@ -690,8 +690,16 @@
     <property name="title">
      <string>View</string>
     </property>
+    <widget class="QMenu" name="menuBookmarks">
+     <property name="title">
+      <string>Bookmarks</string>
+     </property>
+     <addaction name="actionBookmark_This_View"/>
+     <addaction name="separator"/>
+    </widget>
     <addaction name="actionReset_View"/>
     <addaction name="actionFull_Screen"/>
+    <addaction name="menuBookmarks"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -728,6 +736,11 @@
    </property>
    <property name="shortcut">
     <string>Esc</string>
+   </property>
+  </action>
+  <action name="actionBookmark_This_View">
+   <property name="text">
+    <string>Bookmark This View...</string>
    </property>
   </action>
  </widget>
