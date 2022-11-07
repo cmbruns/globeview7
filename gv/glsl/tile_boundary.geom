@@ -16,7 +16,7 @@ void main()
     vec2 ndc1 = ndc_for_obq(gl_in[1].gl_Position.xyz).xy;
 
     vec3 offset_win = vec3(uLineWidth / 2, uLineWidth / 2, 0);
-    vec2 offset_ndc = ndc_for_win(offset_win).xy;
+    vec2 offset_ndc = abs(ndc_for_win(offset_win).xy);
 
     // local coordinate system of line segment
     vec2 u_hat = normalize(ndc1 - ndc0);
