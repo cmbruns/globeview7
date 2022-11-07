@@ -530,7 +530,7 @@ class StereographicProjection(DisplayProjection):
     def draw_boundary(self, context):
         pass
 
-    def fill_boundary(self, context):
+    def fill_boundary(self, context, _shader):
         self.boundary_vertices.bind()
         GL.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, len(self.boundary_vertices))
 
