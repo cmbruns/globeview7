@@ -10,12 +10,12 @@ in Waypoint3 te_waypoint_obq[];
 patch in Waypoint3 midPoint;
 patch in float midT;
 
-patch in Data { vec4 color; } tese_input;
+in Data { vec4 color; } tese_input[];
 out Data { vec4 color; } tese_output;
 
 void main()
 {
-    tese_output.color = tese_input.color;
+    tese_output.color = tese_input[0].color;
 
     // Interpolate curved segment
     // TODO: handle specially bisected segments

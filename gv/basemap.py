@@ -328,7 +328,7 @@ class Basemap(object):
             shader.Stage(["tile_fill.geom"], GL.GL_GEOMETRY_SHADER),
             shader.Stage(["color.frag"], GL.GL_FRAGMENT_SHADER),
             # validate=False,
-        ).compile(validate=True)
+        ).compile(validate=False)
         self.tile_boundary_shader = shader.Program(
             shader.Stage(["tile_boundary.vert"], GL.GL_VERTEX_SHADER),
             shader.Stage(["tile_boundary.tesc"], GL.GL_TESS_CONTROL_SHADER),
