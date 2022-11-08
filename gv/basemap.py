@@ -24,6 +24,9 @@ tile_arity_mask = 0b010  # for the current tile, the arity of number of polygons
 projection_region_mask = 0b100  # all valid pixels on screen for this projection
 
 
+_debug_tile_boundaries = True
+
+
 class WebMercatorTile(object):
     def __init__(self, x, y, rez, basemap):
         self.x = x
@@ -204,9 +207,11 @@ class WebMercatorTile(object):
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
         else:
             # Draw nothing outside the tile boundaries
-            # Note: set border color to something like magenta when debugging tile boundaries
-            GL.glTexParameterfv(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_BORDER_COLOR, (0, 0, 0, 0))  # Invisible black
-            # GL.glTexParameterfv(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_BORDER_COLOR, (1, 0, 1, 1))  # Magenta
+            # Set border color to magenta when debugging tile boundaries
+            if _debug_tile_boundaries:
+                GL.glTexParameterfv(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_BORDER_COLOR, (1, 0, 1, 1))  # Magenta
+            else:
+                GL.glTexParameterfv(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_BORDER_COLOR, (0, 0, 0, 0))  # Invisible black
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_BORDER)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_BORDER)
         GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
@@ -354,10 +359,13 @@ class RootRasterTile(ILayer):
 
 
 class TestRasterTile(ILayer):
-    def __init__(self, name: str, x, y, rez):
+    def __init__(self, name: str, tile_coords):
         super().__init__(name=name)
         basemap = Basemap()
-        self.tile = basemap.fetch_tile(x, y, rez)
+        self.tiles = []
+        for tc in tile_coords:
+            x, y, rez = tc
+            self.tiles.append(basemap.fetch_tile(x, y, rez))
         self.vao = None
         self.boundary_shader = None
         self.color_location = None
@@ -366,7 +374,8 @@ class TestRasterTile(ILayer):
         self.color_screen_location = None
 
     def initialize_opengl(self):
-        self.tile.initialize_opengl()
+        for tile in self.tiles:
+            tile.initialize_opengl()
         self.vao = GL.glGenVertexArrays(1)
         GL.glBindVertexArray(self.vao)
         self.boundary_shader = shader.Program(
@@ -413,7 +422,10 @@ class TestRasterTile(ILayer):
         context.projection.fill_boundary(context, self.boundary_shader)
         # 3) Render the tile(s)
         # TODO: loop over multiple tiles
-        self.tile.fill_boundary(context)
-        # 4) Draw the outline of the tile(s)
+        for tile in self.tiles:
+            tile.fill_boundary(context)
         GL.glDisable(GL.GL_STENCIL_TEST)
-        # self.tile.paint_boundary(context)
+        # 4) Draw the outline of the tile(s)
+        if _debug_tile_boundaries:
+            for tile in self.tiles:
+                tile.paint_boundary(context)
