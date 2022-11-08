@@ -28,15 +28,14 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
         self.planet = planet.Earth()
         #
         self.painter = QtGui.QPainter()
-        self.font = self.painter.font()
-        # self.font.setPointSize(self.font.pointSize() * 4)
+        self.font = None
         self.layers = []
         self.layers.append(ProjectionOutlineLayer(self.view_state))
         self.layers.append(h3cell.H3Cell())
         self.layers.append(coastline.Coastline("Coast Lines"))
         self.layers.append(graticule.Graticule("Graticule"))
-        self.layers.append(basemap.TestRasterTile("California", 0, 1, 2))
-        self.layers.append(basemap.TestRasterTile("Australia", 3, 2, 2))
+        self.layers.append(basemap.TestRasterTile("Sub-tiles", [(0, 1, 2), (3, 2, 2)]))
+        # self.layers.append(basemap.TestRasterTile("Australia", 3, 2, 2))
         self.layers.append(basemap.RootRasterTile("Satellite"))
         self.layers[-1].set_visible(False)  # Turn off satellite for now.
         for layer in self.layers:
@@ -204,6 +203,8 @@ class GeoCanvas(QtOpenGLWidgets.QOpenGLWidget):
     def paint_qt(self, painter):
         # TODO: layer for qt stuff
         # Experimental label sketch
+        if self.font is None:
+            self.font = painter.font()
         painter.setFont(self.font)
         painter.setPen(QtGui.QColor("#07495f"))  # Dark blue
         painter.drawText(50, 50, "Some Text")

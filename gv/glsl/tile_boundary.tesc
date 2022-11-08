@@ -102,7 +102,7 @@ void main()
 
         te_waypoint_obq[gl_InvocationID] = wp0;
 
-        const bool color_by_horizon_status = false;  // debugging feature toggle
+        const bool color_by_horizon_status = true;  // debugging feature toggle
         if (color_by_horizon_status) {
             // Color by horizon relationship for testing and debugging
             tesc_output[gl_InvocationID].color = vec4(0, 1, 0, 1);  // green for segment above horizon
@@ -112,8 +112,7 @@ void main()
                 tesc_output[gl_InvocationID].color = vec4(1, 1, 0, 1);  // yellow for segment crossing horizon
         }
 
-        // TODO: handle horizon crossing segments
-        // TODO: this is orthographic specific
+        // Handle horizon crossing segments
         if (!down0 && !down1) {
             // Both segment endpoints are above the horizon
             // Simply interpolate in the main play area
@@ -135,9 +134,9 @@ void main()
             // TODO: solve exact horizon crossing using cubic formula
             // for now use linear approximation to find t where x==min_x
             float horizonT = (tc_waypoint_obq[0].p.x - min_x) / (tc_waypoint_obq[0].p.x - tc_waypoint_obq[1].p.x);
-            // tesc_output[gl_InvocationID].color = vec4(horizonT, 1 - horizonT, horizonT, 1);
+            // tesc_output[gl_InvocationID].color = vec4(horizonT, 1 - horizonT, horizonT, 1);  // color segment by distance from horizon
             Waypoint3 horizonWp = interpolateWaypoint(tc_waypoint_obq[0], tc_waypoint_obq[1], horizonT);
-            float r = sqrt(1 - min_x*min_x);
+            float r = sqrt(1.0 - min_x*min_x);
             horizonWp.p = vec3(min_x, r * normalize(horizonWp.p.yz));  // Clamp to exact x==min_x
             vec3 horizonSlope = normalize(vec3(0, horizonWp.p.z, -horizonWp.p.y));  // clockwise around horizon
             if (down0) {
