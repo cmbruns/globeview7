@@ -106,6 +106,16 @@ class ViewState(QtCore.QObject):
     def ecf_J_obq(self):
         return self.ecf_X_obq[0:3, 0:3]
 
+    def restore_memento(self, memento):
+        self.center_location = memento["center_location"]
+        self.zoom = memento["zoom"]
+
+    def memento(self):
+        return {
+            "center_location": self.center_location[:],
+            "zoom": self.zoom,
+        }
+
     @property
     def ndc_X_nmc(self):
         if self._ndc_X_nmc.dirty:

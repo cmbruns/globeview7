@@ -1,5 +1,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtWidgets import QMessageBox
 
+from gv.bookmark import Bookmark
 from ui_globeview import Ui_MainWindow
 from gv.projection import Projection
 from gv.layer import LayerWidget
@@ -32,6 +34,27 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         # Set initial state
         self.openGLWidget.set_projection(Projection.PERSPECTIVE)
         self.projectionComboBox.setCurrentIndex(self.openGLWidget.view_state.projection.index)
+        self._bookmarks = []
+
+    @QtCore.Slot()
+    def on_actionBookmark_This_View_triggered(self):
+        vs = self.openGLWidget.view_state
+        center = vs.center_location[:]
+        zoom = vs.zoom
+        name = f"{center}:{zoom}"
+        reply = QMessageBox.question(
+            self, "Save Bookmark?",
+            f"Create Bookmark:"
+            f"\n  center = {center}"
+            f"\n  zoom = {zoom}",
+            QMessageBox.Save | QMessageBox.Cancel)
+        if reply != QMessageBox.Save:
+            return
+        print("bookmark")
+        bookmark = Bookmark(name=name, view_state=vs, ui_parent=self, updatable=self.openGLWidget)
+        self.menuBookmarks.addAction(bookmark.action)
+        self._bookmarks.append(bookmark)  # Avoid garbage collection
+        print("saved")
 
     @QtCore.Slot(bool)
     def on_actionFull_Screen_toggled(self, is_checked: bool):
