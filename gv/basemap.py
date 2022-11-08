@@ -416,4 +416,4 @@ class TestRasterTile(ILayer):
         self.tile.fill_boundary(context)
         # 4) Draw the outline of the tile(s)
         GL.glDisable(GL.GL_STENCIL_TEST)
-        # self.tile.paint_boundary(context)
+        self.tile.paint_boundary(context)
