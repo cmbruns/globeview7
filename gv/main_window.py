@@ -35,6 +35,16 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         self.openGLWidget.set_projection(Projection.PERSPECTIVE)
         self.projectionComboBox.setCurrentIndex(self.openGLWidget.view_state.projection.index)
         self._bookmarks = []
+        settings = QtCore.QSettings()
+        bookmark_mementos = settings.value("bookmarks", [])
+        for bmm in bookmark_mementos:
+            vs = self.openGLWidget.view_state
+            name = bmm["name"]
+            bookmark = Bookmark(name=name, view_state=vs, ui_parent=self, updatable=self.openGLWidget)
+            bookmark.restore_memento(bmm)
+            self.menuBookmarks.addAction(bookmark.action)
+            self._bookmarks.append(bookmark)  # Avoid garbage collection
+            pass
 
     @QtCore.Slot()
     def on_actionBookmark_This_View_triggered(self):
@@ -50,11 +60,14 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
             QMessageBox.Save | QMessageBox.Cancel)
         if reply != QMessageBox.Save:
             return
-        print("bookmark")
         bookmark = Bookmark(name=name, view_state=vs, ui_parent=self, updatable=self.openGLWidget)
         self.menuBookmarks.addAction(bookmark.action)
         self._bookmarks.append(bookmark)  # Avoid garbage collection
-        print("saved")
+        settings = QtCore.QSettings()
+        bookmark_list = []
+        for bm in self._bookmarks:
+            bookmark_list.append(bm.memento())
+        settings.setValue("bookmarks", bookmark_list)
 
     @QtCore.Slot(bool)
     def on_actionFull_Screen_toggled(self, is_checked: bool):
@@ -85,6 +98,20 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
     @QtCore.Slot()
     def on_actionQuit_triggered(self):
         QtCore.QCoreApplication.quit()
+
+    @QtCore.Slot()
+    def on_actionSave_Screenshot_triggered(self):
+        filename = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Save Globeview Image",
+            "globeview.jpg",
+            "Images (*.jpg *.png)",
+        )
+        fn = filename[0]
+        if fn is None or len(fn) < 1:
+            return
+        qimage = self.openGLWidget.grabFramebuffer()
+        qimage.save(fn, quality=95)
 
     @QtCore.Slot(int)
     def on_altitudeComboBox_currentIndexChanged(self, index: int):
