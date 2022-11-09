@@ -63,11 +63,21 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         bookmark = Bookmark(name=name, view_state=vs, ui_parent=self, updatable=self.openGLWidget)
         self.menuBookmarks.addAction(bookmark.action)
         self._bookmarks.append(bookmark)  # Avoid garbage collection
-        settings = QtCore.QSettings()
         bookmark_list = []
         for bm in self._bookmarks:
             bookmark_list.append(bm.memento())
-        settings.setValue("bookmarks", bookmark_list)
+        QtCore.QSettings().setValue("bookmarks", bookmark_list)
+
+    @QtCore.Slot()
+    def on_actionClear_All_Bookmarks_triggered(self):
+        # TODO: make this an undoable command
+        self._bookmarks[:] = []
+        QtCore.QSettings().setValue("bookmarks", [])
+        actions = self.menuBookmarks.actions()
+        for i, action in enumerate(actions):
+            if i <= 2:
+                continue  # don't remove non-bookmark actions
+            self.menuBookmarks.removeAction(action)
 
     @QtCore.Slot(bool)
     def on_actionFull_Screen_toggled(self, is_checked: bool):
@@ -110,6 +120,7 @@ class GlobeViewMainWindow(Ui_MainWindow, QtWidgets.QMainWindow):
         fn = filename[0]
         if fn is None or len(fn) < 1:
             return
+        # self.grab() always yields terrible quality in the QOpenGLWidget
         qimage = self.openGLWidget.grabFramebuffer()
         qimage.save(fn, quality=95)
 

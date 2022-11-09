@@ -696,6 +696,7 @@
       <string>Bookmarks</string>
      </property>
      <addaction name="actionBookmark_This_View"/>
+     <addaction name="actionClear_All_Bookmarks"/>
      <addaction name="separator"/>
     </widget>
     <addaction name="actionReset_View"/>
@@ -747,6 +748,11 @@
   <action name="actionSave_Screenshot">
    <property name="text">
     <string>Save Screenshot...</string>
+   </property>
+  </action>
+  <action name="actionClear_All_Bookmarks">
+   <property name="text">
+    <string>Clear All Bookmarks</string>
    </property>
   </action>
  </widget>
