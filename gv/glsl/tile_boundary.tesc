@@ -102,7 +102,7 @@ void main()
 
         te_waypoint_obq[gl_InvocationID] = wp0;
 
-        const bool color_by_horizon_status = true;  // debugging feature toggle
+        const bool color_by_horizon_status = false;  // debugging feature toggle
         if (color_by_horizon_status) {
             // Color by horizon relationship for testing and debugging
             tesc_output[gl_InvocationID].color = vec4(0, 1, 0, 1);  // green for segment above horizon

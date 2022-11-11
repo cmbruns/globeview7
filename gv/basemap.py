@@ -249,9 +249,11 @@ class WebMercatorTile(object):
         GL.glColorMask(True, True, True, True)
         # TODO: more nuanced antipode signed distance from tile edge test
         if self.contains_antipode(context):
+            print("contains antipode")
             ref = projection_region_mask  # Invert polygon area
             msk = tile_arity_mask | projection_region_mask
         else:
+            print("does NOT contain antipode")
             ref = tile_arity_mask | projection_region_mask
             msk = tile_arity_mask | projection_region_mask
         GL.glStencilFunc(GL.GL_EQUAL, ref, msk)

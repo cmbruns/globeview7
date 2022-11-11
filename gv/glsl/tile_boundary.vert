@@ -21,4 +21,12 @@ void main()
         obq,
         obq_for_ecf(v_inDir),
         obq_for_ecf(v_outDir));
+
+    const bool color_by_vertex_id = true;
+    if (color_by_vertex_id) {
+        if (gl_VertexID == 5)
+            color = vec4(0, 1, 0, 1);
+        else
+            color = vec4(0, 0, 1, 1);
+    }
 }
